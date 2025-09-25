@@ -1,0 +1,289 @@
+<!-- templates/library/base.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/loaders.css' %}">
+<style>
+    .book-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .book-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .availability-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .available { background: #10B981; color: white; }
+    .unavailable { background: #EF4444; color: white; }
+    .limited { background: #F59E0B; color: white; }
+    
+    .search-result-item {
+        border-left: 4px solid #3B82F6;
+    }
+    .search-highlight {
+        background-color: #FEF3C7;
+        padding: 1px 2px;
+        border-radius: 2px;
+    }
+    
+    .category-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        transition: transform 0.2s;
+    }
+    .category-card:hover {
+        transform: scale(1.02);
+    }
+    
+    /* Modern title styling */
+    .library-title {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #6B21A8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        /* Animation properties */
+        background-size: 200% auto;
+        animation: shimmer 8s linear infinite;
+    }
+
+    @keyframes shimmer {
+        from {
+            background-position: 200% center;
+        }
+        to {
+            background-position: 0% center;
+        }
+    }
+    
+    
+    
+    
+    
+    
+    /* Loading spinner */
+    .loading-spinner {
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #3498db;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        margin-right: 8px;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Search suggestions */
+    .search-suggestions {
+        max-height: 400px;
+        overflow-y: auto;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .suggestion-item:hover {
+        background-color: #F3F4F6;
+    }
+    
+    /* Responsive book grid */
+    .book-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .book-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+        
+        
+    }
+    
+    .htmx-indicator{
+        display:none;
+    }
+    .htmx-request .htmx-indicator{
+        display:inline-block;
+    }
+    .htmx-request.htmx-indicator{
+        display:inline-block;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Quick search functionality - FIXED VERSION
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('#quick-search-input');
+    const searchResults = document.querySelector('#quick-search-results');
+    
+    if (searchInput && searchResults) {
+        // Hide results when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.add('hidden');
+            }
+        });
+        
+        // Show results when focusing on input (if there are results)
+        searchInput.addEventListener('focus', function() {
+            if (searchResults.children.length > 0) {
+                searchResults.classList.remove('hidden');
+            }
+        });
+
+        // KEY FIX: Show results after HTMX loads new content
+        searchInput.addEventListener('htmx:afterRequest', function(event) {
+            // Always show results after successful search, even if empty
+            searchResults.classList.remove('hidden');
+        });
+
+        // Alternative fix: Listen for content changes and show results
+        if (window.MutationObserver) {
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList' && searchResults.children.length > 0) {
+                        searchResults.classList.remove('hidden');
+                    }
+                });
+            });
+            
+            observer.observe(searchResults, {
+                childList: true,
+                subtree: true
+            });
+        }
+        
+        // Clear search results when input is empty
+        searchInput.addEventListener('input', function() {
+            if (this.value.trim() === '') {
+                searchResults.classList.add('hidden');
+                searchResults.innerHTML = '';
+            }
+        });
+    }
+
+    // Global click listener for dynamic search results
+    document.body.addEventListener('click', function(event) {
+        const authorResult = event.target.closest('.author-result-item');
+        if (authorResult) {
+            selectAuthor(authorResult.dataset.slug, authorResult.dataset.name);
+            return;
+        }
+
+        const publisherResult = event.target.closest('.publisher-result-item');
+        if (publisherResult) {
+            selectPublisher(publisherResult.dataset.slug, publisherResult.dataset.name);
+            return;
+        }
+    });
+    
+    
+
+// HTMX event handlers
+document.body.addEventListener('htmx:beforeRequest', function(evt) {
+    // Show loading state
+    const target = document.querySelector(evt.detail.target);
+    if (target) {
+        target.style.opacity = '0.7';
+    }
+});
+
+document.body.addEventListener('htmx:afterRequest', function(evt) {
+    // Hide loading state
+    const target = document.querySelector(evt.detail.target);
+    if (target) {
+        target.style.opacity = '1';
+    }
+});
+
+// Search result highlighting
+function highlightSearchTerm(text, term) {
+    if (!term) return text;
+    const regex = new RegExp(`(${term})`, 'gi');
+    return text.replace(regex, '<span class="search-highlight">$1</span>');
+}
+
+function selectAuthor(slug, name) {
+    document.getElementById('author-slug-input').value = slug;
+    document.getElementById('author-search-input').value = name;
+    document.getElementById('author-search-results').innerHTML = '';
+}
+
+function selectPublisher(slug, name) {
+    document.getElementById('publisher-slug-input').value = slug;
+    document.getElementById('publisher-search-input').value = name;
+    document.getElementById('publisher-search-results').innerHTML = '';
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Modern Library Header -->
+    <div class="mb-8">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
+            <div class="mb-4 lg:mb-0 text-center lg:text-left">
+                <h1 class="library-title text-5xl lg:text-6xl font-bold mb-2">HSIT Library</h1>
+                <p class="text-xl text-gray-600">Your gateway to knowledge and academic excellence</p>
+            </div>
+            
+            <div class="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-6">
+                
+                
+                <!-- Original Search Box -->
+                <div class="relative">
+                    <div class="flex items-center">
+                        <div class="relative w-64">
+                            <input 
+                                type="text" 
+                                id="quick-search-input"
+                                placeholder="Quick search books..."
+                                class="w-full px-4 py-2 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                hx-get="{% url 'library:quick_search' %}"
+                                hx-trigger="keyup changed delay:150ms"
+                                hx-target="#quick-search-results"
+                                hx-indicator="#quick-search-indicator"
+                                name="q"
+                                autocomplete="off"
+                            >
+                        </div>
+                        <a href="{% url 'library:home' %}" 
+                           class="px-4 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-search"></i>
+                        </a>
+                    </div>
+                    
+                    <!-- Quick Search Results -->
+                    <div id="quick-search-results" 
+                         class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 hidden search-suggestions">
+                        <div id="quick-search-indicator" class="htmx-indicator p-4 text-center text-gray-500">
+                            <i class="fas fa-spinner fa-spin mr-2"></i> Searching...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    
+    {% block library_content %}{% endblock %}
+</div>
+{% endblock %}

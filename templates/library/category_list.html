@@ -1,0 +1,23 @@
+<!-- templates/library/category_list.html -->
+{% extends "library/base.html" %}
+
+{% block library_breadcrumb %}
+<li class="text-gray-500">/</li>
+<li class="text-gray-700">Categories</li>
+{% endblock %}
+
+{% block library_title %}Book Categories{% endblock %}
+{% block library_subtitle %}Browse books by their category{% endblock %}
+
+{% block library_content %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for category in categories %}
+    <a href="{% url 'library:category_books' category.slug %}" class="category-card p-6 rounded-lg block text-center hover:shadow-lg transition-all">
+        <h3 class="font-semibold mb-2 text-xl">{{ category.name }}</h3>
+        <div class="text-sm opacity-90">{{ category.book_count }} books</div>
+    </a>
+    {% empty %}
+    <p class="col-span-full text-center text-gray-500 py-8">No categories available.</p>
+    {% endfor %}
+</div>
+{% endblock %}

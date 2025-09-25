@@ -1,0 +1,391 @@
+<!-- templates/library/book_detail.html -->
+{% extends "library/base.html" %}
+{% load static %}
+{% load string_filters %}
+
+{% block library_breadcrumb %}
+<div class="no-print">
+<li class="text-gray-500">/</li>
+<li><a href="{% url 'library:home' %}" class="text-blue-600 hover:text-blue-800">All Books</a></li>
+<li class="text-gray-500">/</li>
+<li class="text-gray-700">{{ book.title|truncatechars:30 }}</li>
+</div>
+{% endblock %}
+
+{% block library_title %}{{ book.title }}{% endblock %}
+{% block library_subtitle %}by {{ book.authors_list }}{% endblock %}
+
+{% block library_content %}
+<div id="printable-area">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Book Information -->
+    <div class="lg:col-span-2 space-y-8">
+        <!-- Book Header -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="flex flex-col md:flex-row md:items-start space-y-6 md:space-y-0 md:space-x-8">
+                <!-- Book Cover -->
+                <div class="flex-shrink-0">
+                    <div class="w-48 h-64 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center shadow-md">
+                        {% if book.cover_image %}
+                            <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" 
+                                 class="w-full h-full object-cover rounded-lg">
+                        {% else %}
+                            <div class="text-center p-6">
+                                <i class="fas fa-book text-6xl text-blue-400 mb-4"></i>
+                                <div class="text-sm text-blue-600 font-medium">{{ book.call_number }}</div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Book Details -->
+                <div class="flex-grow">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ book.title }}</h1>
+                    {% if book.subtitle %}
+                    <h2 class="text-xl text-gray-700 mb-4">{{ book.subtitle }}</h2>
+                    {% endif %}
+                    
+                    <div class="space-y-3 text-gray-700">
+                        <div><strong>Author(s):</strong> 
+                            {% for author in book.authors.all %}
+                                <a href="{% url 'library:author_detail' author.slug %}" 
+                                   class="text-blue-600 hover:text-blue-800">{{ author.full_name }}</a>{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </div>
+                        
+                        <div><strong>Publisher:</strong> 
+                            <a href="{% url 'library:publisher_detail' book.publisher.slug %}" 
+                               class="text-blue-600 hover:text-blue-800">{{ book.publisher.name }}</a>
+                        </div>
+                        
+                        <div><strong>Publication Year:</strong> {{ book.publication_year }}</div>
+                        
+                        <div><strong>Category:</strong> 
+                            <a href="{% url 'library:category_books' book.category.slug %}" 
+                               class="text-blue-600 hover:text-blue-800">{{ book.category.name }}</a>
+                        </div>
+                        
+                        <div><strong>Language:</strong> {{ book.get_language_display }}</div>
+                        
+                        {% if book.pages %}
+                        <div><strong>Pages:</strong> {{ book.pages }}</div>
+                        {% endif %}
+                        
+                        {% if book.edition %}
+                        <div><strong>Edition:</strong> {{ book.edition }}</div>
+                        {% endif %}
+                        
+                        {% if book.primary_isbn %}
+                        <div><strong>ISBN:</strong> {{ book.primary_isbn }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Description -->
+        {% if book.description %}
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Description</h3>
+            <div class="prose prose-blue max-w-none">
+                {{ book.description|linebreaks }}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Keywords -->
+        {% if book.keywords %}
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Keywords</h3>
+            <div class="flex flex-wrap gap-2">
+                {% for keyword in book.keywords|split:"," %}
+                <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                    {{ keyword.strip }}
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Related Books -->
+        {% if related_books %}
+        <div class="bg-white rounded-lg shadow-sm p-6 no-print">
+            <h3 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                <i class="fas fa-books mr-2 text-blue-500"></i>
+                Related Books
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for related_book in related_books %}
+                <div class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 hover:border-blue-300 group">
+                    <a href="{{ related_book.get_absolute_url }}" class="block">
+                        <!-- Book cover or placeholder -->
+                        <div class="h-32 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative">
+                            {% if related_book.cover_image %}
+                                <img src="{{ related_book.cover_image.url }}" 
+                                     alt="{{ related_book.title }}" 
+                                     class="h-full w-auto object-cover">
+                            {% else %}
+                                <div class="text-center">
+                                    <i class="fas fa-book text-2xl text-gray-400 mb-1"></i>
+                                    <div class="text-xs text-gray-500 font-mono">{{ related_book.call_number }}</div>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Availability indicator -->
+                            <div class="absolute top-2 right-2">
+                                {% if related_book.is_available %}
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        Available
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <i class="fas fa-times-circle mr-1"></i>
+                                        Not Available
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Book details -->
+                        <div class="p-4">
+                            <h4 class="font-semibold text-gray-900 text-sm mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                                {{ related_book.title }}
+                            </h4>
+                            
+                            <p class="text-xs text-gray-600 mb-3 line-clamp-1">
+                                by {{ related_book.authors_list }}
+                            </p>
+                            
+                            <!-- Call number and location -->
+                            <div class="bg-gray-50 rounded px-2 py-1 mb-3">
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="text-gray-500">Call Number:</span>
+                                    <span class="font-mono font-medium text-gray-700">{{ related_book.call_number }}</span>
+                                </div>
+                                {% if related_book.location_shelf %}
+                                <div class="flex items-center justify-between text-xs mt-1">
+                                    <span class="text-gray-500">Location:</span>
+                                    <span class="font-medium text-gray-700 flex items-center">
+                                        <i class="fas fa-map-marker-alt text-red-500 mr-1"></i>
+                                        {{ related_book.location_shelf }}
+                                    </span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Additional info -->
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="text-gray-500">{{ related_book.publication_year }}</span>
+                                <span class="text-gray-500">{{ related_book.category.name }}</span>
+                            </div>
+                            
+                            <!-- Copies info -->
+                            <div class="flex items-center justify-between text-xs mt-1">
+                                <span class="text-gray-500">Copies:</span>
+                                <span class="font-medium {% if related_book.copies_available > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                    {{ related_book.copies_available }}/{{ related_book.total_copies }}
+                                </span>
+                            </div>
+                            
+                            <!-- Popular indicator -->
+                            {% if related_book.times_borrowed > 5 %}
+                            <div class="flex items-center text-xs text-orange-600 mt-2">
+                                <i class="fas fa-fire mr-1"></i>
+                                <span>Popular ({{ related_book.times_borrowed }} times borrowed)</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </a>
+                    
+                    <!-- Quick actions -->
+                    <div class="px-4 pb-3 border-t border-gray-100">
+                        <div class="flex items-center justify-between mt-2">
+                            <button class="copy-call-number-btn text-xs text-blue-600 hover:text-blue-800 flex items-center"
+                                    data-clipboard-text="{{ related_book.call_number }}"
+                                    title="Copy call number">
+                                <i class="fas fa-copy mr-1"></i>
+                                Copy Call #
+                            </button>
+                            
+                            <a href="{{ related_book.get_absolute_url }}" 
+                               class="text-xs text-gray-600 hover:text-gray-800 flex items-center">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- View more related books -->
+            <div class="mt-6 text-center">
+                <a href="{% url 'library:category_books' book.category.slug %}?author={{ book.authors.first.slug }}" 
+                   class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                    <i class="fas fa-search mr-2"></i>
+                    Find More Similar Books
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="space-y-6 no-print">
+        <!-- Availability Card -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Availability</h3>
+            
+            <div class="space-y-4">
+                <!-- Status -->
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-700">Status:</span>
+                    {% if book.is_available %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            Available
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                            <i class="fas fa-times-circle mr-1"></i>
+                            {{ book.get_status_display }}
+                        </span>
+                    {% endif %}
+                </div>
+                
+                <!-- Copies -->
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-700">Copies:</span>
+                    <span class="font-medium">{{ book.copies_available }}/{{ book.total_copies }}</span>
+                </div>
+                
+                <!-- Times Borrowed -->
+                {% if book.times_borrowed > 0 %}
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-700">Times Borrowed:</span>
+                    <span class="font-medium text-orange-600">
+                        <i class="fas fa-fire mr-1"></i>{{ book.times_borrowed }}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Where to Find It -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-map-marker-alt mr-2 text-blue-500"></i>
+                Where to Find It
+            </h3>
+            
+            <div class="space-y-4">
+                <!-- Call Number -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-500">Call Number</label>
+                    <div class="mt-1 flex rounded-md shadow-sm">
+                        <div class="relative flex-grow focus-within:z-10">
+                            <input type="text" readonly value="{{ book.call_number }}" class="form-input block w-full rounded-none rounded-l-md sm:text-sm border-gray-300 bg-gray-50">
+                        </div>
+                        <button type="button" class="copy-btn -ml-px relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-r-md text-gray-700 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                data-clipboard-text="{{ book.call_number }}">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Location -->
+                {% if book.location_shelf %}
+                <div>
+                    <label class="block text-sm font-medium text-gray-500">Location</label>
+                    <div class="mt-1 flex rounded-md shadow-sm">
+                        <div class="relative flex-grow focus-within:z-10">
+                            <input type="text" readonly value="{{ book.location_shelf }}" class="form-input block w-full rounded-none rounded-l-md sm:text-sm border-gray-300 bg-gray-50">
+                        </div>
+                        <button type="button" class="copy-btn -ml-px relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-r-md text-gray-700 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                data-clipboard-text="{{ book.location_shelf }}">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Technical Details -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Technical Details</h3>
+            
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Classification:</span>
+                    <span class="font-mono">{{ book.classification_number }}</span>
+                </div>
+                
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Cutter Number:</span>
+                    <span class="font-mono">{{ book.cutter_number }}</span>
+                </div>
+                
+                {% if book.isbn_10 %}
+                <div class="flex justify-between">
+                    <span class="text-gray-600">ISBN-10:</span>
+                    <span class="font-mono">{{ book.isbn_10 }}</span>
+                </div>
+                {% endif %}
+                
+                {% if book.isbn_13 %}
+                <div class="flex justify-between">
+                    <span class="text-gray-600">ISBN-13:</span>
+                    <span class="font-mono">{{ book.isbn_13 }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Added:</span>
+                    <span>{{ book.acquisition_date|date:"M d, Y" }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Actions</h3>
+            
+            <div class="space-y-3">
+                <button onclick="window.print()" class="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                    <i class="fas fa-print mr-2"></i>Print Details
+                </button>
+                
+                <div x-data="{ open: false }">
+                    <button @click="open = true" class="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-share mr-2"></i>Share Book
+                    </button>
+
+                    <!-- Share Modal -->
+                    <div x-show="open" @click.away="open = false" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div class="bg-white rounded-lg p-6 w-full max-w-md mx-auto">
+                            <h3 class="text-lg font-semibold mb-4">Share "{{ book.title }}"</h3>
+                            <div class="flex items-center space-x-2 mb-4">
+                                <input type="text" value="{{ request.build_absolute_uri }}" readonly class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100">
+                                <button @click="navigator.clipboard.writeText('{{ request.build_absolute_uri }}'); alert('Copied to clipboard!');" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                            <div class="flex justify-center space-x-4">
+                                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" class="text-2xl text-blue-600 hover:text-blue-800"><i class="fab fa-facebook"></i></a>
+                                <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ book.title }}" target="_blank" class="text-2xl text-blue-400 hover:text-blue-600"><i class="fab fa-twitter"></i></a>
+                                <a href="https://api.whatsapp.com/send?text={{ book.title }} {{ request.build_absolute_uri }}" target="_blank" class="text-2xl text-green-500 hover:text-green-700"><i class="fab fa-whatsapp"></i></a>
+                            </div>
+                            <div class="text-right mt-4">
+                                <button @click="open = false" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

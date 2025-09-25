@@ -1,0 +1,10 @@
+
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h2>Upload CSV File to Add/Update Books</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="csv_file">
+    <button type="submit">Upload</button>
+</form>
+{% endblock %}

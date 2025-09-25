@@ -1,0 +1,5 @@
+<!-- partials/author_options.html -->
+<option value="">All Authors</option>
+{% for author in authors %}
+    <option value="{{ author.slug }}">{{ author.full_name }}</option>
+{% endfor %}

@@ -1,0 +1,9 @@
+
+<!-- templates/library/partials/_publisher_search_results.html -->
+{% for publisher in publishers %}
+    <div class="p-2 hover:bg-blue-100 cursor-pointer publisher-result-item"
+     data-slug="{{ publisher.slug }}"
+     data-name="{{ publisher.name|escapejs }}">
+    {{ publisher.name }} ({{ publisher.book_count }})
+</div>
+{% endfor %}

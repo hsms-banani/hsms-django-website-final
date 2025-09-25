@@ -1,0 +1,32 @@
+
+{% load humanize %}
+<!-- templates/library/partials/load_more_response.html -->
+
+{# This block will be appended to the existing book grid #}
+<div hx-swap-oob="beforeend:.book-grid">
+    {% for book in page_obj %}
+        {% include "library/partials/book_card.html" %}
+    {% endfor %}
+</div>
+
+{# This block will replace the results counter #}
+<div id="results-counter" hx-swap-oob="true">
+    <p class="text-sm text-gray-600">Showing <span class="font-semibold">1-{{ page_obj.end_index }}</span> of <span class="font-semibold">{{ page_obj.paginator.count|intcomma }}</span> results</p>
+</div>
+
+{# This block will replace the pagination container (the button) #}
+<div id="pagination-container" hx-swap-oob="true">
+    {% if page_obj.has_next %}
+    <div class="text-center mt-8">
+        <button hx-get="{% url 'library:load_more_books' %}?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}" 
+                class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 ease-in-out">
+            <span class="htmx-indicator">
+                <i class="fas fa-spinner fa-spin mr-2"></i>Loading...
+            </span>
+            <span class="htmx-no-indicator">
+                Load More Books
+            </span>
+        </button>
+    </div>
+    {% endif %}
+</div>

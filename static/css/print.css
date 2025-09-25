@@ -1,0 +1,79 @@
+/* static/css/print.css */
+
+@media print {
+    body {
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 12pt;
+        background: #fff !important;
+        color: #000 !important;
+    }
+
+    /* Hide all non-essential elements */
+    .no-print,
+    header,
+    footer,
+    nav,
+    aside,
+    form,
+    button,
+    .breadcrumb-container, /* Assuming breadcrumbs are in a container with this class */
+    .related-books-section /* A class for the related books section */
+    {
+        display: none !important;
+    }
+
+    /* Ensure the main content area is fully visible */
+    main, .content-wrapper, #printable-area {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    /* Reset grid and flex layouts to a simple block flow */
+    #printable-area .grid,
+    #printable-area .flex {
+        display: block !important;
+    }
+
+    /* Style the printable content for clarity */
+    #printable-area .bg-white {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        page-break-inside: avoid;
+    }
+
+    #printable-area h1, #printable-area h2, #printable-area h3 {
+        color: #000 !important;
+        page-break-after: avoid;
+    }
+    
+    #printable-area h1 { font-size: 22pt; }
+    #printable-area h2 { font-size: 16pt; }
+    #printable_area h3 { font-size: 14pt; font-weight: bold; }
+
+    #printable-area a {
+        color: #000 !important;
+        text-decoration: none !important;
+    }
+
+    /* Remove URLs from links in print output */
+    #printable-area a[href]:after {
+        content: "";
+    }
+
+    #printable-area img {
+        max-width: 250px !important;
+        height: auto;
+        border-radius: 0 !important;
+        page-break-inside: avoid;
+    }
+    
+    /* Ensure prose sections from TinyMCE print nicely */
+    .prose {
+        color: #000 !important;
+    }
+}

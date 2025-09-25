@@ -66,7 +66,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
     list_display = ('site_name', 'site_motto', 'email', 'phone')
     fieldsets = (
         ('Basic Information', {
-            'fields': ('site_name', 'site_motto', 'site_logo')
+            'fields': ('site_name', 'site_motto', 'site_logo', 'hsit_logo')
         }),
         ('Contact Information', {
             'fields': ('address', 'phone', 'email')

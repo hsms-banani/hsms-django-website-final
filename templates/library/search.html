@@ -1,0 +1,250 @@
+<!-- templates/library/search.html -->
+{% extends "library/base.html" %}
+{% load static %}
+{% load search_tags %}
+
+{% block library_breadcrumb %}
+<li class="text-gray-500">/</li>
+<li class="text-gray-700">Search</li>
+{% endblock %}
+
+{% block library_title %}Advanced Search{% endblock %}
+{% block library_subtitle %}
+    {% if query %}
+        {% if total_results %}
+            Found {{ total_results }} result{{ total_results|pluralize }} for "{{ query }}"
+        {% else %}
+            No results found for "{{ query }}"
+        {% endif %}
+    {% else %}
+        Find exactly what you're looking for
+    {% endif %}
+{% endblock %}
+
+{% block library_content %}
+<!-- Advanced Search Form -->
+<div class="bg-white p-6 rounded-lg shadow-sm mb-8">
+    <form method="get" class="space-y-6">
+        <!-- Main Search -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Search Terms</label>
+            <input type="text" name="q" value="{{ query }}" 
+                   placeholder="Title, author, ISBN, call number, keywords..."
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+        
+        <!-- Advanced Filters -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Category -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                <select name="category" class="form-select w-full">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                    <option value="{{ category.slug }}" {% if request.GET.category == category.slug %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Author -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Author</label>
+                <select name="author" class="form-select w-full">
+                    <option value="">All Authors</option>
+                    {% for author in authors %}
+                    <option value="{{ author.slug }}" {% if request.GET.author == author.slug %}selected{% endif %}>
+                        {{ author.full_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Publisher -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Publisher</label>
+                <select name="publisher" class="form-select w-full">
+                    <option value="">All Publishers</option>
+                    {% for publisher in publishers %}
+                    <option value="{{ publisher.slug }}" {% if request.GET.publisher == publisher.slug %}selected{% endif %}>
+                        {{ publisher.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Publication Year From -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">From Year</label>
+                <input type="number" name="year_from" value="{{ request.GET.year_from }}" 
+                       min="1000" max="2025" placeholder="e.g., 2000"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <!-- Publication Year To -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">To Year</label>
+                <input type="number" name="year_to" value="{{ request.GET.year_to }}" 
+                       min="1000" max="2025" placeholder="e.g., 2023"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <!-- Language -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Language</label>
+                <select name="language" class="form-select w-full">
+                    <option value="">All Languages</option>
+                    <option value="en" {% if request.GET.language == 'en' %}selected{% endif %}>English</option>
+                    <option value="bn" {% if request.GET.language == 'bn' %}selected{% endif %}>Bangla</option>
+                    <option value="hi" {% if request.GET.language == 'hi' %}selected{% endif %}>Hindi</option>
+                    <option value="ur" {% if request.GET.language == 'ur' %}selected{% endif %}>Urdu</option>
+                    <option value="other" {% if request.GET.language == 'other' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            
+            <!-- Availability -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Availability</label>
+                <select name="availability" class="form-select w-full">
+                    <option value="">All Books</option>
+                    <option value="available" {% if request.GET.availability == 'available' %}selected{% endif %}>Available Only</option>
+                    <option value="unavailable" {% if request.GET.availability == 'unavailable' %}selected{% endif %}>Not Available</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Search Button -->
+        <div class="flex items-center space-x-4">
+            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <i class="fas fa-search mr-2"></i>Search
+            </button>
+            <a href="{% url 'library:search' %}" class="px-4 py-2 text-gray-600 hover:text-gray-800">
+                Clear All
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Search Results -->
+{% if query %}
+<div class="space-y-4">
+    {% for book in page_obj %}
+    <div class="bg-white p-6 rounded-lg shadow-sm search-result-item">
+        <div class="flex flex-col md:flex-row md:items-start space-y-4 md:space-y-0 md:space-x-6">
+            <!-- Book Cover -->
+            <div class="flex-shrink-0">
+                <div class="w-20 h-28 bg-gradient-to-br from-blue-100 to-blue-200 rounded flex items-center justify-center">
+                    {% if book.cover_image %}
+                        <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" class="w-full h-full object-cover rounded">
+                    {% else %}
+                        <i class="fas fa-book text-blue-400 text-xl"></i>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Book Details -->
+            <div class="flex-grow min-w-0">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                    <a href="{{ book.get_absolute_url }}" class="hover:text-blue-600 transition-colors">
+                        {{ book.title|highlight:query|safe }}
+                        {% if book.subtitle %}<span class="text-gray-600">: {{ book.subtitle|highlight:query|safe }}</span>{% endif %}
+                    </a>
+                </h3>
+                
+                <div class="space-y-2 text-sm text-gray-600">
+                    <div><strong>Author(s):</strong> {{ book.authors_list|highlight:query|safe }}</div>
+                    <div><strong>Publisher:</strong> {{ book.publisher.name }} ({{ book.publication_year }})</div>
+                    <div><strong>Call Number:</strong> <code class="bg-gray-100 px-2 py-1 rounded">{{ book.call_number }}</code></div>
+                    <div><strong>Category:</strong> {{ book.category.name }}</div>
+                    {% if book.primary_isbn %}
+                    <div><strong>ISBN:</strong> {{ book.primary_isbn }}</div>
+                    {% endif %}
+                    {% if book.description %}
+                    <div class="mt-3">
+                        <strong>Description:</strong> {{ book.description|truncatewords:30|highlight:query|safe }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Availability Status -->
+            <div class="flex-shrink-0 text-center">
+                {% if book.is_available %}
+                    <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        <i class="fas fa-check-circle mr-1"></i>
+                        Available
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">{{ book.copies_available }}/{{ book.total_copies }} copies</div>
+                {% else %}
+                    <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                        <i class="fas fa-times-circle mr-1"></i>
+                        Not Available
+                    </div>
+                {% endif %}
+                
+                {% if book.times_borrowed > 0 %}
+                <div class="text-xs text-orange-600 mt-2">
+                    <i class="fas fa-fire"></i> {{ book.times_borrowed }} borrowed
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    {% if query %}
+    <div class="text-center py-12">
+        <i class="fas fa-search text-4xl text-gray-300 mb-4"></i>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No books found</h3>
+        <p class="text-gray-600 mb-4">We couldn't find any books matching your search criteria.</p>
+        <div class="text-sm text-gray-500">
+            Try:
+            <ul class="list-disc list-inside mt-2 space-y-1">
+                <li>Using fewer or different keywords</li>
+                <li>Checking your spelling</li>
+                <li>Using broader search terms</li>
+                <li>Browsing our categories instead</li>
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<nav class="flex items-center justify-between mt-8">
+    <div class="flex items-center text-sm text-gray-700">
+        Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} results
+    </div>
+    
+    <div class="flex items-center space-x-2">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+               class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                Previous
+            </a>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <span class="px-3 py-2 text-sm bg-blue-600 text-white rounded-md">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                   class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                    {{ num }}
+                </a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+               class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                Next
+            </a>
+        {% endif %}
+    </div>
+</nav>
+{% endif %}
+{% endif %}
+{% endblock %}

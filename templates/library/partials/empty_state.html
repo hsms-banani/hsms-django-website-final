@@ -1,0 +1,25 @@
+
+<!-- templates/library/partials/empty_state.html -->
+<div class="text-center py-16 px-4">
+    <div class="mx-auto w-full max-w-sm">
+        <!-- SVG Illustration -->
+        <svg class="mx-auto h-40 w-40 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            <circle cx="14" cy="10" r="3"/>
+            <line x1="16" y1="12" x2="18" y2="14"/>
+        </svg>
+
+        <h3 class="mt-8 text-2xl font-semibold text-gray-800">{{ title|default:"No Results Found" }}</h3>
+        <p class="mt-2 text-base text-gray-600">{{ message|default:"We couldn't find what you're looking for." }}</p>
+        
+        {% if show_clear_filter %}
+        <div class="mt-8">
+            <a href="{% url 'library:home' %}" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 ease-in-out">
+                <i class="fas fa-times mr-2"></i>
+                Clear All Filters
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>

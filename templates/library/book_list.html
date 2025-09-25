@@ -1,0 +1,127 @@
+<!-- templates/library/book_list.html -->
+{% extends "library/base.html" %}
+{% load static %}
+
+{% block library_breadcrumb %}
+<li class="text-gray-500">/</li>
+<li class="text-gray-700">Books</li>
+{% endblock %}
+
+{% block library_title %}All Books{% endblock %}
+{% block library_subtitle %}{{ page_obj.paginator.count }} books in our collection{% endblock %}
+
+{% block library_content %}
+<!-- Filters -->
+<div class="bg-white p-6 rounded-lg shadow-sm mb-8">
+    <form method="get" id="book-filter-form" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Category Filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                <select name="category" class="form-select w-full">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                    <option value="{{ category.slug }}" {% if current_filters.category == category.slug %}selected{% endif %}>
+                        {{ category.name }} ({{ category.book_count }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Language Filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Language</label>
+                <select name="language" class="form-select w-full">
+                    <option value="">All Languages</option>
+                    <option value="en" {% if current_filters.language == 'en' %}selected{% endif %}>English</option>
+                    <option value="bn" {% if current_filters.language == 'bn' %}selected{% endif %}>Bangla</option>
+                    <option value="hi" {% if current_filters.language == 'hi' %}selected{% endif %}>Hindi</option>
+                    <option value="ur" {% if current_filters.language == 'ur' %}selected{% endif %}>Urdu</option>
+                    <option value="other" {% if current_filters.language == 'other' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            
+            <!-- Status Filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Availability</label>
+                <select name="status" class="form-select w-full">
+                    <option value="">All Books</option>
+                    <option value="available" {% if current_filters.status == 'available' %}selected{% endif %}>Available</option>
+                    <option value="checked_out" {% if current_filters.status == 'checked_out' %}selected{% endif %}>Checked Out</option>
+                    <option value="reserved" {% if current_filters.status == 'reserved' %}selected{% endif %}>Reserved</option>
+                </select>
+            </div>
+            
+            <!-- Sort Filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                <select name="sort" class="form-select w-full">
+                    <option value="-created_at" {% if current_filters.sort == '-created_at' %}selected{% endif %}>Newest First</option>
+                    <option value="title" {% if current_filters.sort == 'title' %}selected{% endif %}>Title A-Z</option>
+                    <option value="-title" {% if current_filters.sort == '-title' %}selected{% endif %}>Title Z-A</option>
+                    <option value="-publication_year" {% if current_filters.sort == '-publication_year' %}selected{% endif %}>Publication Year (Newest)</option>
+                    <option value="-times_borrowed" {% if current_filters.sort == '-times_borrowed' %}selected{% endif %}>Most Popular</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                Apply Filters
+            </button>
+            <a href="{% url 'library:book_list' %}" class="px-4 py-2 text-gray-600 hover:text-gray-800">
+                Clear Filters
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Books Grid -->
+<div class="book-grid mb-8">
+    {% for book in page_obj %}
+        {% include "library/partials/book_card.html" %}
+    {% empty %}
+        <div class="col-span-full text-center py-12">
+            <i class="fas fa-book-open text-4xl text-gray-300 mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No books found</h3>
+            <p class="text-gray-600">Try adjusting your filters or search terms.</p>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<nav class="flex items-center justify-between">
+    <div class="flex items-center text-sm text-gray-700">
+        Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} results
+    </div>
+    
+    <div class="flex items-center space-x-2">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+               class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                Previous
+            </a>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <span class="px-3 py-2 text-sm bg-blue-600 text-white rounded-md">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                   class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                    {{ num }}
+                </a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+               class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                Next
+            </a>
+        {% endif %}
+    </div>
+</nav>
+{% endif %}
+{% endblock %}

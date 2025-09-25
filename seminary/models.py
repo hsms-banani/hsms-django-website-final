@@ -10,6 +10,7 @@ class SiteSettings(models.Model):
     site_name = models.CharField(max_length=200, default="Holy Spirit Major Seminary")
     site_motto = models.CharField(max_length=200, default="Dedicated for Service")
     site_logo = models.ImageField(upload_to='site/', blank=True, null=True)
+    hsit_logo = models.ImageField(upload_to='site/', blank=True, null=True)
     address = HTMLField(help_text="Use rich text formatting for address")  # Rich text
     phone = models.CharField(max_length=20)
     email = models.EmailField()

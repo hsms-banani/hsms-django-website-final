@@ -1,0 +1,59 @@
+<!-- templates/library/author_list.html -->
+{% extends "library/base.html" %}
+
+{% block library_breadcrumb %}
+<li class="text-gray-500">/</li>
+<li class="text-gray-700">Authors</li>
+{% endblock %}
+
+{% block library_title %}Authors{% endblock %}
+{% block library_subtitle %}Browse books by their authors{% endblock %}
+
+{% block library_content %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    {% for author in page_obj %}
+    <a href="{% url 'library:author_detail' author.slug %}" class="block p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+        <h3 class="font-semibold text-lg text-gray-900">{{ author.full_name }}</h3>
+        <p class="text-sm text-gray-600">{{ author.book_count }} books</p>
+    </a>
+    {% empty %}
+    <p class="col-span-full text-center text-gray-500 py-8">No authors available.</p>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<nav class="flex items-center justify-between mt-8">
+    <div class="flex items-center text-sm text-gray-700">
+        Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} results
+    </div>
+    
+    <div class="flex items-center space-x-2">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" 
+               class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                Previous
+            </a>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <span class="px-3 py-2 text-sm bg-blue-600 text-white rounded-md">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}" 
+                   class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                    {{ num }}
+                </a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" 
+               class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                Next
+            </a>
+        {% endif %}
+    </div>
+</nav>
+{% endif %}
+{% endblock %}

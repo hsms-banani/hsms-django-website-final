@@ -1,0 +1,43 @@
+<!-- templates/library/category_books.html -->
+{% extends "library/base.html" %}
+{% load static %}
+
+{% block library_breadcrumb %}
+<li class="text-gray-500">/</li>
+<li><a href="{% url 'library:category_list' %}" class="text-blue-600 hover:underline">Categories</a></li>
+<li class="text-gray-500">/</li>
+<li class="text-gray-700">{{ category.name }}</li>
+{% endblock %}
+
+{% block library_title %}Books in {{ category.name }}{% endblock %}
+{% block library_subtitle %}{{ page_obj.paginator.count }} books in this category{% endblock %}
+
+{% block library_content %}
+<!-- Books Grid -->
+<div class="book-grid mb-8">
+    {% for book in page_obj %}
+        {% include "library/partials/book_card.html" %}
+    {% empty %}
+        <div class="col-span-full">
+            {% include "library/partials/empty_state.html" with title="This Category is Empty" message="There are currently no books in this category. Please check back later or explore other categories." %}
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_next %}
+<div class="text-center mt-8">
+    <button hx-get="?page={{ page_obj.next_page_number }}" 
+            hx-target=".book-grid" 
+            hx-swap="beforeend" 
+            class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 ease-in-out">
+        <span class="htmx-indicator">
+            <i class="fas fa-spinner fa-spin mr-2"></i>Loading...
+        </span>
+        <span class="htmx-no-indicator">
+            Load More Books
+        </span>
+    </button>
+</div>
+{% endif %}
+{% endblock %}

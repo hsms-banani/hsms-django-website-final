@@ -1,0 +1,11 @@
+<!-- partials/search_suggestions.html -->
+{% for suggestion in suggestions %}
+    <div class="suggestion-item p-2 hover:bg-gray-100 cursor-pointer"
+         hx-get="{% url 'library:home' %}"
+         hx-vals='{"q": "{{ suggestion }}"}'
+         hx-target="#book-grid-container"
+         hx-push-url="true"
+         onclick="document.getElementById('quick-search-input').value='{{ suggestion }}'; document.getElementById('quick-search-results').classList.add('hidden');">
+        {{ suggestion }}
+    </div>
+{% endfor %}

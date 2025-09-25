@@ -1,0 +1,56 @@
+<!-- templates/library/publisher_detail.html -->
+{% extends "library/base.html" %}
+{% load static %}
+
+{% block library_breadcrumb %}
+<li class="text-gray-500">/</li>
+<li><a href="{% url 'library:publisher_list' %}" class="text-blue-600 hover:underline">Publishers</a></li>
+<li class="text-gray-500">/</li>
+<li class="text-gray-700">{{ publisher.name }}</li>
+{% endblock %}
+
+{% block library_title %}Books by {{ publisher.name }}{% endblock %}
+{% block library_subtitle %}{{ page_obj.paginator.count }} books from this publisher{% endblock %}
+
+{% block library_content %}
+<!-- Publisher Info -->
+<div class="bg-white p-6 rounded-lg shadow-sm mb-8">
+    <h2 class="text-2xl font-bold mb-2">{{ publisher.name }}</h2>
+    {% if publisher.website %}
+        <p class="text-gray-700"><a href="{{ publisher.website }}" target="_blank" class="text-blue-600 hover:underline">{{ publisher.website }}</a></p>
+    {% endif %}
+    {% if publisher.description %}
+        <p class="text-gray-700 mt-2">{{ publisher.description }}</p>
+    {% else %}
+        <p class="text-gray-500">No description available for this publisher.</p>
+    {% endif %}
+</div>
+
+<!-- Books Grid -->
+<div class="book-grid mb-8">
+    {% for book in page_obj %}
+        {% include "library/partials/book_card.html" %}
+    {% empty %}
+        <div class="col-span-full">
+            {% include "library/partials/empty_state.html" with title="No Books from this Publisher" message="There are currently no books from this publisher in our collection." %}
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_next %}
+<div class="text-center mt-8">
+    <button hx-get="?page={{ page_obj.next_page_number }}" 
+            hx-target=".book-grid" 
+            hx-swap="beforeend" 
+            class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 ease-in-out">
+        <span class="htmx-indicator">
+            <i class="fas fa-spinner fa-spin mr-2"></i>Loading...
+        </span>
+        <span class="htmx-no-indicator">
+            Load More Books
+        </span>
+    </button>
+</div>
+{% endif %}
+{% endblock %}

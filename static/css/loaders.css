@@ -1,0 +1,48 @@
+
+/* static/css/loaders.css */
+
+.skeleton-card {
+    background-color: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.skeleton {
+    background-color: #e5e7eb;
+    border-radius: 0.25rem;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    50% {
+        opacity: .5;
+    }
+}
+
+.skeleton-cover {
+    height: 10rem;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.skeleton-line {
+    height: 0.75rem;
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+.skeleton-line-short {
+    height: 0.75rem;
+    width: 60%;
+    margin-bottom: 0.5rem;
+}
+
+.skeleton-tag {
+    height: 1.25rem;
+    width: 4rem;
+    border-radius: 9999px;
+    display: inline-block;
+    margin-right: 0.5rem;
+}

@@ -43,6 +43,7 @@ sitemaps = {
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('tinymce/', include('tinymce.urls')),
+    path('library/', include('library.urls')), 
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     # Removed i18n URLs
     path('', include('seminary.urls')),  # Direct include without i18n_patterns

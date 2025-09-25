@@ -47,6 +47,9 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Print-specific Stylesheet -->
+    <link rel="stylesheet" href="{% static 'css/print.css' %}" media="print">
+    
     <!-- Critical CSS - Inline for better performance -->
     <style>
         /* CSS Reset and Base Styles */
@@ -456,6 +459,13 @@
                             <a href="{% url 'library' %}">Library</a>
                         </div>
                     </li>
+
+                    <!-- Library-->
+                    <li class="relative dropdown" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
+                        <a href="{% url 'library:home' %}" class="nav-link flex items-center">
+                            Library 
+                        </a>
+                    </li>
                     
                     <li><a href="{% url 'publications' %}" class="nav-link">Publications</a></li>
                     
@@ -534,6 +544,9 @@
                                 <a href="{% url 'library' %}" class="block px-4 py-2 text-sm hover:bg-gray-700 rounded transition-colors text-gray-300">Library</a>
                             </div>
                         </div>
+                        
+                        <!-- Library -->
+                        <a href="{% url 'library:home' %}" class="block px-4 py-2 hover:bg-gray-700 rounded transition-colors text-white">Library</a>
                         
                         <!-- Publications -->
                         <a href="{% url 'publications' %}" class="block px-4 py-2 hover:bg-gray-700 rounded transition-colors text-white">Publications</a>
@@ -699,67 +712,149 @@
 
     <!-- Core JavaScript -->
     <script>
-        // Dynamic copyright year
-        document.getElementById('currentYear').textContent = new Date().getFullYear();
-
-        // Back to top button functionality
-        window.addEventListener('scroll', function() {
-            const button = document.getElementById('backToTop');
-            if (window.pageYOffset > 300) {
-                button.classList.remove('opacity-0', 'invisible');
-                button.classList.add('opacity-100', 'visible');
-            } else {
-                button.classList.add('opacity-0', 'invisible');
-                button.classList.remove('opacity-100', 'visible');
-            }
-        });
-
-        // Smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
+        document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.querySelector('#quick-search-input');
+        const searchResults = document.querySelector('#quick-search-results');
+        
+        if (searchInput && searchResults) {
+            
+            // Show results when there's content
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+                if (query.length === 0) {
+                    searchResults.classList.add('hidden');
+                    searchResults.innerHTML = '';
                 }
             });
+            
+            // Show results after HTMX request completes
+            searchInput.addEventListener('htmx:afterRequest', function(event) {
+                const query = this.value.trim();
+                if (query.length >= 2) {
+                    searchResults.classList.remove('hidden');
+                }
+            });
+            
+            // Handle HTMX errors gracefully
+            searchInput.addEventListener('htmx:responseError', function(event) {
+                console.error('Search request failed:', event.detail);
+                searchResults.innerHTML = '<div class="p-4 text-red-600 text-center">Search temporarily unavailable. Please try again.</div>';
+                searchResults.classList.remove('hidden');
+            });
+            
+            // Focus management
+            searchInput.addEventListener('focus', function() {
+                const query = this.value.trim();
+                if (query.length >= 2 && searchResults.children.length > 0) {
+                    searchResults.classList.remove('hidden');
+                }
+            });
+            
+            // Hide results when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                    searchResults.classList.add('hidden');
+                }
+            });
+            
+            // Keyboard navigation for search results
+            searchInput.addEventListener('keydown', function(e) {
+                const suggestions = searchResults.querySelectorAll('.suggestion-item');
+                let currentFocus = -1;
+                
+                // Find currently focused suggestion
+                suggestions.forEach((item, index) => {
+                    if (item.classList.contains('keyboard-focus')) {
+                        currentFocus = index;
+                    }
+                });
+                
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    currentFocus = (currentFocus + 1) % suggestions.length;
+                    updateKeyboardFocus(suggestions, currentFocus);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    currentFocus = currentFocus <= 0 ? suggestions.length - 1 : currentFocus - 1;
+                    updateKeyboardFocus(suggestions, currentFocus);
+                } else if (e.key === 'Enter' && currentFocus >= 0) {
+                    e.preventDefault();
+                    suggestions[currentFocus].click();
+                } else if (e.key === 'Escape') {
+                    searchResults.classList.add('hidden');
+                    searchInput.blur();
+                }
+            });
+        }
+        
+        function updateKeyboardFocus(suggestions, currentFocus) {
+            suggestions.forEach((item, index) => {
+                if (index === currentFocus) {
+                    item.classList.add('keyboard-focus', 'bg-gray-100');
+                    item.scrollIntoView({ block: 'nearest' });
+                } else {
+                    item.classList.remove('keyboard-focus', 'bg-gray-100');
+                }
+            });
+        }
+        
+        // Performance optimization: Debounce search
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // Add loading state management
+        document.body.addEventListener('htmx:beforeRequest', function(evt) {
+            if (evt.detail.elt.id === 'quick-search-input') {
+                const spinner = document.getElementById('quick-search-spinner');
+                if (spinner) {
+                    spinner.classList.remove('htmx-indicator');
+                    spinner.style.display = 'block';
+                }
+            }
         });
+        
+        document.body.addEventListener('htmx:afterRequest', function(evt) {
+            if (evt.detail.elt.id === 'quick-search-input') {
+                const spinner = document.getElementById('quick-search-spinner');
+                if (spinner) {
+                    spinner.classList.add('htmx-indicator');
+                    spinner.style.display = 'none';
+                }
+            }
+        });
+    });
 
-        // HTMX configuration
-        document.body.addEventListener('htmx:configRequest', function(evt) {
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
-            if (csrfToken) {
-                evt.detail.headers['X-CSRFToken'] = csrfToken.value;
-            }
-        });
+    // Global helper functions
+    function hideQuickSearchResults() {
+        const results = document.getElementById('quick-search-results');
+        if (results) {
+            results.classList.add('hidden');
+        }
+    }
 
-        // Prevent style conflicts
-        document.addEventListener('DOMContentLoaded', function() {
-            // Force consistent header/nav/footer styling
-            const topHeader = document.querySelector('.top-header');
-            const mainHeader = document.querySelector('.main-header');
-            const mainNav = document.querySelector('.main-nav');
-            const mainFooter = document.querySelector('.main-footer');
-            
-            if (topHeader) {
-                topHeader.style.cssText = 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; color: white !important;';
-            }
-            
-            if (mainHeader) {
-                mainHeader.style.cssText = 'background-color: white !important; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;';
-            }
-            
-            if (mainNav) {
-                mainNav.style.cssText = 'background-color: #374151 !important; color: white !important;';
-            }
-            
-            if (mainFooter) {
-                mainFooter.style.cssText = 'background-color: #111827 !important; color: white !important;';
-            }
-        });
+    function clearQuickSearch() {
+        const input = document.getElementById('quick-search-input');
+        const results = document.getElementById('quick-search-results');
+        
+        if (input) {
+            input.value = '';
+            input.focus();
+        }
+        
+        if (results) {
+            results.innerHTML = '';
+            results.classList.add('hidden');
+        }
+    }
     </script>
 
     {% block extra_js %}{% endblock %}

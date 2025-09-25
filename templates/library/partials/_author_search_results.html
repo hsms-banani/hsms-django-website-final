@@ -1,0 +1,13 @@
+
+<!-- templates/library/partials/_author_search_results.html -->
+{% if authors %}
+    {% for author in authors %}
+        <div class="p-2 hover:bg-blue-100 cursor-pointer author-result-item"
+         data-slug="{{ author.slug }}"
+         data-name="{{ author.full_name|escapejs }}">
+        {{ author.full_name }} ({{ author.book_count }})
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="p-2 text-gray-500">No authors found.</div>
+{% endif %}
