@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-16">
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="px-6 py-8">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Welcome Back</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="id_username">
+                        Username
+                    </label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                            <i class="fas fa-user text-gray-400"></i>
+                        </span>
+                        <input class="shadow appearance-none border rounded w-full py-3 px-10 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="id_username" name="username" type="text" placeholder="Enter your username">
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="id_password">
+                        Password
+                    </label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                            <i class="fas fa-lock text-gray-400"></i>
+                        </span>
+                        <input class="shadow appearance-none border rounded w-full py-3 px-10 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" id="id_password" name="password" type="password" placeholder="Enter your password">
+                        <span class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer" onclick="togglePasswordVisibility()">
+                            <i id="password-toggle-icon" class="fas fa-eye text-gray-400"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="flex items-center justify-center">
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full focus:outline-none focus:shadow-outline w-full" type="submit">
+                        Sign In
+                    </button>
+                </div>
+            </form>
+            <div class="text-center mt-6">
+                <p class="text-gray-600">Don't have an account? <a href="#" class="font-bold text-blue-600 hover:text-blue-800">Sign Up</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePasswordVisibility() {
+    const passwordInput = document.getElementById('id_password');
+    const passwordIcon = document.getElementById('password-toggle-icon');
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        passwordIcon.classList.remove('fa-eye');
+        passwordIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        passwordIcon.classList.remove('fa-eye-slash');
+        passwordIcon.classList.add('fa-eye');
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,21 @@
+<!-- library/templates/library/emails/first_reminder.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Due Soon</title>
+</head>
+<body>
+    <h2>Reminder: Book Due in 3 Days</h2>
+    <p>Dear {{ borrower.get_full_name }},</p>
+    <p>This is a reminder that the following book is due in 3 days:</p>
+    <ul>
+        <li><strong>Title:</strong> {{ book.title }}</li>
+        <li><strong>Author(s):</strong> {{ book.authors_display }}</li>
+        <li><strong>Due Date:</strong> {{ due_date|date:"F d, Y" }}</li>
+    </ul>
+    {% if can_renew %}
+    <p>You can renew this book from your account page.</p>
+    {% endif %}
+    <p>Thank you for using the {{ library_name }}.</p>
+</body>
+</html>

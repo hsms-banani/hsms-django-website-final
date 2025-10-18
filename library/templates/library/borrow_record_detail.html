@@ -1,0 +1,40 @@
+<!-- library/templates/library/borrow_record_detail.html -->
+{% extends "base.html" %}
+
+{% block title %}Borrow Record Details{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">Borrow Record Details</h1>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-700 mb-2">Book Details</h2>
+                <p><strong>Title:</strong> {{ record.book.title }}</p>
+                <p><strong>Author(s):</strong> {% for author in record.book.authors.all %}{{ author.full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+                <p><strong>Accession Number:</strong> {{ record.book.accession_number }}</p>
+                <p><strong>Call Number:</strong> {{ record.book.call_number }}</p>
+            </div>
+            <div>
+                <h2 class="text-lg font-semibold text-gray-700 mb-2">Borrower Details</h2>
+                <p><strong>Name:</strong> {{ record.borrower.get_full_name }}</p>
+                <p><strong>Username:</strong> {{ record.borrower.username }}</p>
+                <p><strong>Email:</strong> {{ record.borrower.email }}</p>
+            </div>
+            <div class="md:col-span-2">
+                <h2 class="text-lg font-semibold text-gray-700 mb-2">Borrowing Status</h2>
+                <p><strong>Status:</strong> <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {% if record.status == 'active' %}bg-blue-100 text-blue-800{% endif %}{% if record.status == 'overdue' %}bg-red-100 text-red-800{% endif %}{% if record.status == 'returned' %}bg-gray-100 text-gray-800{% endif %}">{{ record.get_status_display }}</span></p>
+                <p><strong>Borrow Date:</strong> {{ record.borrow_date|date:"d M, Y" }}</p>
+                <p><strong>Due Date:</strong> {{ record.due_date|date:"d M, Y" }}</p>
+                {% if record.return_date %}
+                <p><strong>Return Date:</strong> {{ record.return_date|date:"d M, Y" }}</p>
+                {% endif %}
+                <p><strong>Fine:</strong> ৳{{ record.fine_amount|default:"0.00" }}</p>
+            </div>
+        </div>
+        <div class="mt-8 flex justify-end">
+            <a href="{% url 'library:librarian_dashboard' %}" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

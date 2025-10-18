@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>New Prayer Request</title>
+</head>
+<body>
+    <h2>New Prayer Request Received</h2>
+    <p>A new prayer request has been submitted through the website.</p>
+    
+    <h3>Requester Details:</h3>
+    <ul>
+        <li><strong>Name:</strong> {{ prayer_request.name }}</li>
+        <li><strong>Email:</strong> {{ prayer_request.email }}</li>
+        {% if prayer_request.phone %}
+            <li><strong>Phone:</strong> {{ prayer_request.phone }}</li>
+        {% endif %}
+    </ul>
+    
+    <h3>Request Information:</h3>
+    <ul>
+        <li><strong>Request Type:</strong> {{ prayer_request.get_request_type_display }}</li>
+        <li><strong>Intention:</strong></li>
+    </ul>
+    <p>{{ prayer_request.intention|linebreaksbr }}</p>
+    
+    {% if prayer_request.preferred_date %}
+        <p><strong>Preferred Date for Mass:</strong> {{ prayer_request.preferred_date }}</p>
+    {% endif %}
+    
+    <hr>
+    
+    <p>This is an automated notification. Please review this request in the admin panel.</p>
+</body>
+</html>

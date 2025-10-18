@@ -1,0 +1,313 @@
+<!-- templates/spiritual_food/home.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Spiritual Food{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Scrolling Announcements -->
+<section class="bg-gradient-primary py-20 relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10">
+        <div class="absolute inset-0" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.1) 10px, rgba(255,255,255,.1) 20px);"></div>
+    </div>
+    
+    <div class="container mx-auto px-4 relative z-10">
+        <div class="text-center text-white mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold font-serif mb-4 animate-fade-in-up">
+                Spiritual Food
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 animate-fade-in-up" style="animation-delay: 0.2s;">
+                Nourishment for the Soul
+            </p>
+        </div>
+        
+        <!-- Scrolling Announcements -->
+        {% if announcements %}
+        <div class="max-w-4xl mx-auto bg-white/10 backdrop-blur-sm rounded-2xl p-6 md:p-8 shadow-lg animate-fade-in-up" style="animation-delay: 0.4s;">
+            <div class="flex items-center mb-4">
+                <i class="fas fa-bullhorn text-yellow-300 text-2xl mr-4"></i>
+                <h3 class="text-2xl font-semibold text-white font-serif">Announcements</h3>
+            </div>
+            
+            <div class="relative h-48 md:h-40" x-data="{
+                currentIndex: 0,
+                announcements: {{ announcements|length }},
+                progress: 0,
+                interval: 5000,
+                autoplay() {
+                    let timer = setInterval(() => {
+                        this.progress += (100 / (this.interval / 100));
+                        if (this.progress >= 100) {
+                            this.progress = 0;
+                            this.currentIndex = (this.currentIndex + 1) % this.announcements;
+                        }
+                    }, 100);
+                    this.$watch('currentIndex', () => { this.progress = 0; });
+                }
+            }" x-init="autoplay()">
+                <!-- Slides -->
+                {% for announcement in announcements %}
+                <div x-show="currentIndex === {{ forloop.counter0 }}"
+                     x-transition:enter="transition ease-out duration-700 transform"
+                     x-transition:enter-start="opacity-0 translate-x-full"
+                     x-transition:enter-end="opacity-100 translate-x-0"
+                     x-transition:leave="transition ease-in duration-500 transform"
+                     x-transition:leave-start="opacity-100 translate-x-0"
+                     x-transition:leave-end="opacity-0 -translate-x-full"
+                     class="absolute inset-0 w-full h-full"
+                     style="display: none;">
+                    
+                    <a href="{% url 'spiritual_food:announcement_detail' announcement.pk %}"
+                       class="block w-full h-full bg-white/20 hover:bg-white/30 rounded-xl p-6 transition-all duration-300 group">
+                        <div class="flex flex-col justify-between h-full">
+                            <div>
+                                <h4 class="font-bold text-white text-xl mb-2 group-hover:text-yellow-300 transition-colors">
+                                    {{ announcement.title }}
+                                </h4>
+                                <div class="text-white/80 text-sm line-clamp-3 leading-relaxed">
+                                    {{ announcement.short_description|safe }}
+                                </div>
+                            </div>
+                            <div class="text-right text-xs text-white/70 group-hover:text-white transition-colors">
+                                Read more &rarr;
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+
+                <!-- Progress Bar -->
+                <div class="absolute bottom-0 left-0 w-full h-1 bg-white/20 rounded-full overflow-hidden">
+                    <div class="h-full bg-yellow-400" :style="`width: ${progress}%`"></div>
+                </div>
+            </div>
+            
+            <!-- Navigation Dots -->
+            <div class="flex justify-center space-x-3 mt-6">
+                {% for announcement in announcements %}
+                <button @click="currentIndex = {{ forloop.counter0 }}"
+                        class="w-3 h-3 rounded-full transition-all duration-300"
+                        :class="currentIndex === {{ forloop.counter0 }} ? 'bg-white scale-125' : 'bg-white/40 hover:bg-white/70'"></button>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Quick Access Cards -->
+<section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Prayer Services Card -->
+            <a href="{% url 'spiritual_food:prayer_services' %}" 
+               class="bg-white rounded-xl shadow-lg p-6 hover-lift group">
+                <div class="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-praying-hands text-white text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2 text-gray-800">Prayer Services</h3>
+                <p class="text-gray-600 text-sm">View our daily mass and prayer schedule</p>
+            </a>
+            
+            <!-- Homilies Card -->
+            <a href="{% url 'spiritual_food:homily_list' %}" 
+               class="bg-white rounded-xl shadow-lg p-6 hover-lift group">
+                <div class="w-16 h-16 bg-gradient-secondary rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-book-open text-white text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2 text-gray-800">Homilies</h3>
+                <p class="text-gray-600 text-sm">Watch and read inspiring homilies</p>
+            </a>
+            
+            <!-- Archive Card -->
+            <a href="{% url 'spiritual_food:homily_archive' %}" 
+               class="bg-white rounded-xl shadow-lg p-6 hover-lift group">
+                <div class="w-16 h-16 bg-gradient-tertiary rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-archive text-white text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2 text-gray-800">Archive</h3>
+                <p class="text-gray-600 text-sm">Browse older homilies by date</p>
+            </a>
+            
+            <!-- Prayer Request Card -->
+            <a href="{% url 'spiritual_food:prayer_request' %}" 
+               class="bg-white rounded-xl shadow-lg p-6 hover-lift group bg-gradient-to-br from-yellow-50 to-orange-50">
+                <div class="w-16 h-16 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-hands text-white text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2 text-gray-800">Prayer Request</h3>
+                <p class="text-gray-600 text-sm">Submit your prayer intentions</p>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Homilies -->
+{% if featured_homilies %}
+<section class="py-16 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold font-serif text-gray-800 mb-4">
+                Featured Homilies
+            </h2>
+            <div class="w-24 h-1 bg-gradient-primary mx-auto"></div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {% for homily in featured_homilies %}
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden hover-lift">
+                {% if homily.thumbnail %}
+                <img src="{{ homily.thumbnail.url }}" 
+                     alt="{{ homily.title }}" 
+                     class="w-full h-48 object-cover">
+                {% else %}
+                <div class="w-full h-48 bg-gradient-primary flex items-center justify-center">
+                    <i class="fas fa-bible text-white text-5xl opacity-50"></i>
+                </div>
+                {% endif %}
+                
+                <div class="p-6">
+                    <div class="flex items-center space-x-2 mb-3">
+                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                            {{ homily.get_liturgical_season_display }}
+                        </span>
+                        {% if homily.youtube_url %}
+                        <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">
+                            <i class="fab fa-youtube mr-1"></i>Video
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">
+                        {{ homily.title }}
+                    </h3>
+                    
+                    <p class="text-gray-600 text-sm mb-3 line-clamp-2">
+                        {{ homily.summary }}
+                    </p>
+                    
+                    <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
+                        <span><i class="fas fa-user mr-1"></i>{{ homily.preacher }}</span>
+                        <span><i class="fas fa-calendar mr-1"></i>{{ homily.date|date:"M d, Y" }}</span>
+                    </div>
+                    
+                    <a href="{% url 'spiritual_food:homily_detail' homily.slug %}" 
+                       class="block w-full text-center bg-gradient-primary text-white py-2 rounded-lg hover:shadow-lg transition-all">
+                        Read More <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Recent Homilies -->
+{% if recent_homilies %}
+<section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold font-serif text-gray-800">
+                Recent Homilies
+            </h2>
+            <a href="{% url 'spiritual_food:homily_list' %}" 
+               class="text-blue-600 hover:text-blue-800 font-semibold">
+                View All <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for homily in recent_homilies %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden hover-lift">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                            {{ homily.date|date:"M d, Y" }}
+                        </span>
+                        {% if homily.youtube_url %}
+                        <i class="fab fa-youtube text-red-600 text-lg"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">
+                        {{ homily.title }}
+                    </h3>
+                    
+                    <p class="text-gray-600 text-sm mb-3">
+                        By {{ homily.preacher }}
+                    </p>
+                    
+                    {% if homily.scripture_reference %}
+                    <p class="text-sm text-blue-600 mb-3">
+                        <i class="fas fa-book mr-1"></i>{{ homily.scripture_reference }}
+                    </p>
+                    {% endif %}
+                    
+                    <a href="{% url 'spiritual_food:homily_detail' homily.slug %}" 
+                       class="text-blue-600 hover:text-blue-800 font-semibold text-sm">
+                        Read More <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Prayer Services Preview -->
+<section class="py-16 bg-gradient-to-br from-blue-900 to-purple-900 text-white">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold font-serif mb-4">
+                Join Us in Prayer
+            </h2>
+            <p class="text-xl text-white/90">
+                All are welcome to participate in our daily prayer services
+            </p>
+        </div>
+        
+        <div class="max-w-3xl mx-auto bg-white/10 backdrop-blur-md rounded-xl p-8 glass">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for service in prayer_services|slice:":4" %}
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-pray text-2xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold">{{ service.service_name }}</h4>
+                        <p class="text-sm text-white/80">{{ service.get_day_display }} - {{ service.time|time:"g:i A" }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="text-center mt-8">
+                <a href="{% url 'spiritual_food:prayer_services' %}" 
+                   class="inline-block bg-white text-blue-900 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors">
+                    View Full Schedule
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-16 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold font-serif text-gray-800 mb-6">
+                How Can We Pray for You?
+            </h2>
+            <p class="text-xl text-gray-600 mb-8">
+                Submit your prayer intentions and let our community lift you up in prayer
+            </p>
+            <a href="{% url 'spiritual_food:prayer_request' %}" 
+               class="inline-block bg-gradient-primary text-white px-12 py-4 rounded-full text-lg font-semibold hover:shadow-2xl transition-all transform hover:scale-105">
+                <i class="fas fa-hands mr-2"></i>Submit Prayer Request
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

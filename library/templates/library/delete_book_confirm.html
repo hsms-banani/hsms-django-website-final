@@ -1,0 +1,20 @@
+<!-- library/templates/library/delete_book_confirm.html -->
+{% extends "base.html" %}
+
+{% block title %}Confirm Delete{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-lg mx-auto bg-white p-8 rounded-lg shadow-md text-center">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">Confirm Deletion</h1>
+        <p class="text-gray-600 mb-6">Are you sure you want to delete the book "<strong>{{ book.title }}</strong>"?</p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="flex justify-center">
+                <a href="{% url 'library:librarian_dashboard' %}" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 mr-4">Cancel</a>
+                <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

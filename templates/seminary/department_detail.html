@@ -1,7 +1,7 @@
 <!-- seminary/department_detail.html -->
 {% extends 'base.html' %}
 {% load custom_tags %}
-{% load content_filters %}
+{% load seminary_filters %}
 
 {% block title %}{{ department_name }} Department - HSIT{% endblock %}
 
@@ -343,7 +343,7 @@
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {% for member in faculty %}
-                <div class="bg-white rounded-lg shadow-lg overflow-hidden hover-lift">
+                <a href="{% url 'faculty_detail' member.pk %}" class="block bg-white rounded-lg shadow-lg overflow-hidden hover-lift">
                     <div class="relative">
                         {% if member.photo %}
                         <img src="{{ member.photo.url }}" alt="{{ member.name }}" 
@@ -367,7 +367,7 @@
                         </div>
                         {% endif %}
                     </div>
-                </div>
+                </a>
                 {% endfor %}
             </div>
         </div>

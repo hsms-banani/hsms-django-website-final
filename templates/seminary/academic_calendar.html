@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load seminary_extras %}
+
+{% block title %}Academic Calendar - Holy Spirit Major Seminary{% endblock %}
+
+{% block extra_css %}
+<style>
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 1px;
+        background-color: #e5e7eb;
+        border: 1px solid #e5e7eb;
+    }
+    .calendar-day {
+        background-color: white;
+        padding: 1rem;
+        min-height: 120px;
+    }
+    .calendar-day.other-month {
+        background-color: #f9fafb;
+    }
+    .calendar-day-header {
+        font-weight: bold;
+        text-align: center;
+        padding: 0.5rem;
+        background-color: #f3f4f6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-16" x-data="{ showModal: false, selectedEvent: {} }">
+    <h1 class="text-4xl font-bold text-center mb-12">Academic Calendar</h1>
+
+    <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-center mb-8">
+            <a href="?month={{ prev_month.month }}&year={{ prev_month.year }}" class="px-4 py-2 bg-gray-200 rounded-lg">&lt; Prev</a>
+            <h2 class="text-2xl font-semibold">{{ month_name }} {{ year }}</h2>
+            <a href="?month={{ next_month.month }}&year={{ next_month.year }}" class="px-4 py-2 bg-gray-200 rounded-lg">Next &gt;</a>
+        </div>
+
+        <div class="grid grid-cols-7 text-center font-bold">
+            <div class="py-2">Sun</div>
+            <div class="py-2">Mon</div>
+            <div class="py-2">Tue</div>
+            <div class="py-2">Wed</div>
+            <div class="py-2">Thu</div>
+            <div class="py-2">Fri</div>
+            <div class="py-2">Sat</div>
+        </div>
+
+        <div class="calendar-grid">
+            {% for week in calendar_weeks %}
+                {% for day, events in week %}
+                    <div class="calendar-day {% if day.month != month %}other-month{% endif %}">
+                        <div class="font-bold">{{ day.day }}</div>
+                        {% for event in events %}
+                            <button @click="selectedEvent = {{ event|jsonify }}; showModal = true" class="w-full text-left bg-blue-100 border border-blue-400 text-blue-700 px-2 py-1 rounded mt-2 text-sm">
+                                {{ event.title }}
+                            </button>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div x-show="showModal" @keydown.escape.window="showModal = false" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" style="display: none;">
+        <div @click.away="showModal = false" class="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full">
+            <h3 class="text-2xl font-bold mb-4" x-text="selectedEvent.title"></h3>
+            <p class="text-gray-600 mb-2"><strong class="font-semibold">Time:</strong> <span x-text="selectedEvent.time"></span></p>
+            <p class="text-gray-800" x-html="selectedEvent.description"></p>
+            <button @click="showModal = false" class="mt-6 px-4 py-2 bg-gray-200 rounded-lg">Close</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

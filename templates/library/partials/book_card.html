@@ -1,61 +1,170 @@
 <!-- templates/library/partials/book_card.html -->
-{% load static %}
-<div class="book-card bg-white rounded-lg shadow-sm overflow-hidden transform transition-transform duration-300 hover:-translate-y-2 hover:shadow-lg">
-    <a href="{{ book.get_absolute_url }}" class="block">
-        <div class="relative h-48 group">
-            {% if book.cover_image %}
-                <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" class="w-full h-full object-cover">
+{% load static library_extras %}
+
+<div class="book-card bg-white rounded-lg shadow-lg hover:shadow-2xl overflow-hidden relative transition-shadow duration-300 border">
+    <!-- Availability Badge -->
+    <div class="availability-badge {% if book.is_available %}available{% else %}unavailable{% endif %}" title="{% if book.is_available %}This book is available to borrow{% else %}This book is currently not available to borrow{% endif %}">
+        {% if book.is_available %}
+            Available ({{ book.copies_available }})
+        {% else %}
+            Not Available
+        {% endif %}
+    </div>
+
+    <!-- Cover Image -->
+    <div class="aspect-w-3 aspect-h-4 bg-gray-100">
+        {% if book.cover_image %}
+            <img src="{{ book.cover_image.url }}" 
+                 alt="Cover of {{ book.title }}" 
+                 class="object-cover w-full h-48 transition-transform duration-200"
+                 loading="lazy">
+        {% else %}
+            <div class="flex items-center justify-center h-48 bg-gradient-to-br from-gray-100 to-gray-200">
+                <div class="text-center p-4">
+                    <i class="fas fa-book text-gray-400 text-3xl mb-2"></i>
+                    <p class="text-gray-500 text-sm font-medium mixed-content">{{ book.title|truncatechars:30 }}</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Book Details -->
+    <div class="p-4 space-y-3">
+        <!-- Title -->
+        <h3 class="book-title text-lg font-semibold text-gray-900 leading-tight">
+            {% if book.slug %}
+            <a href="{{ book.get_absolute_url }}" 
+               class="hover:text-blue-600 transition-colors mixed-content"
+               title="{{ book.title }}{% if book.subtitle %} - {{ book.subtitle }}{% endif %}">
+                <span class="text-truncate-mixed">{{ book.title }}</span>
+                {% if book.subtitle %}
+                    <span class="text-sm text-gray-600 font-normal block mt-1 mixed-content">{{ book.subtitle|truncatechars:50 }}</span>
+                {% endif %}
+            </a>
             {% else %}
-                <div class="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <i class="fas fa-book text-4xl text-gray-400"></i>
+                <span class="text-truncate-mixed">{{ book.title }}</span>
+                {% if book.subtitle %}
+                    <span class="text-sm text-gray-600 font-normal block mt-1 mixed-content">{{ book.subtitle|truncatechars:50 }}</span>
+                {% endif %}
+            {% endif %}
+        </h3>
+
+        <!-- Authors -->
+        <div class="book-author text-sm text-gray-600">
+            <i class="fas fa-user-edit text-gray-400 mr-1" aria-hidden="true"></i>
+            {% if book.authors.exists %}
+                {% for author in book.authors.all %}
+                    <a href="{% url 'library:author_detail' author.slug %}" 
+                       class="hover:text-blue-600 transition-colors mixed-content"
+                       title="{{ author.full_name }}">{{ author.full_name }}</a>{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            {% else %}
+                <span class="text-gray-500">Unknown Author</span>
+            {% endif %}
+        </div>
+
+        <!-- Category & Publisher -->
+        <div class="flex flex-wrap gap-2 text-xs">
+            {% if book.category %}
+                <a href="{% url 'library:category_books' book.category.slug %}" 
+                   title="{{ book.category.name }}"
+                   class="book-category inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition-colors">
+                    <i class="fas fa-folder text-xs mr-1"></i>
+                    {{ book.category.name }}
+                </a>
+            {% endif %}
+            
+            {% if book.publisher %}
+                <a href="{% url 'library:publisher_detail' book.publisher.slug %}" 
+                   title="{{ book.publisher.name }}"
+                   class="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors english">
+                    <i class="fas fa-building text-xs mr-1"></i>
+                    {{ book.publisher.name|truncatechars:20 }}
+                </a>
+            {% endif %}
+        </div>
+
+        <!-- Publication Year & Call Number -->
+        <div class="flex justify-between items-center text-xs text-gray-500">
+            <div class="flex items-center english" title="Publication Year">
+                <i class="fas fa-calendar-alt mr-1"></i>
+                {{ book.publication_year }}
+            </div>
+            {% if book.accession_number %}
+                <div class="flex items-center english" title="Accession Number: {{ book.accession_number }}">
+                    <i class="fas fa-key mr-1"></i>
+                    <code class="bg-gray-100 px-1 rounded text-xs">{{ book.accession_number }}</code>
                 </div>
             {% endif %}
-
-            <!-- Tooltip Overlay on Image Hover -->
-            <div class="absolute inset-0 flex items-center justify-center p-4 bg-black bg-opacity-70 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div class="text-center text-white">
-                    <h4 class="font-bold text-base">{{ book.title }}</h4>
-                    {% if book.authors_list %}
-                    <p class="text-xs mt-1">by {{ book.authors_list }}</p>
-                    {% endif %}
+            {% if book.call_number %}
+                <div class="flex items-center english" title="Library Location: {{ book.call_number }}">
+                    <i class="fas fa-map-marker-alt mr-1"></i>
+                    <code class="bg-gray-100 px-1 rounded text-xs">{{ book.call_number }}</code>
                 </div>
-            </div>
-
-            <div class="absolute top-2 right-2">
-                {% if book.status == 'available' %}
-                    <span class="px-2 py-1 text-xs font-semibold text-white bg-green-500 rounded-full">Available</span>
-                {% elif book.status == 'checked_out' %}
-                    <span class="px-2 py-1 text-xs font-semibold text-white bg-yellow-500 rounded-full">Checked Out</span>
-                {% else %}
-                    <span class="px-2 py-1 text-xs font-semibold text-white bg-red-500 rounded-full">Reserved</span>
-                {% endif %}
-            </div>
+            {% endif %}
         </div>
-        <div class="p-4">
-            <div class="relative group">
-                <h3 class="text-lg font-bold text-gray-900 truncate">{{ book.title }}</h3>
-                <span class="absolute bottom-full mb-2 w-max bg-gray-800 text-white text-xs rounded-md p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                    {{ book.title }}
+
+        <!-- Language Indicator -->
+        {% if book.language != 'en' %}
+            <div class="flex items-center text-xs text-gray-500" title="Language: {{ book.get_language_display }}">
+                <i class="fas fa-language mr-1"></i>
+                <span class="english">
+                    {% if book.language == 'bn' %}
+                        <span class="bangla">বাংলা</span> (Bangla)
+                    {% else %}
+                        {{ book.get_language_display }}
+                    {% endif %}
                 </span>
             </div>
-            {% if book.authors.all %}
-                <p class="text-sm text-gray-600 truncate">
-                    by 
-                    {% for author in book.authors.all %}
-                        {{ author.full_name }}{% if not forloop.last %}, {% endif %}
-                    {% endfor %}
-                </p>
-            {% endif %}
-            <div class="mt-3 flex items-center justify-between text-sm text-gray-500">
-                <span class="truncate"><i class="fas fa-layer-group mr-1"></i> {{ book.category.name }}</span>
-                <span class="truncate"><i class="fas fa-calendar-alt mr-1"></i> {{ book.publication_year }}</span>
+        {% endif %}
+
+        <!-- Keywords (if available) -->
+        {% if book.keywords %}
+            <div class="text-xs text-gray-400 truncate" title="{{ book.keywords }}">
+                <i class="fas fa-tags mr-1"></i>
+                <span class="mixed-content">{{ book.keywords|truncatechars:40 }}</span>
             </div>
-            <div class="mt-4 pt-4 border-t border-gray-200">
-                <div class="flex items-center justify-between text-sm">
-                    <span class="font-semibold text-gray-800">{{ book.call_number }}</span>
-                    <span class="text-gray-600"><i class="fas fa-map-marker-alt mr-1"></i> {{ book.location_shelf }}</span>
-                </div>
+        {% endif %}
+
+        <!-- Popular indicator -->
+        {% if book.times_borrowed > 5 %}
+            <div class="flex items-center text-xs text-orange-600" title="This book has been borrowed {{ book.times_borrowed }} times.">
+                <i class="fas fa-fire mr-1"></i>
+                <span class="english">Popular ({{ book.times_borrowed }} borrows)</span>
             </div>
-        </div>
-    </a>
+        {% endif %}
+    </div>
+
+
 </div>
+
+<style>
+/* Book card specific styles for better multilingual support */
+.book-card .text-truncate-mixed {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+    line-height: 1.4;
+    max-height: 2.8em;
+}
+
+.book-card code {
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-size: 0.75rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .book-card .book-title {
+        font-size: 1rem;
+    }
+    
+    .book-card .text-truncate-mixed {
+        -webkit-line-clamp: 3;
+        max-height: 4.2em;
+    }
+}
+</style>

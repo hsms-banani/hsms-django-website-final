@@ -1,8 +1,8 @@
-# library/views.py
+# library/views.py - Enhanced with Bangla/Multilingual Support
 
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.db import connections
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db.models import Q, Count, Case, When, Prefetch
 
 from django.core.paginator import Paginator
@@ -16,22 +16,55 @@ import operator
 from thefuzz import process
 from thefuzz import fuzz
 import re
-from .models import Book, Category, Author, Publisher, BookSearch
-from django.core.cache import cache
+import unicodedata
+from .models import Book, Category, Author, Publisher, BookSearch, BorrowRecord
+from .forms import BookForm
+from .email_service import LibraryEmailService
+from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_page
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.http import require_http_methods
 from django.core.files.storage import FileSystemStorage
 from django.core.management import call_command
 from django.contrib import messages
-
 import csv
-from django.http import HttpResponse
+import hashlib
+from django.utils import timezone
 
 # Cache timeouts
 CACHE_TIMEOUT_SHORT = 60 * 5   # 5 minutes
 CACHE_TIMEOUT_MEDIUM = 60 * 15  # 15 minutes
 CACHE_TIMEOUT_LONG = 60 * 60    # 1 hour
+
+def detect_text_language(text):
+    """Detect if text contains Bangla characters"""
+    if not text:
+        return 'en'
+    
+    bangla_pattern = re.compile(r'[\u0980-\u09FF]')
+    english_pattern = re.compile(r'[A-Za-z]')
+    
+    has_bangla = bangla_pattern.search(text)
+    has_english = english_pattern.search(text)
+    
+    if has_bangla and has_english:
+        return 'mixed'
+    elif has_bangla:
+        return 'bn'
+    return 'en'
+
+def normalize_search_query(query):
+    """Normalize search query for better matching"""
+    if not query:
+        return ""
+    
+    # Normalize Unicode (important for Bangla)
+    query = unicodedata.normalize('NFC', query.strip())
+    
+    # Remove extra whitespace
+    query = ' '.join(query.split())
+    
+    return query
 
 def get_optimized_book_queryset():
     """Get optimized book queryset with all relations prefetched"""
@@ -39,36 +72,56 @@ def get_optimized_book_queryset():
         'publisher', 
         'category'
     ).prefetch_related(
-        Prefetch('authors', queryset=Author.objects.only('id', 'first_name', 'last_name', 'slug'))
+        Prefetch('authors', queryset=Author.objects.only(
+            'id', 'first_name', 'last_name', 'first_name_bangla', 
+            'last_name_bangla', 'slug', 'primary_language'
+        ))
     ).only(
-        'id', 'title', 'subtitle', 'slug', 'publication_year', 
-        'isbn_10', 'isbn_13', 'call_number', 'keywords', 
-        'status', 'copies_available', 'total_copies', 'times_borrowed',
-        'created_at', 'cover_image', 'classification_number', 'cutter_number',
+        'id', 'title', 'title_bangla', 'subtitle', 'subtitle_bangla', 
+        'slug', 'publication_year', 'isbn_10', 'isbn_13', 'call_number', 
+        'keywords', 'keywords_bangla', 'language', 'status', 'copies_available', 
+        'total_copies', 'times_borrowed', 'created_at', 'cover_image', 
+        'classification_number', 'cutter_number',
         'publisher__name', 'publisher__slug',
         'category__name', 'category__slug'
     )
 
 def download_csv_template(request):
-    response = HttpResponse(content_type='text/csv')
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
     response['Content-Disposition'] = 'attachment; filename="book_import_template.csv"'
+    
+    # Add BOM for Excel compatibility with Unicode
+    response.write('\ufeff')
 
     writer = csv.writer(response)
+    
+    # ✅ FIXED: Added accession_number and volume
     header = [
-        'title*', 'subtitle', 'author*', 'publisher*', 'publication_year*', 
-        'isbn_10', 'isbn_13', 'classification_number*', 'cutter_number*', 
-        'category*', 'language', 'pages', 'edition', 'description', 
-        'keywords', 'total_copies', 'copies_available', 'location_shelf', 'status'
+        'title*', 'title_bangla', 'subtitle', 'subtitle_bangla', 
+        'accession_number*',  # ✅ ADDED
+        'volume',              # ✅ ADDED
+        'author*', 
+        'publisher*', 'publication_year*', 'isbn_10', 'isbn_13', 
+        'classification_number*', 'cutter_number*', 'category*', 'language', 
+        'pages', 'edition', 'description', 'description_bangla',
+        'keywords', 'keywords_bangla', 'total_copies', 'copies_available', 
+        'location_shelf', 'status'
     ]
     writer.writerow(header)
+    
+    # ✅ FIXED: Updated sample data
     writer.writerow([
-        'Sample Book Title', 'A Sample Subtitle', 'Author One;Author Two', 'Sample Publisher', '2023',
-        '1234567890', '9781234567890', '230.1', 'S64i', 'Systematic Theology', 'en', '450', '3rd Edition',
-        'A sample book description.', 'theology,christianity,doctrine', '3', '2', 'A-1-5', 'available'
+        'Sample Book Title', 'নমুনা বই শিরোনাম', 'A Sample Subtitle', 'একটি নমুনা উপশিরোনাম',
+        'ACC-2024-001',  # ✅ ADDED - Accession number
+        'v1',            # ✅ ADDED - Volume
+        'Author One;Author Two', 'Sample Publisher', '2023',
+        '1234567890', '9781234567890', '230.1', 'S64i', 'Systematic Theology', 'bn', '450', 
+        '3rd Edition', 'A sample book description.', 'একটি নমুনা বই বর্ণনা।',
+        'theology,christianity,doctrine', 'ধর্মতত্ত্ব,খ্রিস্টধর্ম,মতবাদ', 
+        '3', '2', 'A-1-5', 'available'
     ])
 
     return response
-
 
 @staff_member_required
 def upload_csv(request):
@@ -80,6 +133,7 @@ def upload_csv(request):
             file_path = fs.path(filename)
             
             try:
+                # Use the enhanced import command with encoding detection
                 call_command('import_books', file_path)
                 messages.success(request, f'Successfully imported books from {filename}.')
             except Exception as e:
@@ -91,76 +145,140 @@ def upload_csv(request):
 
     return render(request, 'library/upload_csv.html')
 
-
 def _get_filtered_sorted_books(request):
     """
-    Applies search, filtering, and sorting to the main book queryset based on request GET parameters.
-    Returns a fully filtered and sorted queryset.
+    Enhanced filtering with multilingual support
     """
     books = get_optimized_book_queryset()
     query = request.GET.get('q', '').strip()
     sort_by = request.GET.get('sort', '-created_at')
     using_postgres = connections['default'].vendor == 'postgresql'
+    
+    # Normalize query for better search
+    query = normalize_search_query(query)
 
-    # --- Search ---
+    # --- Multilingual Search ---
     if query:
+        query_language = detect_text_language(query)
+        
         if using_postgres:
-            search_vector = (
-                SearchVector('title', weight='A') + 
-                SearchVector('subtitle', weight='B') +
-                SearchVector('authors__first_name', weight='B') +
-                SearchVector('authors__last_name', weight='B') + 
-                SearchVector('isbn_10', weight='C') +
-                SearchVector('isbn_13', weight='C') +
-                SearchVector('keywords', weight='C') +
-                SearchVector('call_number', weight='D')
-            )
+            # Enhanced PostgreSQL search with multilingual support
+            if query_language in ['bn', 'mixed']:
+                search_vector = (
+                    SearchVector('title', weight='A') + 
+                    SearchVector('title_bangla', weight='A') +
+                    SearchVector('subtitle', weight='B') +
+                    SearchVector('subtitle_bangla', weight='B') +
+                    SearchVector('authors__first_name', weight='B') +
+                    SearchVector('authors__last_name', weight='B') +
+                    SearchVector('authors__first_name_bangla', weight='B') +
+                    SearchVector('authors__last_name_bangla', weight='B') +
+                    SearchVector('keywords', weight='C') +
+                    SearchVector('keywords_bangla', weight='C') +
+                    SearchVector('isbn_10', weight='D') +
+                    SearchVector('isbn_13', weight='D') +
+                    SearchVector('call_number', weight='D')
+                )
+            else:
+                # Standard English search
+                search_vector = (
+                    SearchVector('title', weight='A') + 
+                    SearchVector('subtitle', weight='B') +
+                    SearchVector('authors__first_name', weight='B') +
+                    SearchVector('authors__last_name', weight='B') + 
+                    SearchVector('isbn_10', weight='C') +
+                    SearchVector('isbn_13', weight='C') +
+                    SearchVector('keywords', weight='C') +
+                    SearchVector('call_number', weight='D')
+                )
+            
             search_query = SearchQuery(query)
             books = books.annotate(
                 rank=SearchRank(search_vector, search_query)
             ).filter(rank__gte=0.1)
         else:
+            # Enhanced SQLite search with multilingual support
             query_words = query.split()
             final_q = Q()
+            
             for word in query_words:
-                word_q = (
-                    Q(title__icontains=word) | Q(subtitle__icontains=word) |
-                    Q(authors__first_name__icontains=word) | Q(authors__last_name__icontains=word) |
-                    Q(isbn_10__icontains=word) | Q(isbn_13__icontains=word) |
-                    Q(keywords__icontains=word) | Q(call_number__icontains=word) |
-                    Q(publisher__name__icontains=word) | Q(category__name__icontains=word)
-                )
+                if query_language in ['bn', 'mixed']:
+                    # Search in both English and Bangla fields
+                    word_q = (
+                        Q(title__icontains=word) | Q(title_bangla__icontains=word) |
+                        Q(subtitle__icontains=word) | Q(subtitle_bangla__icontains=word) |
+                        Q(authors__first_name__icontains=word) | Q(authors__last_name__icontains=word) |
+                        Q(authors__first_name_bangla__icontains=word) | Q(authors__last_name_bangla__icontains=word) |
+                        Q(keywords__icontains=word) | Q(keywords_bangla__icontains=word) |
+                        Q(isbn_10__icontains=word) | Q(isbn_13__icontains=word) |
+                        Q(call_number__icontains=word) |
+                        Q(publisher__name__icontains=word) | Q(category__name__icontains=word)
+                    )
+                else:
+                    # Standard English search
+                    word_q = (
+                        Q(title__icontains=word) | Q(subtitle__icontains=word) |
+                        Q(authors__first_name__icontains=word) | Q(authors__last_name__icontains=word) |
+                        Q(isbn_10__icontains=word) | Q(isbn_13__icontains=word) |
+                        Q(keywords__icontains=word) | Q(call_number__icontains=word) |
+                        Q(publisher__name__icontains=word) | Q(category__name__icontains=word)
+                    )
                 final_q &= word_q
+            
             if final_q:
                 books = books.filter(final_q).distinct()
             else:
                 books = books.none()
 
+        # Track search with language detection
         try:
-            search_obj, created = BookSearch.objects.get_or_create(query=query)
+            search_obj, created = BookSearch.objects.get_or_create(
+                query=query,
+                defaults={'language_detected': query_language}
+            )
             if not created:
                 search_obj.search_count += 1
                 search_obj.save(update_fields=['search_count', 'last_searched'])
         except:
             pass
 
-    # --- Filtering ---
+    # --- Enhanced Filtering ---
     category_slug = request.GET.get('category')
     if category_slug:
         books = books.filter(category__slug=category_slug)
+
+    # Language filter
+    language = request.GET.get('language')
+    if language:
+        books = books.filter(language=language)
 
     author_slug = request.GET.get('author')
     author_q = request.GET.get('author_q')
     if author_slug:
         books = books.filter(authors__slug=author_slug)
     elif author_q:
-        books = books.filter(Q(authors__first_name__icontains=author_q) | Q(authors__last_name__icontains=author_q)).distinct()
+        author_q = normalize_search_query(author_q)
+        author_lang = detect_text_language(author_q)
+        
+        if author_lang in ['bn', 'mixed']:
+            books = books.filter(
+                Q(authors__first_name__icontains=author_q) | 
+                Q(authors__last_name__icontains=author_q) |
+                Q(authors__first_name_bangla__icontains=author_q) | 
+                Q(authors__last_name_bangla__icontains=author_q)
+            ).distinct()
+        else:
+            books = books.filter(
+                Q(authors__first_name__icontains=author_q) | 
+                Q(authors__last_name__icontains=author_q)
+            ).distinct()
 
     publisher_slug = request.GET.get('publisher')
     publisher_q = request.GET.get('publisher_q')
     if publisher_slug:
         books = books.filter(publisher__slug=publisher_slug)
     elif publisher_q:
+        publisher_q = normalize_search_query(publisher_q)
         books = books.filter(publisher__name__icontains=publisher_q)
 
     status = request.GET.get('status')
@@ -174,48 +292,60 @@ def _get_filtered_sorted_books(request):
     valid_sorts = [
         'title', '-title', '-publication_year', 'publication_year', 
         '-times_borrowed', 'times_borrowed', '-created_at', 'created_at', 
-        'call_number', '-call_number'
+        'call_number', '-call_number', 'language', '-language'
     ]
     if query and using_postgres:
         valid_sorts.append('relevance')
-        if sort_by == '-created_at': # Default sort for a search should be relevance
+        if sort_by == '-created_at':  # Default sort for search should be relevance
             sort_by = 'relevance'
 
     if sort_by == 'relevance' and 'rank' in books.query.annotations:
-        books = books.order_by('-rank')
+        books = books.order_by('-rank', '-created_at')
     elif sort_by in valid_sorts:
         books = books.order_by(sort_by)
     
     return books
 
-
 def library_home(request):
-    """Display a comprehensive, filterable list of books - OPTIMIZED"""
+    """Enhanced home view with multilingual support"""
     books = _get_filtered_sorted_books(request)
 
     paginator = Paginator(books, 16)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    filter_options = cache.get('library_filter_options_v2')
+    # Get filter options with language-aware caching
+    user_language = request.GET.get('language', 'all')
+    filter_options = cache.get(f'library_filter_options_v3_{user_language}')
     if not filter_options:
+        categories = Category.objects.annotate(
+            book_count=Count('books')
+        ).filter(book_count__gt=0).only('id', 'name', 'name_bangla', 'slug').order_by('name')
+        
         filter_options = {
-            'categories': Category.objects.annotate(book_count=Count('books')).filter(book_count__gt=0).only('id', 'name', 'slug').order_by('name'),
+            'categories': categories,
+            'languages': Book.LANGUAGE_CHOICES,
         }
-        cache.set('library_filter_options_v2', filter_options, CACHE_TIMEOUT_LONG)
+        cache.set(f'library_filter_options_v3_{user_language}', filter_options, CACHE_TIMEOUT_LONG)
 
     # Handle search box state after form submission
     author_q_value = request.GET.get('author_q', '')
     if request.GET.get('author') and not author_q_value:
         try:
-            author_q_value = Author.objects.get(slug=request.GET.get('author')).full_name
+            author = Author.objects.get(slug=request.GET.get('author'))
+            # Choose appropriate name based on content language
+            if author.full_name_bangla:
+                author_q_value = author.full_name_bangla
+            else:
+                author_q_value = author.full_name
         except Author.DoesNotExist:
             pass
 
     publisher_q_value = request.GET.get('publisher_q', '')
     if request.GET.get('publisher') and not publisher_q_value:
         try:
-            publisher_q_value = Publisher.objects.get(slug=request.GET.get('publisher')).name
+            publisher = Publisher.objects.get(slug=request.GET.get('publisher'))
+            publisher_q_value = publisher.name
         except Publisher.DoesNotExist:
             pass
 
@@ -227,11 +357,13 @@ def library_home(request):
             'author': request.GET.get('author'),
             'publisher': request.GET.get('publisher'),
             'status': request.GET.get('status'),
+            'language': request.GET.get('language'),
         },
         'search_query': request.GET.get('q', '').strip(),
         'sort_by': request.GET.get('sort', '-created_at'),
         'author_q_value': author_q_value,
         'publisher_q_value': publisher_q_value,
+        'detected_language': detect_text_language(request.GET.get('q', '')),
     }
 
     if request.headers.get('HX-Request'):
@@ -239,9 +371,8 @@ def library_home(request):
 
     return render(request, 'library/home.html', context)
 
-
 def book_detail(request, slug):
-    """Display detailed view of a single book - OPTIMIZED"""
+    """Enhanced book detail view with multilingual content"""
     cache_key = f"book_detail_{slug}"
     context = cache.get(cache_key)
     
@@ -252,125 +383,286 @@ def book_detail(request, slug):
             slug=slug
         )
         
+        # Find related books with multilingual consideration
         related_books = Book.objects.filter(
-            Q(category=book.category) | Q(authors__in=book.authors.all())
+            Q(category=book.category) | 
+            Q(authors__in=book.authors.all()) |
+            Q(language=book.language)  # Same language books
         ).exclude(id=book.id).distinct().select_related(
             'publisher', 'category'
         ).prefetch_related('authors').only(
-            'id', 'title', 'slug', 'call_number', 'status', 
-            'copies_available', 'total_copies', 'cover_image',
+            'id', 'title', 'title_bangla', 'slug', 'call_number', 'status', 
+            'copies_available', 'total_copies', 'cover_image', 'language',
             'publisher__name', 'category__name'
         )[:6]
         
         context = {
             'book': book,
             'related_books': list(related_books),
+            'book_language': book.language,
+            'is_multilingual': bool(book.title_bangla or book.description_bangla),
         }
         
         cache.set(cache_key, context, CACHE_TIMEOUT_MEDIUM)
     
     return render(request, 'library/book_detail.html', context)
 
-
 @require_http_methods(["GET"])
 def quick_search(request):
-    """HTMX quick search for autocomplete - OPTIMIZED"""
+    """
+    Ultra-fast quick search with single character support
+    Optimized with aggressive caching and minimal queries
+    """
     query = request.GET.get('q', '').strip()
     
-    if len(query) < 2:
+    # Return empty for no input
+    if len(query) < 1:
         return render(request, 'library/partials/quick_search_results.html', 
                      {'results': [], 'query': query})
     
-    cache_key = f"quick_search_{hash(query)}"
+    # Normalize query
+    query = normalize_search_query(query)
+    query_language = detect_text_language(query)
+    
+    # Create cache key based on query and language
+    cache_key = f"quick_search_v2_{hashlib.md5(f'{query}_{query_language}'.encode()).hexdigest()}"
+    
+    # Try to get from cache first (30 second cache for super fast responses)
     results = cache.get(cache_key)
     
     if results is None:
+        # Build optimized queryset
         books = Book.objects.select_related('publisher', 'category').prefetch_related(
-            'authors'
+            Prefetch('authors', queryset=Author.objects.only(
+                'id', 'first_name', 'last_name', 'first_name_bangla', 
+                'last_name_bangla', 'slug'
+            ))
         ).only(
-            'id', 'title', 'slug', 'isbn_10', 'isbn_13', 'call_number',
-            'status', 'copies_available', 'total_copies',
+            'id', 'title', 'title_bangla', 'slug', 'isbn_10', 'isbn_13', 
+            'call_number', 'status', 'copies_available', 'total_copies', 
+            'language', 'times_borrowed', 'cover_image', 'location_shelf',
+            'publication_year', 'subtitle', 'subtitle_bangla',
             'publisher__name', 'category__name'
         )
         
-        db_results = optimized_database_search(books, query)
+        # For single character, use more targeted search
+        if len(query) == 1:
+            # Single character - search only in titles and call numbers for performance
+            if query_language in ['bn', 'mixed']:
+                search_q = (
+                    Q(title__istartswith=query) | 
+                    Q(title_bangla__istartswith=query) |
+                    Q(call_number__istartswith=query)
+                )
+            else:
+                search_q = (
+                    Q(title__istartswith=query) | 
+                    Q(call_number__istartswith=query)
+                )
+            
+            # Limit to 15 results for single char
+            books = books.filter(search_q)[:15]
+            
+        else:
+            # Multi-character search - more comprehensive
+            db_results = optimized_multilingual_search(books, query, query_language)
+            books = [book for book, score in db_results[:12]]
         
-        results = [book for book, score in db_results[:10]]
+        results = list(books)
         
-        cache.set(cache_key, results, 120)
+        # Cache for 30 seconds (fast responses for repeated searches)
+        cache.set(cache_key, results, 30)
     
     return render(request, 'library/partials/quick_search_results.html', {
         'results': results, 
-        'query': query
+        'query': query,
+        'query_language': query_language,
+        'is_single_char': len(query) == 1,
     })
 
-def optimized_database_search(books, query):
-    """Optimized database search with scoring for autocomplete"""
+def optimized_multilingual_search(books, query, query_language):
+    """
+    Enhanced search with better performance for short queries
+    """
     using_postgres = connections['default'].vendor == 'postgresql'
     
     if using_postgres:
-        search_vector = (
-            SearchVector('title', weight='A') + 
-            SearchVector('authors__first_name', weight='B') +
-            SearchVector('authors__last_name', weight='B') + 
-            SearchVector('isbn_10', weight='C') +
-            SearchVector('isbn_13', weight='C') +
-            SearchVector('call_number', weight='D')
-        )
+        # PostgreSQL full-text search
+        if query_language in ['bn', 'mixed']:
+            search_vector = (
+                SearchVector('title', weight='A') + 
+                SearchVector('title_bangla', weight='A') +
+                SearchVector('authors__first_name', weight='B') +
+                SearchVector('authors__last_name', weight='B') +
+                SearchVector('authors__first_name_bangla', weight='B') +
+                SearchVector('authors__last_name_bangla', weight='B') +
+                SearchVector('isbn_10', weight='C') +
+                SearchVector('isbn_13', weight='C') +
+                SearchVector('call_number', weight='D')
+            )
+        else:
+            search_vector = (
+                SearchVector('title', weight='A') + 
+                SearchVector('authors__first_name', weight='B') +
+                SearchVector('authors__last_name', weight='B') + 
+                SearchVector('isbn_10', weight='C') +
+                SearchVector('isbn_13', weight='C') +
+                SearchVector('call_number', weight='D')
+            )
+        
         search_query = SearchQuery(query)
         
         books_with_rank = books.annotate(
             rank=SearchRank(search_vector, search_query)
-        ).filter(rank__gte=0.1).order_by('-rank')
+        ).filter(rank__gte=0.05).order_by('-rank')  # Lower threshold for short queries
         
         return [(book, float(book.rank) * 100) for book in books_with_rank[:15]]
+    
     else:
-        # SQLite fallback with basic scoring
-        query_words = query.lower().split()
+        # SQLite fallback with optimized scoring
+        query_lower = query.lower()
         scored_books = []
         
-        q_objects = []
-        for word in query_words:
-            if len(word) >= 2:
-                q_objects.append(
-                    Q(title__icontains=word) |
-                    Q(authors__first_name__icontains=word) |
-                    Q(authors__last_name__icontains=word) |
-                    Q(isbn_10__icontains=word) |
-                    Q(isbn_13__icontains=word) |
-                    Q(call_number__icontains=word)
-                )
+        # Build efficient Q objects
+        if query_language in ['bn', 'mixed']:
+            q_filter = (
+                Q(title__icontains=query) |
+                Q(title_bangla__icontains=query) |
+                Q(authors__first_name__icontains=query) |
+                Q(authors__last_name__icontains=query) |
+                Q(authors__first_name_bangla__icontains=query) |
+                Q(authors__last_name_bangla__icontains=query) |
+                Q(isbn_10__icontains=query) |
+                Q(isbn_13__icontains=query) |
+                Q(call_number__icontains=query)
+            )
+        else:
+            q_filter = (
+                Q(title__istartswith=query) |  # Prioritize starts-with
+                Q(title__icontains=query) |
+                Q(authors__first_name__icontains=query) |
+                Q(authors__last_name__icontains=query) |
+                Q(isbn_10__icontains=query) |
+                Q(isbn_13__icontains=query) |
+                Q(call_number__istartswith=query)
+            )
         
-        if q_objects:
-            filtered_books = books.filter(reduce(operator.or_, q_objects)).distinct()
+        filtered_books = books.filter(q_filter).distinct()[:25]
+        
+        # Score the results
+        for book in filtered_books:
+            score = 0
+            title_lower = book.title.lower()
+            title_bangla_lower = (book.title_bangla or '').lower()
             
-            for book in filtered_books[:20]:
-                score = 0
-                title_lower = book.title.lower()
-                if query.lower() in title_lower:
-                    score += 100
-                for word in query_words:
-                    if word in title_lower:
-                        score += 30
-                if score > 0:
-                    scored_books.append((book, score))
+            # Exact match bonus
+            if query_lower == title_lower or query_lower == title_bangla_lower:
+                score += 200
+            
+            # Starts with bonus (high priority)
+            if title_lower.startswith(query_lower):
+                score += 150
+            elif title_bangla_lower.startswith(query_lower):
+                score += 150
+            
+            # Contains in title
+            if query_lower in title_lower:
+                score += 80
+            if query_lower in title_bangla_lower:
+                score += 80
+            
+            # Call number match (exact or starts with)
+            call_number_lower = (book.call_number or '').lower()
+            if query_lower == call_number_lower:
+                score += 120
+            elif call_number_lower.startswith(query_lower):
+                score += 100
+            elif query_lower in call_number_lower:
+                score += 60
+            
+            # ISBN match
+            if book.isbn_10 and query in book.isbn_10:
+                score += 90
+            if book.isbn_13 and query in book.isbn_13:
+                score += 90
+            
+            # Author match
+            for author in book.authors.all():
+                author_full = f"{author.first_name} {author.last_name}".lower()
+                author_full_bangla = f"{author.first_name_bangla} {author.last_name_bangla}".lower()
+                
+                if query_lower in author_full or query_lower in author_full_bangla:
+                    score += 70
+            
+            # Language match bonus
+            if book.language == query_language:
+                score += 15
+            
+            # Popularity bonus (slight)
+            if book.times_borrowed > 10:
+                score += 10
+            elif book.times_borrowed > 5:
+                score += 5
+            
+            if score > 0:
+                scored_books.append((book, score))
         
+        # Sort by score descending
         return sorted(scored_books, key=lambda x: x[1], reverse=True)
 
+def search_authors(request):
+    """Enhanced author search with multilingual support"""
+    query = request.GET.get('author_q', '').strip()
+    if len(query) >= 1:
+        query = normalize_search_query(query)
+        query_language = detect_text_language(query)
+        
+        if query_language in ['bn', 'mixed']:
+            authors = Author.objects.filter(
+                Q(first_name__icontains=query) | Q(last_name__icontains=query) |
+                Q(first_name_bangla__icontains=query) | Q(last_name_bangla__icontains=query)
+            ).annotate(book_count=Count('books')).order_by('-book_count')[:10]
+        else:
+            authors = Author.objects.filter(
+                Q(first_name__icontains=query) | Q(last_name__icontains=query)
+            ).annotate(book_count=Count('books')).order_by('-book_count')[:10]
+    
+    return render(request, 'library/partials/_author_search_results.html', {
+        'authors': authors,
+        'query_language': detect_text_language(query) if query else 'en'
+    })
+
+def search_publishers(request):
+    """Enhanced publisher search"""
+    query = request.GET.get('publisher_q', '').strip()
+    publishers = []
+    if len(query) >= 1:
+        query = normalize_search_query(query)
+        publishers = (
+            Publisher.objects.filter(name__icontains=query)
+            .annotate(book_count=Count('books'))
+            .order_by('-book_count')[:10]
+        )
+    
+    return render(request, 'library/partials/_publisher_search_results.html', {
+        'publishers': publishers
+    })
+
+# Keep existing view functions but with minimal updates for better caching
 @cache_page(CACHE_TIMEOUT_LONG)
 def category_list(request):
-    """Display all categories - CACHED"""
+    """Display all categories with multilingual names"""
     categories = Category.objects.annotate(
         book_count=Count('books')
-    ).only('id', 'name', 'slug', 'description').order_by('name')
+    ).only('id', 'name', 'name_bangla', 'slug', 'description', 'description_bangla').order_by('name')
     
     return render(request, 'library/category_list.html', {
         'categories': categories
     })
 
 def category_books(request, slug):
-    """Display books in a specific category - OPTIMIZED"""
-    category = get_object_or_404(Category.objects.only('id', 'name', 'slug'), slug=slug)
+    """Display books in a specific category"""
+    category = get_object_or_404(Category.objects.only('id', 'name', 'name_bangla', 'slug'), slug=slug)
     
     books = get_optimized_book_queryset().filter(category=category)
     
@@ -385,10 +677,13 @@ def category_books(request, slug):
 
 @cache_page(CACHE_TIMEOUT_LONG)
 def author_list(request):
-    """Display all authors - CACHED"""
+    """Display all authors with multilingual names"""
     authors = Author.objects.annotate(
         book_count=Count('books')
-    ).only('id', 'first_name', 'last_name', 'slug', 'bio').order_by('last_name', 'first_name')
+    ).only(
+        'id', 'first_name', 'last_name', 'first_name_bangla', 
+        'last_name_bangla', 'slug', 'bio', 'bio_bangla', 'primary_language'
+    ).order_by('last_name', 'first_name')
     
     paginator = Paginator(authors, 24)
     page_number = request.GET.get('page')
@@ -399,8 +694,14 @@ def author_list(request):
     })
 
 def author_detail(request, slug):
-    """Display author details and their books - OPTIMIZED"""
-    author = get_object_or_404(Author.objects.only('id', 'first_name', 'last_name', 'slug', 'bio'), slug=slug)
+    """Display author details and their books with multilingual support"""
+    author = get_object_or_404(
+        Author.objects.only(
+            'id', 'first_name', 'last_name', 'first_name_bangla', 
+            'last_name_bangla', 'slug', 'bio', 'bio_bangla', 'primary_language'
+        ), 
+        slug=slug
+    )
     
     books = get_optimized_book_queryset().filter(authors=author)
     
@@ -414,97 +715,288 @@ def author_detail(request, slug):
     })
 
 def publisher_list(request):
-    """Display all publishers"""
-    publishers = cache.get('library_publisher_list')
+    """Display all publishers with multilingual names"""
+    publishers = cache.get('library_publisher_list_v2')
     if not publishers:
         publishers = Publisher.objects.annotate(
             book_count=Count('books')
-        ).order_by('name')
-        cache.set('library_publisher_list', publishers, 60 * 15)
+        ).only('id', 'name', 'name_bangla', 'slug').order_by('name')
+        cache.set('library_publisher_list_v2', publishers, CACHE_TIMEOUT_MEDIUM)
 
     paginator = Paginator(publishers, 24)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    context = {
+    return render(request, 'library/publisher_list.html', {
         'page_obj': page_obj,
-    }
-    return render(request, 'library/publisher_list.html', context)
+    })
 
 def publisher_detail(request, slug):
     """Display publisher details and their books"""
-    publisher = get_object_or_404(Publisher, slug=slug)
+    publisher = get_object_or_404(
+        Publisher.objects.only('id', 'name', 'name_bangla', 'slug', 'address', 'website'), 
+        slug=slug
+    )
     books = Book.objects.filter(publisher=publisher).select_related('publisher', 'category').prefetch_related('authors')
     
     paginator = Paginator(books, 12)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    context = {
+    return render(request, 'library/publisher_detail.html', {
         'publisher': publisher,
         'page_obj': page_obj,
-    }
-    return render(request, 'library/publisher_detail.html', context)
+    })
 
-# HTMX Views for dynamic loading
+# Enhanced HTMX Views
 @require_http_methods(["GET"])
 def load_more_books(request):
-    """Load more books for infinite scroll - OPTIMIZED"""
+    """Load more books for infinite scroll with multilingual support"""
     books = _get_filtered_sorted_books(request)
-    paginator = Paginator(books, 16) # Consistent pagination
+    paginator = Paginator(books, 16)
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
     
-    return render(request, 'library/partials/load_more_response.html', {'page_obj': page_obj})
+    return render(request, 'library/partials/load_more_response.html', {
+        'page_obj': page_obj
+    })
 
 def search_suggestions(request):
+    """Enhanced search suggestions with multilingual support"""
     query = request.GET.get('q', '').strip()
-    if len(query) < 2:
+    if len(query) < 1:
         return render(request, 'library/partials/search_suggestions.html', {'suggestions': []})
 
+    query = normalize_search_query(query)
+    query_language = detect_text_language(query)
     query_words = query.split()
 
-    q_objects = [Q(title__icontains=word) for word in query_words]
+    # Build query based on detected language
+    q_objects = []
+    for word in query_words:
+        if query_language in ['bn', 'mixed']:
+            q_objects.append(
+                Q(title__icontains=word) | Q(title_bangla__icontains=word)
+            )
+        else:
+            q_objects.append(Q(title__icontains=word))
 
     if q_objects:
-        books = Book.objects.filter(reduce(operator.and_, q_objects)).values_list('title', flat=True).distinct()[:10]
+        # Get both English and Bangla titles
+        suggestions = []
+        books = Book.objects.filter(reduce(operator.and_, q_objects))
+        
+        for book in books.distinct()[:10]:
+            if query_language == 'bn' and book.title_bangla:
+                suggestions.append(book.title_bangla)
+            elif book.title:
+                suggestions.append(book.title)
+        
+        # Remove duplicates while preserving order
+        seen = set()
+        unique_suggestions = []
+        for suggestion in suggestions:
+            if suggestion not in seen:
+                seen.add(suggestion)
+                unique_suggestions.append(suggestion)
     else:
-        books = []
+        unique_suggestions = []
     
-    suggestions = list(books)
-    
-    return render(request, 'library/partials/search_suggestions.html', {'suggestions': suggestions})
+    return render(request, 'library/partials/search_suggestions.html', {
+        'suggestions': unique_suggestions[:8],  # Limit to 8 suggestions
+        'query_language': query_language
+    })
 
 def get_authors_for_category(request):
+    """Get authors for category with multilingual support"""
     category_slug = request.GET.get('category')
     authors = Author.objects.all()
     if category_slug:
         authors = authors.filter(books__category__slug=category_slug).distinct()
     
-    return render(request, 'library/partials/author_options.html', {'authors': authors.order_by('last_name', 'first_name')})
-
-def search_authors(request):
-    query = request.GET.get('author_q', '').strip()
-    authors = []
-    if len(query) >= 2:
-        authors = Author.objects.filter(
-            Q(first_name__icontains=query) | Q(last_name__icontains=query)
-        ).annotate(book_count=Count('books')).order_by('-book_count')[:10]
+    authors = authors.order_by('last_name', 'first_name')
     
-    return render(request, 'library/partials/_author_search_results.html', {
+    return render(request, 'library/partials/author_options.html', {
         'authors': authors
     })
 
-def search_publishers(request):
-    query = request.GET.get('publisher_q', '').strip()
-    publishers = []
-    if len(query) >= 2:
-        publishers = (
-            Publisher.objects.filter(name__icontains=query)
-            .annotate(book_count=Count('books'))
-            .order_by('-book_count')[:10]
-        )
+@staff_member_required
+def librarian_dashboard(request):
+    """Display a dashboard for librarians to manage the library."""
+    # Stats Cards
+    total_books = Book.objects.count()
+    borrowed_books_count = BorrowRecord.objects.filter(status__in=['active', 'overdue']).count()
+    overdue_books_count = BorrowRecord.objects.filter(status='overdue').count()
+    total_users = User.objects.filter(is_staff=False).count()
+
+    # Data for tables
+    all_books = Book.objects.all().order_by('-created_at')
+    borrowed_records = BorrowRecord.objects.filter(status__in=['active', 'overdue']).select_related('book', 'borrower').order_by('-due_date')
+    overdue_records = borrowed_records.filter(status='overdue')
+    returned_records = BorrowRecord.objects.filter(status='returned').select_related('book', 'borrower').order_by('-return_date')
+
+    context = {
+        'total_books': total_books,
+        'borrowed_books_count': borrowed_books_count,
+        'overdue_books_count': overdue_books_count,
+        'total_users': total_users,
+        'all_books': all_books,
+        'borrowed_records': borrowed_records,
+        'overdue_records': overdue_records,
+        'returned_records': returned_records,
+        'active_tab': 'dashboard',  # For navigation highlighting
+    }
     
-    return render(request, 'library/partials/_publisher_search_results.html', {
-        'publishers': publishers
-    })
+    return render(request, 'library/librarian_dashboard.html', context)
+
+@staff_member_required
+def get_all_books_table(request):
+    all_books_list = Book.objects.all().order_by('-created_at')
+    paginator = Paginator(all_books_list, 10)
+    page_number = request.GET.get('page')
+    all_books = paginator.get_page(page_number)
+    return render(request, 'library/partials/_all_books_table.html', {'all_books': all_books})
+
+@staff_member_required
+def get_borrowed_books_table(request):
+    borrowed_records = BorrowRecord.objects.filter(status__in=['active', 'overdue']).select_related('book', 'borrower').order_by('-due_date')
+    return render(request, 'library/partials/_borrowed_books_table.html', {'borrowed_records': borrowed_records})
+
+@staff_member_required
+def get_overdue_books_table(request):
+    overdue_records = BorrowRecord.objects.filter(status='overdue').select_related('book', 'borrower').order_by('-due_date')
+    return render(request, 'library/partials/_overdue_books_table.html', {'overdue_records': overdue_records})
+
+@staff_member_required
+def get_dashboard_content(request):
+    all_books = Book.objects.all().order_by('-created_at')[:5]
+    overdue_records = BorrowRecord.objects.filter(status='overdue').select_related('book', 'borrower').order_by('-due_date')[:5]
+    returned_records = BorrowRecord.objects.filter(status='returned').select_related('book', 'borrower').order_by('-return_date')[:5]
+    context = {
+        'all_books': all_books,
+        'overdue_records': overdue_records,
+        'returned_records': returned_records,
+    }
+    return render(request, 'library/partials/_dashboard_content.html', context)
+
+@staff_member_required
+def edit_book(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+    if request.method == 'POST':
+        form = BookForm(request.POST, request.FILES, instance=book)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Successfully updated "{book.title}".')
+            return redirect('library:librarian_dashboard')
+    else:
+        form = BookForm(instance=book)
+    
+    return render(request, 'library/edit_book.html', {'form': form, 'book': book})
+
+@staff_member_required
+def delete_book(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+    if request.method == 'POST':
+        book.delete()
+        messages.success(request, f'Successfully deleted "{book.title}".')
+        return redirect('library:librarian_dashboard')
+    
+    return render(request, 'library/delete_book_confirm.html', {'book': book})
+
+@staff_member_required
+def borrow_record_detail(request, record_id):
+    record = get_object_or_404(BorrowRecord.objects.select_related('book', 'borrower'), id=record_id)
+    return render(request, 'library/borrow_record_detail.html', {'record': record})
+
+@staff_member_required
+def send_reminder(request, record_id):
+    record = get_object_or_404(BorrowRecord, id=record_id)
+    if record.status == 'overdue':
+        LibraryEmailService.send_overdue_notice(record)
+        messages.success(request, f'Overdue notice sent to {record.borrower.email}.')
+    elif record.days_until_due and record.days_until_due <= 3:
+        LibraryEmailService.send_first_reminder(record)
+        messages.success(request, f'Reminder sent to {record.borrower.email}.')
+    else:
+        messages.warning(request, 'No reminder needed for this record yet.')
+    
+    return redirect('library:librarian_dashboard')
+
+@staff_member_required
+def add_book(request):
+    if request.method == 'POST':
+        form = BookForm(request.POST, request.FILES)
+        if form.is_valid():
+            book = form.save()
+            messages.success(request, f'Successfully added "{book.title}".')
+            return redirect('library:librarian_dashboard')
+    else:
+        form = BookForm()
+    
+    return render(request, 'library/add_book.html', {'form': form})
+
+@staff_member_required
+def generate_report(request, report_type):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{report_type}_report_{timezone.now().strftime("%Y-%m-%d")}.csv"'
+
+    writer = csv.writer(response)
+
+    if report_type == 'borrowed':
+        writer.writerow(['Book Title', 'Borrower', 'Borrow Date', 'Due Date', 'Status'])
+        records = BorrowRecord.objects.filter(status__in=['active', 'overdue']).select_related('book', 'borrower')
+        for record in records:
+            writer.writerow([record.book.title, record.borrower.get_full_name(), record.borrow_date.strftime('%Y-%m-%d'), record.due_date.strftime('%Y-%m-%d'), record.get_status_display()])
+    elif report_type == 'overdue':
+        writer.writerow(['Book Title', 'Borrower', 'Due Date', 'Fine'])
+        records = BorrowRecord.objects.filter(status='overdue').select_related('book', 'borrower')
+        for record in records:
+            writer.writerow([record.book.title, record.borrower.get_full_name(), record.due_date.strftime('%Y-%m-%d'), record.fine_amount])
+    else:
+        return HttpResponse("Invalid report type.", status=400)
+
+    return response
+
+@staff_member_required
+def dashboard_renew_book(request, record_id):
+    record = get_object_or_404(BorrowRecord, id=record_id)
+    if request.method == 'POST':
+        try:
+            record.renew()
+            messages.success(request, f'Book "{record.book.title}" renewed for {record.borrower.get_full_name()}.')
+        except ValueError as e:
+            messages.error(request, str(e))
+        
+        response = render(request, 'library/partials/_borrowed_books_table.html', {'borrowed_records': BorrowRecord.objects.filter(status__in=['active', 'overdue'])} )
+        response['HX-Trigger'] = 'close-modal'
+        return response
+
+    return render(request, 'library/dashboard_renew_book_confirm.html', {'record': record})
+
+@staff_member_required
+def dashboard_return_book(request, record_id):
+    record = get_object_or_404(BorrowRecord, id=record_id)
+    if request.method == 'POST':
+        record.return_book()
+        messages.success(request, f'Book "{record.book.title}" returned by {record.borrower.get_full_name()}.')
+        response = render(request, 'library/partials/_borrowed_books_table.html', {'borrowed_records': BorrowRecord.objects.filter(status__in=['active', 'overdue'])} )
+        response['HX-Trigger'] = 'close-modal'
+        return response
+    return render(request, 'library/dashboard_return_book_confirm.html', {'record': record})
+
+@staff_member_required
+def dashboard_mark_as_paid(request, record_id):
+    record = get_object_or_404(BorrowRecord, id=record_id)
+    if request.method == 'POST':
+        record.fine_paid = True
+        record.save()
+        messages.success(request, f'Fine for "{record.book.title}" marked as paid for {record.borrower.get_full_name()}.')
+        response = render(request, 'library/partials/_overdue_books_table.html', {'overdue_records': BorrowRecord.objects.filter(status='overdue')} )
+        response['HX-Trigger'] = 'close-modal'
+        return response
+    return render(request, 'library/dashboard_mark_as_paid_confirm.html', {'record': record})
+
+@staff_member_required
+def get_returned_books_table(request):
+    returned_records = BorrowRecord.objects.filter(status='returned').select_related('book', 'borrower').order_by('-return_date')
+    return render(request, 'library/partials/_returned_books_table.html', {'returned_records': returned_records})

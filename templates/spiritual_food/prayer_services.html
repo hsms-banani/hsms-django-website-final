@@ -1,0 +1,192 @@
+<!-- templates/spiritual_food/prayer_services.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Prayer Services Schedule{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-gradient-primary py-16">
+    <div class="container mx-auto px-4">
+        <div class="text-center text-white">
+            <h1 class="text-4xl md:text-5xl font-bold font-serif mb-4">
+                Prayer Services Schedule
+            </h1>
+            <p class="text-xl">Join us in worship and prayer</p>
+        </div>
+    </div>
+</section>
+
+<!-- Daily Services -->
+{% if daily_services %}
+<section class="py-16 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold font-serif text-gray-800 mb-2">
+                    Daily Services
+                </h2>
+                <p class="text-gray-600">Services held every day</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for service in daily_services %}
+                <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6 shadow-md hover-lift">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-pray text-white text-2xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-2">
+                                {{ service.service_name }}
+                            </h3>
+                            <div class="space-y-1 text-gray-600">
+                                <p><i class="fas fa-clock mr-2 text-blue-600"></i>{{ service.time|time:"g:i A" }}</p>
+                                <p><i class="fas fa-map-marker-alt mr-2 text-blue-600"></i>{{ service.location }}</p>
+                            </div>
+                            {% if service.description %}
+                            <p class="text-sm text-gray-600 mt-3">{{ service.description }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Weekly Schedule -->
+<section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold font-serif text-gray-800 mb-2">
+                    Weekly Schedule
+                </h2>
+                <p class="text-gray-600">Services organized by day of the week</p>
+            </div>
+            
+            <div class="space-y-6">
+                {% for day, day_name in weekday_services.items %}
+                {% if day_name %}
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="bg-gradient-primary text-white px-6 py-4">
+                        <h3 class="text-2xl font-semibold capitalize">{{ day|title }}</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {% for service in day_name %}
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-400 hover:shadow-md transition-all">
+                                <h4 class="font-semibold text-gray-800 mb-2">
+                                    {{ service.service_name }}
+                                </h4>
+                                <div class="text-sm space-y-1 text-gray-600">
+                                    <p><i class="fas fa-clock mr-2 text-blue-600"></i>{{ service.time|time:"g:i A" }}</p>
+                                    <p><i class="fas fa-map-marker-alt mr-2 text-blue-600"></i>{{ service.location }}</p>
+                                    <span class="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs mt-2">
+                                        {{ service.get_service_type_display }}
+                                    </span>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <p class="text-gray-500 italic col-span-full">No services scheduled for this day.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Special Services -->
+{% if special_services %}
+<section class="py-16 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold font-serif text-gray-800 mb-2">
+                    Special Occasions
+                </h2>
+                <p class="text-gray-600">Services for special feast days and celebrations</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for service in special_services %}
+                <div class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-6 shadow-md hover-lift">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-16 h-16 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-star text-white text-2xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-2">
+                                {{ service.service_name }}
+                            </h3>
+                            <div class="space-y-1 text-gray-600">
+                                <p><i class="fas fa-clock mr-2 text-orange-600"></i>{{ service.time|time:"g:i A" }}</p>
+                                <p><i class="fas fa-map-marker-alt mr-2 text-orange-600"></i>{{ service.location }}</p>
+                            </div>
+                            {% if service.description %}
+                            <p class="text-sm text-gray-600 mt-3">{{ service.description }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Call to Action -->
+<section class="py-16 bg-gradient-to-br from-blue-900 to-purple-900 text-white">
+    <div class="container mx-auto px-4">
+        <div class="max-w-3xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold font-serif mb-6">
+                All Are Welcome
+            </h2>
+            <p class="text-xl mb-8 text-white/90">
+                Join us in prayer and worship. Experience the peace and grace of communal prayer.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{% url 'spiritual_food:home' %}" 
+                   class="bg-white text-blue-900 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Spiritual Food
+                </a>
+                <a href="{% url 'spiritual_food:prayer_request' %}" 
+                   class="bg-yellow-500 text-white px-8 py-3 rounded-full font-semibold hover:bg-yellow-600 transition-colors">
+                    <i class="fas fa-hands mr-2"></i>Submit Prayer Request
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Information Section -->
+<section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-xl shadow-md p-8">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6">Important Information</h3>
+                
+                <div class="space-y-4 text-gray-600">
+                    <div class="flex items-start space-x-3">
+                        <i class="fas fa-info-circle text-blue-600 mt-1"></i>
+                        <p>Please arrive 10 minutes before the service begins to ensure timely participation.</p>
+                    </div>
+                    
+                    <div class="flex items-start space-x-3">
+                        <i class="fas fa-church text-blue-600 mt-1"></i>
+                        <p>All services are held in the main chapel unless otherwise specified.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

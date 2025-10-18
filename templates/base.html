@@ -1,3 +1,4 @@
+<!-- templates/base.html -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
@@ -135,6 +136,7 @@
             display: block;
             padding: 0.75rem 1rem;
             color: white !important;
+            white-space: nowrap;
         }
         
         .nav-link::after {
@@ -302,6 +304,24 @@
         .content-wrapper {
             isolation: isolate;
         }
+
+        /* Global Toast Styles */
+        #toast-copied {
+            position: fixed;
+            top: 1.25rem; /* 20px */
+            right: 1.25rem; /* 20px */
+            z-index: 1000; /* Ensure it is on top */
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: none; /* Prevent interaction when hidden */
+        }
+        #toast-copied.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        
     </style>
     <script type="application/ld+json">
         {
@@ -334,7 +354,7 @@
     
     {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-white text-gray-800">
     <!-- Top Header - Fixed styling -->
     <div class="top-header text-white py-2 text-sm">
         <div class="container mx-auto px-4 flex justify-between items-center">
@@ -342,12 +362,29 @@
                 <span><i class="fas fa-map-marker-alt mr-1"></i> Banani, Dhaka, Bangladesh</span>
                 <span class="hidden sm:inline"><i class="fas fa-envelope mr-1"></i>hsmsmajorseminary@gmail.com</span>
             </div>
-            <div class="flex items-center space-x-4">
-                <a href="#" class="bg-white/20 px-3 py-1 rounded-full text-sm hover:bg-white/30 transition-colors">
-                    <i class="fas fa-sign-in-alt mr-1"></i> Login
-                </a>
-            </div>
-        </div>
+                            <div class="flex items-center space-x-4">
+                                                    {% if user.is_authenticated %}
+                                                        <span class="text-white font-semibold">Welcome, {{ user.get_full_name|default:user.username }}</span>
+                                                        <a href="{% url 'library:my_borrowed_books' %}" class="bg-white/20 px-3 py-1 rounded-full text-sm hover:bg-white/30 transition-colors">
+                                                            <i class="fas fa-user-circle mr-1"></i> My Account
+                                                        </a>
+                                                        {% if user.is_staff %}
+                                                            <a href="{% url 'library:librarian_dashboard' %}" class="bg-blue-500/80 px-3 py-1 rounded-full text-sm hover:bg-blue-500/90 transition-colors">
+                                                                <i class="fas fa-tachometer-alt mr-1"></i> Dashboard
+                                                            </a>
+                                                        {% endif %}
+                                                        <form action="{% url 'logout' %}" method="post" class="inline">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="bg-red-500/80 px-3 py-1 rounded-full text-sm hover:bg-red-500/90 transition-colors">
+                                                                <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                                                            </button>
+                                                        </form>
+                                                    {% else %}
+                                                        <a href="{% url 'login' %}" class="bg-white/20 px-3 py-1 rounded-full text-sm hover:bg-white/30 transition-colors">
+                                                            <i class="fas fa-sign-in-alt mr-1"></i> Login
+                                                        </a>
+                                                    {% endif %}
+                            </div>        </div>
     </div>
 
     <!-- Main Header - Fixed styling -->
@@ -407,14 +444,14 @@
             </div>
         </div>
 
-        <!-- Navigation Menu - Fixed styling -->
+        <!-- Navigation Menu - Centered -->
         <nav class="main-nav" 
              x-data="{ mobileMenuOpen: false }" 
              @toggle-mobile-menu.window="mobileMenuOpen = !mobileMenuOpen"
              @click.outside="mobileMenuOpen = false">
             <div class="container mx-auto px-4">
-                <!-- Desktop Menu -->
-                <ul class="hidden md:flex space-x-1">
+                <!-- Desktop Menu - CENTERED -->
+                <ul class="hidden md:flex space-x-1 justify-center items-center">
                     <li><a href="{% url 'home' %}" class="nav-link">Home</a></li>
                     
                     <!-- Our Seminary Dropdown -->
@@ -578,7 +615,7 @@
                             <div class="relative" x-data="{ showResults: false }">
                                 <input 
                                     name="q"
-                            type="text" 
+                                    type="text" 
                                     placeholder="Search..." 
                                     class="w-full px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800"
                                     hx-get="{% url 'search' %}"
@@ -730,7 +767,7 @@
             // Show results after HTMX request completes
             searchInput.addEventListener('htmx:afterRequest', function(event) {
                 const query = this.value.trim();
-                if (query.length >= 2) {
+                if (query.length >= 1) {
                     searchResults.classList.remove('hidden');
                 }
             });
@@ -830,8 +867,56 @@
                     spinner.style.display = 'none';
                 }
             }
+        // Initialize all elements with data-clipboard-text
+        document.querySelectorAll('[data-clipboard-text]').forEach(element => {
+            element.addEventListener('click', () => {
+                const textToCopy = element.getAttribute('data-clipboard-text');
+                copyToClipboard(textToCopy);
+            });
+        });
+        
         });
     });
+
+    // Toast notification function
+    function showToast(id) {
+        const toast = document.getElementById(id);
+        if (toast) {
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000); // Hide after 3 seconds
+        }
+    }
+
+    // Copy text function with proper encoding
+    function copyToClipboard(text) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(function() {
+                showToast('toast-copied');
+            }).catch(function(err) {
+                console.error('Failed to copy text: ', err);
+            });
+        } else {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showToast('toast-copied');
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+            }
+            
+            document.body.removeChild(textArea);
+        }
+    }
 
     // Global helper functions
     function hideQuickSearchResults() {
@@ -855,8 +940,31 @@
             results.classList.add('hidden');
         }
     }
+
+    // Back to top button functionality
+    window.addEventListener('scroll', function() {
+        const backToTop = document.getElementById('backToTop');
+        if (backToTop) {
+            if (window.pageYOffset > 300) {
+                backToTop.classList.remove('opacity-0', 'invisible');
+                backToTop.classList.add('opacity-100', 'visible');
+            } else {
+                backToTop.classList.add('opacity-0', 'invisible');
+                backToTop.classList.remove('opacity-100', 'visible');
+            }
+        }
+    });
+
+    // Update current year in footer
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
     </script>
 
     {% block extra_js %}{% endblock %}
+
+<div id="toast-copied" class="bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
+    <i class="fas fa-check-circle mr-2"></i>
+    Copied to clipboard!
+</div>
+
 </body>
 </html>

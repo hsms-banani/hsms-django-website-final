@@ -1,0 +1,302 @@
+<!-- library/templates/library/librarian_dashboard.html -->
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Librarian Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        transition: all 0.3s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+    .tab-button {
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    .tab-button.active {
+        color: #3B82F6;
+    }
+    .tab-button.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: #3B82F6;
+        border-radius: 3px 3px 0 0;
+    }
+    .action-button {
+        transition: all 0.2s ease;
+    }
+    .action-button:hover {
+        transform: scale(1.05);
+    }
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .animate-slide-in {
+        animation: slideIn 0.5s ease-out;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+    <div class="container mx-auto px-4 py-8">
+        
+        <!-- Header Section -->
+        <div class="mb-8 animate-slide-in">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold text-gray-900 mb-2">Librarian Dashboard</h1>
+                    <p class="text-gray-600">Welcome back! Here's what's happening in your library today.</p>
+                </div>
+                <div class="mt-4 md:mt-0 flex gap-3">
+                    <a href="{% url 'library:add_book' %}" class="inline-flex items-center px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                        <i class="fas fa-plus mr-2"></i>
+                        Add Book
+                    </a>
+                    <a href="{% url 'library:home' %}" class="inline-flex items-center px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border border-gray-200">
+                        <i class="fas fa-home mr-2"></i>
+                        Library Home
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Books Card -->
+            <div class="stat-card bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-2xl shadow-lg text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white/20 backdrop-blur-sm rounded-xl p-3">
+                        <i class="fas fa-book text-2xl"></i>
+                    </div>
+                    <span class="text-sm font-medium bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">Total</span>
+                </div>
+                <div>
+                    <p class="text-sm font-medium opacity-90 mb-1">Total Books</p>
+                    <p class="text-4xl font-bold">{{ total_books|intcomma }}</p>
+                </div>
+            </div>
+
+            <!-- Books Borrowed Card -->
+            <div class="stat-card bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-2xl shadow-lg text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white/20 backdrop-blur-sm rounded-xl p-3">
+                        <i class="fas fa-hands-helping text-2xl"></i>
+                    </div>
+                    <span class="text-sm font-medium bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">Active</span>
+                </div>
+                <div>
+                    <p class="text-sm font-medium opacity-90 mb-1">Books Borrowed</p>
+                    <p class="text-4xl font-bold">{{ borrowed_books_count|intcomma }}</p>
+                </div>
+            </div>
+
+            <!-- Books Overdue Card -->
+            <div class="stat-card bg-gradient-to-br from-red-500 to-red-600 p-6 rounded-2xl shadow-lg text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white/20 backdrop-blur-sm rounded-xl p-3">
+                        <i class="fas fa-exclamation-triangle text-2xl"></i>
+                    </div>
+                    <span class="text-sm font-medium bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">Urgent</span>
+                </div>
+                <div>
+                    <p class="text-sm font-medium opacity-90 mb-1">Books Overdue</p>
+                    <p class="text-4xl font-bold">{{ overdue_books_count|intcomma }}</p>
+                </div>
+            </div>
+
+            <!-- Total Users Card -->
+            <div class="stat-card bg-gradient-to-br from-green-500 to-emerald-600 p-6 rounded-2xl shadow-lg text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white/20 backdrop-blur-sm rounded-xl p-3">
+                        <i class="fas fa-users text-2xl"></i>
+                    </div>
+                    <span class="text-sm font-medium bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">Members</span>
+                </div>
+                <div>
+                    <p class="text-sm font-medium opacity-90 mb-1">Total Users</p>
+                    <p class="text-4xl font-bold">{{ total_users|intcomma }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabbed Interface -->
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <!-- Tab Navigation -->
+            <div class="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+                <nav class="flex space-x-8 px-6" aria-label="Tabs">
+                    <button 
+                        hx-get="{% url 'library:get_dashboard_content' %}" 
+                        hx-target="#tab-content" 
+                        hx-swap="innerHTML"
+                        class="tab-button active whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm flex items-center gap-2"
+                        onclick="setActiveTab(this)">
+                        <i class="fas fa-chart-line"></i>
+                        Dashboard
+                    </button>
+                    <button 
+                        hx-get="{% url 'library:get_all_books_table' %}" 
+                        hx-target="#tab-content" 
+                        hx-swap="innerHTML"
+                        class="tab-button whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 flex items-center gap-2"
+                        onclick="setActiveTab(this)">
+                        <i class="fas fa-book-open"></i>
+                        All Books
+                    </button>
+                    <button 
+                        hx-get="{% url 'library:get_borrowed_books_table' %}" 
+                        hx-target="#tab-content" 
+                        hx-swap="innerHTML"
+                        class="tab-button whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 flex items-center gap-2"
+                        onclick="setActiveTab(this)">
+                        <i class="fas fa-hand-holding"></i>
+                        Borrowed Books
+                        <span class="bg-amber-100 text-amber-800 text-xs font-semibold px-2 py-0.5 rounded-full">{{ borrowed_books_count }}</span>
+                    </button>
+                    <button 
+                        hx-get="{% url 'library:get_overdue_books_table' %}" 
+                        hx-target="#tab-content" 
+                        hx-swap="innerHTML"
+                        class="tab-button whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 flex items-center gap-2"
+                        onclick="setActiveTab(this)">
+                        <i class="fas fa-clock"></i>
+                        Overdue Books
+                        {% if overdue_books_count > 0 %}
+                        <span class="bg-red-100 text-red-800 text-xs font-semibold px-2 py-0.5 rounded-full">{{ overdue_books_count }}</span>
+                        {% endif %}
+                    </button>
+                    <button 
+                        hx-get="{% url 'library:get_returned_books_table' %}" 
+                        hx-target="#tab-content" 
+                        hx-swap="innerHTML"
+                        class="tab-button whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 flex items-center gap-2"
+                        onclick="setActiveTab(this)">
+                        <i class="fas fa-check-circle"></i>
+                        Returned Books
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Tab Content -->
+            <div id="tab-content" class="p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Recently Added Books -->
+                    <div class="bg-gradient-to-br from-blue-50 to-white p-6 rounded-xl border border-blue-100 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                <i class="fas fa-book text-blue-600"></i>
+                                Recently Added Books
+                            </h3>
+                            <span class="text-xs text-gray-500">Last 5</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-white/50">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Title</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Author</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Added On</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white/30 divide-y divide-gray-200">
+                                    {% for book in all_books|slice:":5" %}
+                                    <tr class="hover:bg-white/60 transition-colors">
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{{ book.title }}</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                                            {% for author in book.authors.all %}{{ author.full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{{ book.created_at|date:"d M, Y" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Overdue Books -->
+                    <div class="bg-gradient-to-br from-red-50 to-white p-6 rounded-xl border border-red-100 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-red-700 flex items-center gap-2">
+                                <i class="fas fa-exclamation-circle text-red-600"></i>
+                                Overdue Books
+                            </h3>
+                            <span class="text-xs text-red-600 font-medium">Requires Action</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-white/50">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Book</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Borrower</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Due Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white/30 divide-y divide-gray-200">
+                                    {% for record in overdue_records|slice:":5" %}
+                                    <tr class="hover:bg-white/60 transition-colors">
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{{ record.book.title }}</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{{ record.borrower.get_full_name }}</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-red-600 font-medium">{{ record.due_date|date:"d M, Y" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Modal Container -->
+<div id="modal-container" class="hidden fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-slide-in"></div>
+
+<script>
+    // Enhanced tab switching
+    function setActiveTab(button) {
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.remove('active', 'text-blue-600');
+            btn.classList.add('text-gray-500');
+        });
+        button.classList.add('active', 'text-blue-600');
+        button.classList.remove('text-gray-500');
+    }
+
+    // Modal handling
+    document.body.addEventListener('close-modal', function() {
+        const modal = document.getElementById('modal-container');
+        modal.classList.add('hidden');
+    });
+
+    // Close modal on outside click
+    document.getElementById('modal-container').addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.add('hidden');
+        }
+    });
+
+    // Escape key to close modal
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.getElementById('modal-container').classList.add('hidden');
+        }
+    });
+</script>
+{% endblock %}

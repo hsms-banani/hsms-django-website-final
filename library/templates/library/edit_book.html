@@ -1,0 +1,327 @@
+<!-- library/templates/library/edit_book.html -->
+{% extends "base.html" %}
+
+{% block title %}Edit {{ book.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-section {
+        animation: fadeInUp 0.5s ease-out;
+    }
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Input field styling */
+    input[type="text"],
+    input[type="number"],
+    input[type="email"],
+    input[type="url"],
+    input[type="file"],
+    select,
+    textarea {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #E5E7EB;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        background-color: #FFFFFF;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    input[type="email"]:focus,
+    input[type="url"]:focus,
+    input[type="file"]:focus,
+    select:focus,
+    textarea:focus {
+        outline: none;
+        border-color: #3B82F6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 4px 12px rgba(59, 130, 246, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    input[type="text"]:hover,
+    input[type="number"]:hover,
+    input[type="email"]:hover,
+    input[type="url"]:hover,
+    select:hover,
+    textarea:hover {
+        border-color: #9CA3AF;
+    }
+    
+    textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+    
+    /* File input styling */
+    input[type="file"] {
+        padding: 0.5rem;
+        cursor: pointer;
+    }
+    
+    /* Select2 widget styling (if used) */
+    .select2-container--default .select2-selection--multiple {
+        border: 2px solid #E5E7EB !important;
+        border-radius: 0.5rem !important;
+        padding: 0.5rem !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+    }
+    
+    .select2-container--default.select2-container--focus .select2-selection--multiple {
+        border-color: #3B82F6 !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 4px 12px rgba(59, 130, 246, 0.15) !important;
+    }
+    
+    .field-icon {
+        transition: all 0.3s ease;
+    }
+    
+    .form-group:focus-within .field-icon {
+        color: #3B82F6;
+        transform: scale(1.1);
+    }
+    
+    /* Disabled input styling */
+    input:disabled,
+    select:disabled,
+    textarea:disabled {
+        background-color: #F3F4F6;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8">
+    <div class="container mx-auto px-4">
+        <!-- Header -->
+        <div class="max-w-6xl mx-auto mb-8">
+            <div class="flex items-center gap-4 mb-4">
+                <a href="{% url 'library:librarian_dashboard' %}" 
+                   class="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-blue-600">
+                <div class="flex items-start gap-4">
+                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+                        <i class="fas fa-edit text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900 mb-2">Edit Book</h1>
+                        <p class="text-gray-600">Update information for "<span class="font-semibold text-gray-900">{{ book.title }}</span>"</p>
+                        <div class="flex items-center gap-4 mt-3 text-sm text-gray-500">
+                            <span class="inline-flex items-center">
+                                <i class="fas fa-barcode mr-1"></i>
+                                {{ book.accession_number }}
+                            </span>
+                            <span class="inline-flex items-center">
+                                <i class="fas fa-book mr-1"></i>
+                                {{ book.call_number }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form method="post" enctype="multipart/form-data" class="max-w-6xl mx-auto">
+            {% csrf_token %}
+            
+            <!-- Basic Information Section -->
+            <div class="form-section bg-white rounded-2xl shadow-lg p-8 mb-6 border border-gray-100">
+                <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
+                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-2 text-white">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900">Basic Information</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for field in form %}
+                        {% if field.name == 'title' or field.name == 'title_bangla' or field.name == 'subtitle' or field.name == 'subtitle_bangla' or field.name == 'publisher' or field.name == 'publication_year' or field.name == 'authors' %}
+                        <div class="form-group {% if field.name == 'subtitle' or field.name == 'subtitle_bangla' or field.name == 'authors' %}col-span-2{% endif %}">
+                            <label for="{{ field.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                <i class="fas fa-{% if field.name == 'title' or field.name == 'title_bangla' %}heading{% elif field.name == 'subtitle' or field.name == 'subtitle_bangla' %}align-left{% elif field.name == 'authors' %}user-edit{% elif field.name == 'publisher' %}building{% else %}calendar{% endif %} field-icon text-gray-400 text-xs"></i>
+                                {{ field.label }}
+                                {% if field.field.required %}
+                                <span class="text-red-500">*</span>
+                                {% endif %}
+                            </label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <p class="text-xs text-gray-500 mt-1.5 ml-5 flex items-start gap-1">
+                                    <i class="fas fa-info-circle text-blue-400 mt-0.5"></i>
+                                    <span>{{ field.help_text }}</span>
+                                </p>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <p class="text-red-500 text-xs mt-1.5 ml-5 flex items-center gap-1">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ error }}
+                                </p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Identification & Classification Section -->
+            <div class="form-section bg-white rounded-2xl shadow-lg p-8 mb-6 border border-gray-100">
+                <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
+                    <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg p-2 text-white">
+                        <i class="fas fa-barcode"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900">Identification & Classification</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for field in form %}
+                        {% if field.name == 'accession_number' or field.name == 'volume' or field.name == 'isbn_10' or field.name == 'isbn_13' or field.name == 'classification_number' or field.name == 'cutter_number' or field.name == 'call_number' %}
+                        <div class="form-group">
+                            <label for="{{ field.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                <i class="fas fa-{% if 'isbn' in field.name %}barcode{% elif 'accession' in field.name %}hashtag{% elif 'call' in field.name %}phone{% else %}tag{% endif %} field-icon text-gray-400 text-xs"></i>
+                                {{ field.label }}
+                                {% if field.field.required %}
+                                <span class="text-red-500">*</span>
+                                {% endif %}
+                            </label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <p class="text-xs text-gray-500 mt-1.5 ml-5 flex items-start gap-1">
+                                    <i class="fas fa-info-circle text-purple-400 mt-0.5"></i>
+                                    <span>{{ field.help_text }}</span>
+                                </p>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <p class="text-red-500 text-xs mt-1.5 ml-5 flex items-center gap-1">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ error }}
+                                </p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Content Details Section -->
+            <div class="form-section bg-white rounded-2xl shadow-lg p-8 mb-6 border border-gray-100">
+                <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
+                    <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg p-2 text-white">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900">Content Details</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for field in form %}
+                        {% if field.name == 'category' or field.name == 'language' or field.name == 'pages' or field.name == 'edition' or field.name == 'keywords' or field.name == 'keywords_bangla' or field.name == 'description' or field.name == 'description_bangla' %}
+                        <div class="form-group {% if field.name == 'description' or field.name == 'description_bangla' %}col-span-2{% endif %}">
+                            <label for="{{ field.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                <i class="fas fa-{% if field.name == 'category' %}folder{% elif field.name == 'language' %}language{% elif field.name == 'pages' %}file{% elif field.name == 'edition' %}bookmark{% elif 'keywords' in field.name %}tags{% else %}align-left{% endif %} field-icon text-gray-400 text-xs"></i>
+                                {{ field.label }}
+                                {% if field.field.required %}
+                                <span class="text-red-500">*</span>
+                                {% endif %}
+                            </label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <p class="text-xs text-gray-500 mt-1.5 ml-5 flex items-start gap-1">
+                                    <i class="fas fa-info-circle text-green-400 mt-0.5"></i>
+                                    <span>{{ field.help_text }}</span>
+                                </p>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <p class="text-red-500 text-xs mt-1.5 ml-5 flex items-center gap-1">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ error }}
+                                </p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Physical Details & Status Section -->
+            <div class="form-section bg-white rounded-2xl shadow-lg p-8 mb-6 border border-gray-100">
+                <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
+                    <div class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg p-2 text-white">
+                        <i class="fas fa-warehouse"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900">Physical Details & Status</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for field in form %}
+                        {% if field.name == 'total_copies' or field.name == 'copies_available' or field.name == 'location_shelf' or field.name == 'status' or field.name == 'price' or field.name == 'cover_image' %}
+                        <div class="form-group {% if field.name == 'cover_image' %}col-span-2{% endif %}">
+                            <label for="{{ field.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                <i class="fas fa-{% if field.name == 'total_copies' %}copy{% elif field.name == 'copies_available' %}check-circle{% elif field.name == 'location_shelf' %}map-marker-alt{% elif field.name == 'status' %}info-circle{% elif field.name == 'price' %}dollar-sign{% else %}image{% endif %} field-icon text-gray-400 text-xs"></i>
+                                {{ field.label }}
+                                {% if field.field.required %}
+                                <span class="text-red-500">*</span>
+                                {% endif %}
+                            </label>
+                            {% if field.name == 'cover_image' and book.cover_image %}
+                            <div class="mb-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <p class="text-xs text-gray-600 mb-2 font-medium">Current Cover:</p>
+                                <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" class="h-32 w-24 object-cover rounded-lg shadow-md">
+                            </div>
+                            {% endif %}
+                            {{ field }}
+                            {% if field.help_text %}
+                                <p class="text-xs text-gray-500 mt-1.5 ml-5 flex items-start gap-1">
+                                    <i class="fas fa-info-circle text-amber-400 mt-0.5"></i>
+                                    <span>{{ field.help_text }}</span>
+                                </p>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <p class="text-red-500 text-xs mt-1.5 ml-5 flex items-center gap-1">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ error }}
+                                </p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="form-section bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div class="text-sm text-gray-500">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Fields marked with <span class="text-red-500">*</span> are required
+                    </div>
+                    <div class="flex gap-3">
+                        <a href="{% url 'library:librarian_dashboard' %}" 
+                           class="inline-flex items-center px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md">
+                            <i class="fas fa-times mr-2"></i>
+                            Cancel
+                        </a>
+                        <button type="submit" 
+                                class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg">
+                            <i class="fas fa-save mr-2"></i>
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

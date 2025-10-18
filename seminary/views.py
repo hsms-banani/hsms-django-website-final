@@ -188,16 +188,16 @@ def rules_regulations(request):
 
 def committees(request):
     """Enhanced committees page with filtering"""
-    committee_type = request.GET.get('type', '')
-    committees_qs = Committee.objects.filter(is_active=True).order_by('committee_type', 'order')
+    committee_type_slug = request.GET.get('type', '')
+    committees_qs = Committee.objects.filter(is_active=True).order_by('committee_type__name', 'order')
     
-    if committee_type:
-        committees_qs = committees_qs.filter(committee_type=committee_type)
+    if committee_type_slug:
+        committees_qs = committees_qs.filter(committee_type__slug=committee_type_slug)
     
     context = {
         'committees': committees_qs,
-        'committee_types': Committee.COMMITTEE_TYPES,
-        'selected_type': committee_type,
+        'committee_types': CommitteeType.objects.all(),
+        'selected_type': committee_type_slug,
         'page_title': 'Seminary Committees',
         'breadcrumbs': [
             ('Home', 'home'),
@@ -563,30 +563,52 @@ def faculty_detail(request, pk):
     }
     return render(request, 'seminary/faculty_detail.html', context)
 
+from datetime import timedelta
+import calendar
+from datetime import date
+
 def academic_calendar(request):
     """Academic calendar page"""
-    try:
-        page = Page.objects.get(slug='academic-calendar', is_published=True)
-    except Page.DoesNotExist:
-        page = Page(
-            title="Academic Calendar",
-            slug="academic-calendar",
-            content="""
-            <div class="prose max-w-none">
-                <h2>Academic Calendar</h2>
-                <p>The academic calendar for HSIT...</p>
-            </div>
-            """,
-            is_published=True
-        )
-    return render(request, 'seminary/page_detail.html', {
-        'page': page,
-        'breadcrumbs': [
-            ('Home', 'home'),
-            ('About HSIT', 'hsit_about'),
-            ('Academic Calendar', None)
-        ]
-    })
+    today = date.today()
+    year = int(request.GET.get('year', today.year))
+    month = int(request.GET.get('month', today.month))
+
+    cal = calendar.Calendar()
+    calendar_weeks = []
+
+    events = {}
+    print(f"Fetching events for {year}-{month}")
+    for event in CalendarEvent.objects.filter(start_date__year=year, start_date__month=month):
+        print(f"Found event: {event.title}")
+        if event.start_date not in events:
+            events[event.start_date] = []
+        events[event.start_date].append({
+            'title': event.title,
+            'time': event.start_time.strftime('%I:%M %p') if event.start_time else '',
+            'description': event.description
+        })
+
+    print(f"Events dictionary: {events}")
+
+    for week in cal.monthdatescalendar(year, month):
+        week_with_events = []
+        for day in week:
+            week_with_events.append((day, events.get(day, [])))
+        calendar_weeks.append(week_with_events)
+
+    prev_month_date = date(year, month, 1) - timedelta(days=1)
+    next_month_date = date(year, month, 28) + timedelta(days=4)
+
+    context = {
+        'year': year,
+        'month': month,
+        'month_name': calendar.month_name[month],
+        'calendar_weeks': calendar_weeks,
+        'prev_month': {'month': prev_month_date.month, 'year': prev_month_date.year},
+        'next_month': {'month': next_month_date.month, 'year': next_month_date.year},
+    }
+
+    return render(request, 'seminary/academic_calendar.html', context)
 
 def course_descriptions(request):
     """Course descriptions page"""

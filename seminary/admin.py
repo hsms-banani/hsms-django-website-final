@@ -1,11 +1,26 @@
 # seminary/admin.py - Updated with TinyMCE
+import os
 from django.contrib import admin
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.urls import path, reverse
+from django.utils.decorators import method_decorator
 from django.utils.html import format_html
-from django.urls import reverse
 from django.utils.safestring import mark_safe
+from django.views.decorators.csrf import csrf_exempt
 from tinymce.widgets import TinyMCE
 from django import forms
 from .models import *
+from django.urls import path
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+import os
+from .models import Gallery, GalleryItem
 
 # Custom forms with TinyMCE widgets
 class PageAdminForm(forms.ModelForm):
@@ -342,8 +357,15 @@ class CommitteeMemberAdmin(admin.ModelAdmin):
     search_fields = ('name', 'designation')
 
 
+@admin.register(CommitteeType)
+class CommitteeTypeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug', 'icon_class')
+    prepopulated_fields = {'slug': ('name',)}
+    search_fields = ('name',)
+
 @admin.register(Committee)
 class CommitteeAdmin(admin.ModelAdmin):
+    form = CommitteeAdminForm
     list_display = ('name', 'committee_type', 'advisor', 'is_active', 'established_date')
     list_filter = ('committee_type', 'is_active', 'established_date')
     search_fields = ('name', 'description')
@@ -397,25 +419,134 @@ class AnnouncementAdmin(admin.ModelAdmin):
         }),
     )
 
-# Keep existing admin classes for other models
+class GalleryItemInline(admin.TabularInline):
+    model = GalleryItem
+    extra = 3
+    fields = ('title', 'image', 'video_url', 'description', 'order')
+
 @admin.register(Gallery)
 class GalleryAdmin(admin.ModelAdmin):
+    inlines = [GalleryItemInline]
     list_display = ('title', 'gallery_type', 'is_published', 'created_at')
     list_filter = ('gallery_type', 'is_published', 'created_at')
     search_fields = ('title', 'description')
     prepopulated_fields = {'slug': ('title',)}
     list_editable = ('is_published',)
 
-class GalleryItemInline(admin.TabularInline):
-    model = GalleryItem
-    extra = 3
-    fields = ('title', 'image', 'video_url', 'description', 'order')
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('<int:gallery_id>/bulk-upload/', self.admin_site.admin_view(self.bulk_upload_view), name='gallery_bulk_upload'),
+            path('<int:gallery_id>/bulk-upload/process/', self.admin_site.admin_view(self.process_bulk_upload), name='gallery_bulk_upload_process'),
+        ]
+        return custom_urls + urls
+
+    def bulk_upload_view(self, request, gallery_id):
+        """Render the bulk upload interface"""
+        gallery = Gallery.objects.get(pk=gallery_id)
+        context = {
+            **self.admin_site.each_context(request),
+            'gallery': gallery,
+            'opts': self.model._meta,
+        }
+        return render(request, 'admin/seminary/gallery/bulk_upload.html', context)
+
+    @method_decorator(csrf_exempt)
+    def process_bulk_upload(self, request, gallery_id):
+        """Process uploaded images via AJAX"""
+        if request.method != 'POST':
+            return JsonResponse({'error': 'Invalid method'}, status=405)
+
+        try:
+            gallery = Gallery.objects.get(pk=gallery_id)
+            uploaded_files = request.FILES.getlist('images')
+
+            if not uploaded_files:
+                return JsonResponse({'error': 'No files uploaded'}, status=400)
+
+            # Validate file types
+            allowed_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+            results = []
+
+            for idx, file in enumerate(uploaded_files):
+                file_ext = os.path.splitext(file.name)[1].lower()
+
+                if file_ext not in allowed_extensions:
+                    results.append({
+                        'filename': file.name,
+                        'status': 'error',
+                        'message': f'Invalid file type: {file_ext}'
+                    })
+                    continue
+
+                # Check file size (10MB limit)
+                if file.size > 10 * 1024 * 1024:
+                    results.append({
+                        'filename': file.name,
+                        'status': 'error',
+                        'message': 'File too large (max 10MB)'
+                    })
+                    continue
+
+                try:
+                    # Create gallery item
+                    gallery_item = GalleryItem.objects.create(
+                        gallery=gallery,
+                        title=os.path.splitext(file.name)[0],
+                        image=file,
+                        order=gallery.items.count() + idx
+                    )
+
+                    results.append({
+                        'filename': file.name,
+                        'status': 'success',
+                        'item_id': gallery_item.id,
+                        'thumbnail_url': gallery_item.image.url if gallery_item.image else None
+                    })
+                except Exception as e:
+                    results.append({
+                        'filename': file.name,
+                        'status': 'error',
+                        'message': str(e)
+                    })
+
+            success_count = sum(1 for r in results if r['status'] == 'success')
+
+            return JsonResponse({
+                'success': True,
+                'total': len(uploaded_files),
+                'successful': success_count,
+                'failed': len(uploaded_files) - success_count,
+                'results': results
+            })
+
+        except Gallery.DoesNotExist:
+            return JsonResponse({'error': 'Gallery not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    # Add bulk upload button to change form
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['show_bulk_upload'] = True
+        extra_context['gallery_id'] = object_id
+        return super().change_view(request, object_id, form_url, extra_context)
 
 @admin.register(GalleryItem)
 class GalleryItemAdmin(admin.ModelAdmin):
-    list_display = ('title', 'gallery', 'order', 'uploaded_at')
+    list_display = ('thumbnail_preview', 'title', 'gallery', 'order', 'uploaded_at')
     list_filter = ('gallery', 'uploaded_at')
     search_fields = ('title', 'description')
+    list_editable = ('order',)
+    ordering = ('gallery', 'order')
+    list_per_page = 50
+    
+    def thumbnail_preview(self, obj):
+        if obj.image:
+            return f'<img src="{obj.image.url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" />'
+        return '-'
+    thumbnail_preview.short_description = 'Preview'
+    thumbnail_preview.allow_tags = True
 
 @admin.register(Slider)
 class SliderAdmin(admin.ModelAdmin):
@@ -444,6 +575,22 @@ class DepartmentAdmin(admin.ModelAdmin):
     list_display = ('name', 'slug')
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ('name',)
+
+@admin.register(CalendarEvent)
+class CalendarEventAdmin(admin.ModelAdmin):
+    list_display = ('title', 'start_date', 'end_date', 'event_type')
+    list_filter = ('event_type', 'start_date')
+    search_fields = ('title', 'description')
+    date_hierarchy = 'start_date'
+
+    fieldsets = (
+        ('Event Details', {
+            'fields': ('title', 'description', 'event_type', 'location')
+        }),
+        ('Date and Time', {
+            'fields': ('start_date', 'end_date', 'start_time', 'end_time', 'is_all_day')
+        }),
+    )
 
 # Customize admin site headers
 admin.site.site_header = "Holy Spirit Major Seminary Administration"

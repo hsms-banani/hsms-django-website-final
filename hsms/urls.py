@@ -40,11 +40,17 @@ sitemaps = {
     'galleries': GallerySitemap,
 }
 
+from django.contrib.auth import views as auth_views
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('tinymce/', include('tinymce.urls')),
+    path('select2/', include('django_select2.urls')),
     path('library/', include('library.urls')), 
+    path('spiritual-food/', include('spiritual_food.urls')),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
+    path('login/', auth_views.LoginView.as_view(), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     # Removed i18n URLs
     path('', include('seminary.urls')),  # Direct include without i18n_patterns
 ]

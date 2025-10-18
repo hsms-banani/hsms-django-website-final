@@ -1,0 +1,20 @@
+<!-- library/templates/library/emails/overdue_notice.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Overdue Book Notice</title>
+</head>
+<body>
+    <h2>Overdue Book Notice</h2>
+    <p>Dear {{ borrower.get_full_name }},</p>
+    <p>The following book is overdue:</p>
+    <ul>
+        <li><strong>Title:</strong> {{ book.title }}</li>
+        <li><strong>Author(s):</strong> {{ book.authors_display }}</li>
+        <li><strong>Due Date:</strong> {{ due_date|date:"F d, Y" }}</li>
+        <li><strong>Fine:</strong> ৳{{ fine_amount }}</li>
+    </ul>
+    <p>Please return the book as soon as possible to avoid further fines.</p>
+    <p>Thank you for using the {{ library_name }}.</p>
+</body>
+</html>

@@ -6,6 +6,8 @@ import sys
 
 def main():
     """Run administrative tasks."""
+    # Add the custom_packages directory to the Python path
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'custom_packages'))
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hsms.settings')
     try:
         from django.core.management import execute_from_command_line

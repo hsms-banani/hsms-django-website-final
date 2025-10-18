@@ -2,6 +2,41 @@
 
 from django import forms
 from .models import Book, Category, Author, Publisher
+from django_select2.forms import Select2MultipleWidget
+
+class BookForm(forms.ModelForm):
+    class Meta:
+        model = Book
+        fields = '__all__'
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-input'}),
+            'title_bangla': forms.TextInput(attrs={'class': 'form-input'}),
+            'subtitle': forms.TextInput(attrs={'class': 'form-input'}),
+            'subtitle_bangla': forms.TextInput(attrs={'class': 'form-input'}),
+            'accession_number': forms.TextInput(attrs={'class': 'form-input'}),
+            'volume': forms.TextInput(attrs={'class': 'form-input'}),
+            'authors': Select2MultipleWidget(attrs={'class': 'form-select'}),
+            'publisher': forms.Select(attrs={'class': 'form-select'}),
+            'publication_year': forms.NumberInput(attrs={'class': 'form-input'}),
+            'isbn_10': forms.TextInput(attrs={'class': 'form-input'}),
+            'isbn_13': forms.TextInput(attrs={'class': 'form-input'}),
+            'classification_number': forms.TextInput(attrs={'class': 'form-input'}),
+            'cutter_number': forms.TextInput(attrs={'class': 'form-input'}),
+            'category': forms.Select(attrs={'class': 'form-select'}),
+            'language': forms.Select(attrs={'class': 'form-select'}),
+            'pages': forms.NumberInput(attrs={'class': 'form-input'}),
+            'edition': forms.TextInput(attrs={'class': 'form-input'}),
+            'description': forms.Textarea(attrs={'class': 'form-textarea', 'rows': 3}),
+            'description_bangla': forms.Textarea(attrs={'class': 'form-textarea', 'rows': 3}),
+            'keywords': forms.TextInput(attrs={'class': 'form-input'}),
+            'keywords_bangla': forms.TextInput(attrs={'class': 'form-input'}),
+            'total_copies': forms.NumberInput(attrs={'class': 'form-input'}),
+            'copies_available': forms.NumberInput(attrs={'class': 'form-input'}),
+            'location_shelf': forms.TextInput(attrs={'class': 'form-input'}),
+            'status': forms.Select(attrs={'class': 'form-select'}),
+            'price': forms.NumberInput(attrs={'class': 'form-input'}),
+        }
+
 
 class BookSearchForm(forms.Form):
     SORT_CHOICES = [

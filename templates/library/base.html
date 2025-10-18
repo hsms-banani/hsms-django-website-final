@@ -1,17 +1,108 @@
-<!-- templates/library/base.html -->
+<!-- templates/library/base.html - Complete Enhanced Version -->
 {% extends "base.html" %}
 {% load static %}
 
 {% block extra_css %}
+<!-- Google Fonts for Bangla and English -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Noto Sans Bengali for Bangla text -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
 <link rel="stylesheet" href="{% static 'css/loaders.css' %}">
 <style>
+    [x-cloak] { display: none !important; }
+    
+    /* Font definitions for multilingual support */
+    :root {
+        --font-bangla: 'Noto Sans Bengali', 'SutonnyMJ', 'Kalpurush', sans-serif;
+        --font-english: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-mixed: 'Inter', 'Noto Sans Bengali', system-ui, sans-serif;
+    }
+
+    /* Base font settings */
+    body {
+        font-family: var(--font-mixed);
+        font-feature-settings: "kern" 1, "liga" 1;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Bangla text specific styling */
+    .bangla, [lang="bn"] {
+        font-family: var(--font-bangla);
+        line-height: 1.8;
+        font-size: 1.05em;
+        letter-spacing: 0.01em;
+    }
+
+    /* English text specific styling */
+    .english, [lang="en"] {
+        font-family: var(--font-english);
+        line-height: 1.6;
+    }
+
+    /* Mixed content styling */
+    .mixed-content {
+        font-family: var(--font-mixed);
+        line-height: 1.7;
+    }
+
+    /* Book card improvements */
     .book-card {
         transition: transform 0.2s, box-shadow 0.2s;
+        font-family: var(--font-mixed);
     }
+    
     .book-card:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
+
+    .book-card .book-title {
+        font-family: var(--font-mixed);
+        font-weight: 600;
+        line-height: 1.4;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+        hyphens: auto;
+    }
+
+    .book-card .book-author {
+        font-family: var(--font-mixed);
+        font-weight: 400;
+        line-height: 1.5;
+    }
+
+    .book-card .book-category {
+        font-family: var(--font-english);
+        font-size: 0.875rem;
+    }
+
+    /* Search and form inputs */
+    input[type="text"], input[type="search"], textarea, select {
+        font-family: var(--font-mixed);
+        font-feature-settings: "kern" 1;
+    }
+
+    input[type="text"]:focus, input[type="search"]:focus, textarea:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    /* Language-specific text direction support */
+    .rtl {
+        direction: rtl;
+        text-align: right;
+    }
+
+    .ltr {
+        direction: ltr;
+        text-align: left;
+    }
+
+    /* Availability badges */
     .availability-badge {
         position: absolute;
         top: 8px;
@@ -21,20 +112,25 @@
         font-size: 0.75rem;
         font-weight: 600;
         text-transform: uppercase;
+        font-family: var(--font-english);
     }
     .available { background: #10B981; color: white; }
     .unavailable { background: #EF4444; color: white; }
     .limited { background: #F59E0B; color: white; }
     
+    /* Search result highlighting */
     .search-result-item {
         border-left: 4px solid #3B82F6;
     }
+    
     .search-highlight {
         background-color: #FEF3C7;
         padding: 1px 2px;
         border-radius: 2px;
+        font-weight: 500;
     }
     
+    /* Category cards */
     .category-card {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
@@ -44,7 +140,7 @@
         transform: scale(1.02);
     }
     
-    /* Modern title styling */
+    /* Modern title styling with language support */
     .library-title {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #6B21A8 100%);
         -webkit-background-clip: text;
@@ -53,25 +149,34 @@
         font-weight: 800;
         letter-spacing: -0.02em;
         text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        /* Animation properties */
         background-size: 200% auto;
         animation: shimmer 8s linear infinite;
+        font-family: var(--font-english);
     }
 
     @keyframes shimmer {
-        from {
-            background-position: 200% center;
-        }
-        to {
-            background-position: 0% center;
-        }
+        from { background-position: 200% center; }
+        to { background-position: 0% center; }
     }
-    
-    
-    
-    
-    
-    
+
+    /* Text truncation with language support */
+    .text-truncate-bangla {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        word-break: keep-all;
+    }
+
+    .text-truncate-mixed {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+
     /* Loading spinner */
     .loading-spinner {
         border: 2px solid #f3f3f3;
@@ -89,11 +194,12 @@
         100% { transform: rotate(360deg); }
     }
     
-    /* Search suggestions */
+    /* Search suggestions with language support */
     .search-suggestions {
         max-height: 400px;
         overflow-y: auto;
         box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        font-family: var(--font-mixed);
     }
     
     .suggestion-item:hover {
@@ -103,85 +209,358 @@
     /* Responsive book grid */
     .book-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
         gap: 1.5rem;
     }
     
     @media (max-width: 768px) {
         .book-grid {
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             gap: 1rem;
         }
         
-        
+        .bangla, [lang="bn"] {
+            font-size: 1em;
+            line-height: 1.7;
+        }
     }
     
-    .htmx-indicator{
-        display:none;
+    /* HTMX indicators */
+    .htmx-indicator { display: none; }
+    .htmx-request .htmx-indicator { display: inline-block; }
+    .htmx-request.htmx-indicator { display: inline-block; }
+
+    /* Language toggle styles */
+    .language-toggle {
+        display: inline-flex;
+        background: #f3f4f6;
+        border-radius: 8px;
+        padding: 2px;
     }
-    .htmx-request .htmx-indicator{
-        display:inline-block;
+
+    .language-toggle button {
+        padding: 6px 12px;
+        border: none;
+        background: transparent;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s;
+        cursor: pointer;
     }
-    .htmx-request.htmx-indicator{
-        display:inline-block;
+
+    .language-toggle button.active {
+        background: white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        color: #3B82F6;
+    }
+
+    /* Quick search specific styles */
+    #quick-search-input {
+        transition: all 0.2s ease;
+    }
+
+    #quick-search-input:focus {
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: #3B82F6;
+    }
+
+    #clear-search-btn {
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s, visibility 0.2s;
+    }
+
+    #clear-search-btn.visible {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* Quick search results positioning */
+    #quick-search-results {
+        width: calc(100% + 48px); /* Extend to include the search button */
+    }
+
+    /* Smooth scrollbar for search results */
+    .search-suggestions::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .search-suggestions::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+
+    .search-suggestions::-webkit-scrollbar-thumb {
+        background: #cbd5e0;
+        border-radius: 3px;
+    }
+
+    .search-suggestions::-webkit-scrollbar-thumb:hover {
+        background: #a0aec0;
+    }
+
+    /* Line clamp utilities */
+    .line-clamp-1 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+    }
+
+    .line-clamp-2 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    /* Print styles */
+    @media print {
+        .book-card {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+        
+        .bangla, [lang="bn"] {
+            font-size: 12pt;
+            line-height: 1.6;
+        }
+    }
+
+    /* High contrast mode support */
+    @media (prefers-contrast: high) {
+        .search-highlight {
+            background-color: #FFFF00;
+            color: #000000;
+        }
+    }
+
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+        .search-highlight {
+            background-color: #FCD34D;
+            color: #1F2937;
+        }
     }
 </style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Quick search functionality - FIXED VERSION
+// Enhanced language detection and text handling
 document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.querySelector('#quick-search-input');
-    const searchResults = document.querySelector('#quick-search-results');
-    
-    if (searchInput && searchResults) {
-        // Hide results when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-                searchResults.classList.add('hidden');
-            }
-        });
+    // Detect and mark Bangla text
+    function detectAndMarkBanglaText() {
+        const textElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, div, td, th, a');
         
-        // Show results when focusing on input (if there are results)
-        searchInput.addEventListener('focus', function() {
-            if (searchResults.children.length > 0) {
-                searchResults.classList.remove('hidden');
-            }
-        });
-
-        // KEY FIX: Show results after HTMX loads new content
-        searchInput.addEventListener('htmx:afterRequest', function(event) {
-            // Always show results after successful search, even if empty
-            searchResults.classList.remove('hidden');
-        });
-
-        // Alternative fix: Listen for content changes and show results
-        if (window.MutationObserver) {
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.type === 'childList' && searchResults.children.length > 0) {
-                        searchResults.classList.remove('hidden');
-                    }
-                });
-            });
-            
-            observer.observe(searchResults, {
-                childList: true,
-                subtree: true
-            });
-        }
-        
-        // Clear search results when input is empty
-        searchInput.addEventListener('input', function() {
-            if (this.value.trim() === '') {
-                searchResults.classList.add('hidden');
-                searchResults.innerHTML = '';
+        textElements.forEach(element => {
+            const text = element.textContent.trim();
+            if (text && containsBanglaCharacters(text)) {
+                element.classList.add('bangla');
+                element.setAttribute('lang', 'bn');
+            } else if (text && containsMixedContent(text)) {
+                element.classList.add('mixed-content');
             }
         });
     }
 
-    // Global click listener for dynamic search results
+    function containsBanglaCharacters(text) {
+        // Unicode range for Bengali script (0980-09FF)
+        const banglaRegex = /[\u0980-\u09FF]/;
+        return banglaRegex.test(text);
+    }
+
+    function containsMixedContent(text) {
+        const banglaRegex = /[\u0980-\u09FF]/;
+        const englishRegex = /[A-Za-z]/;
+        return banglaRegex.test(text) && englishRegex.test(text);
+    }
+
+    // Apply language detection
+    detectAndMarkBanglaText();
+
+    // Reapply after HTMX content updates
+    document.body.addEventListener('htmx:afterSettle', function() {
+        detectAndMarkBanglaText();
+    });
+
+    // ============================================
+    // ULTRA-FAST QUICK SEARCH IMPLEMENTATION
+    // ============================================
+    const searchInput = document.querySelector('#quick-search-input');
+    const searchResults = document.querySelector('#quick-search-results');
+    const clearBtn = document.querySelector('#clear-search-btn');
+    
+    if (searchInput && searchResults) {
+        let searchTimeout;
+        let currentRequest = null;
+        let selectedIndex = -1;
+        
+        // Custom debounced search handler
+        searchInput.addEventListener('input', function(e) {
+            const query = this.value.trim();
+            
+            // Show/hide clear button
+            if (clearBtn) {
+                if (query.length > 0) {
+                    clearBtn.classList.add('visible');
+                } else {
+                    clearBtn.classList.remove('visible');
+                }
+            }
+            
+            // Cancel previous timeout
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            
+            // Hide results if empty
+            if (query.length === 0) {
+                searchResults.classList.add('hidden');
+                searchResults.innerHTML = '';
+                return;
+            }
+            
+            // Show loading indicator immediately for responsiveness
+            if (query.length === 1) {
+                searchResults.innerHTML = `
+                    <div class="bg-white border border-gray-200 rounded-lg shadow-xl p-4">
+                        <div class="flex items-center justify-center space-x-2 text-gray-500">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span class="text-sm">Searching...</span>
+                        </div>
+                    </div>
+                `;
+                searchResults.classList.remove('hidden');
+            }
+            
+            // Adjust delay based on query length (single char = 200ms, multi = 150ms)
+            const delay = query.length === 1 ? 200 : 150;
+            
+            searchTimeout = setTimeout(() => {
+                performSearch(query);
+            }, delay);
+        });
+        
+        function performSearch(query) {
+            // Cancel previous request if exists
+            if (currentRequest) {
+                currentRequest.abort();
+            }
+            
+            // Create new AbortController for this request
+            const controller = new AbortController();
+            currentRequest = controller;
+            
+            // Perform fetch with abort signal
+            fetch(`/library/api/quick-search/?q=${encodeURIComponent(query)}`, {
+                signal: controller.signal,
+                headers: {
+                    'HX-Request': 'true'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                searchResults.innerHTML = html;
+                searchResults.classList.remove('hidden');
+                currentRequest = null;
+                selectedIndex = -1; // Reset selection
+                
+                // Re-detect language for new content
+                detectAndMarkBanglaText();
+            })
+            .catch(error => {
+                if (error.name === 'AbortError') {
+                    // Request was cancelled, ignore
+                    return;
+                }
+                console.error('Search error:', error);
+                currentRequest = null;
+            });
+        }
+        
+        // Hide results when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && 
+                !searchResults.contains(e.target) && 
+                !clearBtn?.contains(e.target)) {
+                searchResults.classList.add('hidden');
+            }
+        });
+        
+        // Show results when focusing on input (if has content)
+        searchInput.addEventListener('focus', function() {
+            if (this.value.trim().length > 0 && searchResults.children.length > 0) {
+                searchResults.classList.remove('hidden');
+            }
+        });
+        
+        // Keyboard navigation support
+        searchInput.addEventListener('keydown', function(e) {
+            const items = searchResults.querySelectorAll('.suggestion-item');
+            
+            if (items.length === 0) return;
+            
+            switch(e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    selectedIndex = (selectedIndex + 1) % items.length;
+                    updateSelection(items);
+                    break;
+                    
+                case 'ArrowUp':
+                    e.preventDefault();
+                    selectedIndex = selectedIndex <= 0 ? items.length - 1 : selectedIndex - 1;
+                    updateSelection(items);
+                    break;
+                    
+                case 'Enter':
+                    if (selectedIndex >= 0 && items[selectedIndex]) {
+                        e.preventDefault();
+                        items[selectedIndex].click();
+                    }
+                    break;
+                    
+                case 'Escape':
+                    searchResults.classList.add('hidden');
+                    selectedIndex = -1;
+                    break;
+            }
+        });
+        
+        function updateSelection(items) {
+            items.forEach((item, index) => {
+                if (index === selectedIndex) {
+                    item.classList.add('bg-blue-100');
+                    item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                } else {
+                    item.classList.remove('bg-blue-100');
+                }
+            });
+        }
+        
+        // Reset selection when mouse enters
+        searchResults.addEventListener('mouseenter', function() {
+            const items = searchResults.querySelectorAll('.suggestion-item');
+            items.forEach(item => item.classList.remove('bg-blue-100'));
+            selectedIndex = -1;
+        });
+        
+        // Language-aware input handling
+        searchInput.addEventListener('input', function() {
+            const value = this.value.trim();
+            
+            // Adjust input styling based on content
+            if (containsBanglaCharacters(value)) {
+                this.classList.add('bangla');
+            } else {
+                this.classList.remove('bangla');
+            }
+        });
+    }
+
+    // Global click listener for dynamic search results (author/publisher)
     document.body.addEventListener('click', function(event) {
         const authorResult = event.target.closest('.author-result-item');
         if (authorResult) {
@@ -196,42 +575,137 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // HTMX event handlers with language detection
+    document.body.addEventListener('htmx:beforeRequest', function(evt) {
+        const target = document.querySelector(evt.detail.target);
+        if (target) {
+            target.style.opacity = '0.7';
+        }
+    });
+
+    document.body.addEventListener('htmx:afterRequest', function(evt) {
+        const target = document.querySelector(evt.detail.target);
+        if (target) {
+            target.style.opacity = '1';
+            // Reapply language detection to new content
+            setTimeout(detectAndMarkBanglaText, 100);
+        }
+    });
+});
+
+// ============================================
+// GLOBAL HELPER FUNCTIONS
+// ============================================
+
+function hideQuickSearchResults() {
+    const results = document.getElementById('quick-search-results');
+    if (results) {
+        results.classList.add('hidden');
+    }
+}
+
+function clearQuickSearch() {
+    const input = document.getElementById('quick-search-input');
+    const results = document.getElementById('quick-search-results');
+    const clearBtn = document.getElementById('clear-search-btn');
     
-
-// HTMX event handlers
-document.body.addEventListener('htmx:beforeRequest', function(evt) {
-    // Show loading state
-    const target = document.querySelector(evt.detail.target);
-    if (target) {
-        target.style.opacity = '0.7';
+    if (input) {
+        input.value = '';
+        input.focus();
+        input.classList.remove('bangla');
     }
-});
-
-document.body.addEventListener('htmx:afterRequest', function(evt) {
-    // Hide loading state
-    const target = document.querySelector(evt.detail.target);
-    if (target) {
-        target.style.opacity = '1';
+    
+    if (results) {
+        results.innerHTML = '';
+        results.classList.add('hidden');
     }
-});
 
-// Search result highlighting
+    if (clearBtn) {
+        clearBtn.classList.remove('visible');
+    }
+}
+
+// Enhanced search result highlighting for multilingual text
 function highlightSearchTerm(text, term) {
     if (!term) return text;
-    const regex = new RegExp(`(${term})`, 'gi');
+    
+    // Handle both English and Bangla search terms
+    const regex = new RegExp(`(${escapeRegExp(term)})`, 'gi');
     return text.replace(regex, '<span class="search-highlight">$1</span>');
 }
 
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Author and publisher selection functions
 function selectAuthor(slug, name) {
     document.getElementById('author-slug-input').value = slug;
     document.getElementById('author-search-input').value = name;
     document.getElementById('author-search-results').innerHTML = '';
+    
+    // Apply language styling to selected text
+    const input = document.getElementById('author-search-input');
+    if (containsBanglaCharacters(name)) {
+        input.classList.add('bangla');
+    } else {
+        input.classList.remove('bangla');
+    }
+
+    // Trigger the filter form submission
+    const filterForm = document.getElementById('filter-form');
+    if (filterForm) {
+        htmx.trigger(filterForm, 'submit');
+    }
 }
 
 function selectPublisher(slug, name) {
     document.getElementById('publisher-slug-input').value = slug;
     document.getElementById('publisher-search-input').value = name;
     document.getElementById('publisher-search-results').innerHTML = '';
+    
+    // Apply language styling to selected text
+    const input = document.getElementById('publisher-search-input');
+    if (containsBanglaCharacters(name)) {
+        input.classList.add('bangla');
+    } else {
+        input.classList.remove('bangla');
+    }
+
+    // Trigger the filter form submission
+    const filterForm = document.getElementById('filter-form');
+    if (filterForm) {
+        htmx.trigger(filterForm, 'submit');
+    }
+}
+
+function containsBanglaCharacters(text) {
+    const banglaRegex = /[\u0980-\u09FF]/;
+    return banglaRegex.test(text);
+}
+
+// Language filter functionality
+function setLanguageFilter(lang) {
+    // Update active button
+    document.querySelectorAll('.language-toggle button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // Apply filter (you can integrate this with your existing filter form)
+    const form = document.getElementById('filter-form');
+    if (form) {
+        const langInput = form.querySelector('input[name="language"]') || document.createElement('input');
+        langInput.type = 'hidden';
+        langInput.name = 'language';
+        langInput.value = lang === 'all' ? '' : lang;
+        if (!form.contains(langInput)) {
+            form.appendChild(langInput);
+        }
+        
+        // Trigger form submission via HTMX
+        htmx.trigger(form, 'submit');
+    }
 }
 </script>
 {% endblock %}
@@ -242,47 +716,55 @@ function selectPublisher(slug, name) {
     <div class="mb-8">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
             <div class="mb-4 lg:mb-0 text-center lg:text-left">
-                <h1 class="library-title text-5xl lg:text-6xl font-bold mb-2">HSIT Library</h1>
-                <p class="text-xl text-gray-600">Your gateway to knowledge and academic excellence</p>
+                <h1 class="library-title text-5xl lg:text-6xl font-bold mb-2">HSMS Library</h1>
+                <p class="text-xl text-gray-600 mixed-content">Your gateway to knowledge and academic excellence</p>
             </div>
             
             <div class="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-6">
-                
-                
-                <!-- Original Search Box -->
+                <!-- Ultra-Fast Quick Search Box -->
                 <div class="relative">
                     <div class="flex items-center">
                         <div class="relative w-64">
                             <input 
                                 type="text" 
                                 id="quick-search-input"
-                                placeholder="Quick search books..."
-                                class="w-full px-4 py-2 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                hx-get="{% url 'library:quick_search' %}"
-                                hx-trigger="keyup changed delay:150ms"
-                                hx-target="#quick-search-results"
-                                hx-indicator="#quick-search-indicator"
-                                name="q"
+                                placeholder="Quick search..."
+                                class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mixed-content transition-all"
                                 autocomplete="off"
+                                spellcheck="false"
                             >
+                            <!-- Clear button -->
+                            <button 
+                                type="button"
+                                id="clear-search-btn"
+                                onclick="clearQuickSearch()"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                title="Clear search">
+                                <i class="fas fa-times text-sm"></i>
+                            </button>
                         </div>
                         <a href="{% url 'library:home' %}" 
-                           class="px-4 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition-colors">
+                           class="px-4 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition-colors"
+                           title="Advanced search">
                             <i class="fas fa-search"></i>
                         </a>
                     </div>
                     
-                    <!-- Quick Search Results -->
+                    <!-- Quick Search Results - Now handled by JavaScript -->
                     <div id="quick-search-results" 
-                         class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 hidden search-suggestions">
-                        <div id="quick-search-indicator" class="htmx-indicator p-4 text-center text-gray-500">
-                            <i class="fas fa-spinner fa-spin mr-2"></i> Searching...
-                        </div>
+                         class="absolute top-full left-0 mt-2 z-50 hidden">
                     </div>
+                </div>
+                
+                <!-- Language Toggle (Optional) -->
+                <div class="language-toggle">
+                    <button type="button" class="active" onclick="setLanguageFilter('all')">All</button>
+                    <button type="button" onclick="setLanguageFilter('en')">English</button>
+                    <button type="button" onclick="setLanguageFilter('bn')">বাংলা</button>
                 </div>
             </div>
         </div>
-        
+    </div>
     
     {% block library_content %}{% endblock %}
 </div>

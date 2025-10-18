@@ -1,7 +1,7 @@
 
-{% load humanize %}
-<!-- templates/library/partials/load_more_response.html -->
 
+<!-- templates/library/partials/load_more_response.html -->
+{% load humanize %}
 {# This block will be appended to the existing book grid #}
 <div hx-swap-oob="beforeend:.book-grid">
     {% for book in page_obj %}

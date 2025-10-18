@@ -1,0 +1,315 @@
+<!-- templates/spiritual_food/homily_archive.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Homily Archive | Spiritual Food{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-gradient-tertiary py-16 text-white relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10">
+        <div class="absolute inset-0" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.1) 10px, rgba(255,255,255,.1) 20px);"></div>
+    </div>
+    
+    <div class="container mx-auto px-4 relative z-10">
+        <div class="text-center">
+            <div class="inline-block mb-6 animate-fade-in">
+                <div class="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mx-auto shadow-xl">
+                    <i class="fas fa-archive text-4xl"></i>
+                </div>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold font-serif mb-4 animate-fade-in-up">
+                Homily Archive
+            </h1>
+            <p class="text-xl text-white/90 max-w-2xl mx-auto animate-fade-in-up" style="animation-delay: 0.2s;">
+                Browse our complete collection of homilies organized by year and month
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Archive Content -->
+<section class="py-12 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="max-w-5xl mx-auto">
+            <!-- Quick Navigation -->
+            <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-link mr-2 text-blue-600"></i>Quick Links
+                </h3>
+                <div class="flex flex-wrap gap-3">
+                    <a href="{% url 'spiritual_food:homily_list' %}" 
+                       class="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg hover:bg-blue-200 transition-colors inline-flex items-center">
+                        <i class="fas fa-list mr-2"></i>View All Homilies
+                    </a>
+                    <a href="{% url 'spiritual_food:home' %}" 
+                       class="bg-purple-100 text-purple-800 px-4 py-2 rounded-lg hover:bg-purple-200 transition-colors inline-flex items-center">
+                        <i class="fas fa-home mr-2"></i>Spiritual Food Home
+                    </a>
+                    {% for year in archive_data.keys|slice:":5" %}
+                    <a href="#year-{{ year }}" 
+                       class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-calendar-alt mr-2"></i>{{ year }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if archive_data %}
+            <!-- Archive by Year -->
+            <div class="space-y-6" x-data="{ openYear: {{ archive_data.keys.0|default:'null' }} }">
+                {% for year, months in archive_data.items %}
+                <div class="bg-white rounded-xl shadow-md overflow-hidden" id="year-{{ year }}">
+                    <!-- Year Header -->
+                    <button 
+                        @click="openYear = openYear === {{ year }} ? null : {{ year }}"
+                        class="w-full bg-gradient-primary text-white px-6 py-4 flex items-center justify-between hover:opacity-90 transition-opacity"
+                    >
+                        <div class="flex items-center">
+                            <i class="fas fa-calendar text-2xl mr-4"></i>
+                            <div class="text-left">
+                                <h2 class="text-2xl font-bold font-serif">{{ year }}</h2>
+                                <p class="text-sm text-white/80">
+                                    {{ months|length }} month{{ months|length|pluralize }}
+                                    {% with total_homilies=0 %}
+                                        {% for month, homilies in months.items %}
+                                            {% with total_homilies=homilies|length|add:total_homilies %}{% endwith %}
+                                        {% endfor %}
+                                    {% endwith %}
+                                </p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-down text-2xl transition-transform duration-300" 
+                           :class="{ 'rotate-180': openYear === {{ year }} }"></i>
+                    </button>
+
+                    <!-- Months Content -->
+                    <div 
+                        x-show="openYear === {{ year }}"
+                        x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 transform -translate-y-2"
+                        x-transition:enter-end="opacity-100 transform translate-y-0"
+                        x-transition:leave="transition ease-in duration-200"
+                        x-transition:leave-start="opacity-100 transform translate-y-0"
+                        x-transition:leave-end="opacity-0 transform -translate-y-2"
+                        class="p-6"
+                        style="display: none;"
+                    >
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {% for month, homilies in months.items %}
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-400 hover:shadow-lg transition-all bg-white">
+                                <div class="flex items-center mb-4 pb-3 border-b border-gray-200">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                                        <i class="fas fa-calendar-day text-white text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-800">{{ month }}</h3>
+                                        <p class="text-sm text-gray-500">{{ homilies|length }} homil{{ homilies|length|pluralize:"y,ies" }}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-2 max-h-96 overflow-y-auto">
+                                    {% for homily in homilies %}
+                                    <a href="{% url 'spiritual_food:homily_detail' homily.slug %}" 
+                                       class="block p-3 bg-gray-50 rounded hover:bg-blue-50 transition-colors group">
+                                        <div class="flex items-start justify-between">
+                                            <div class="flex-1 min-w-0 pr-2">
+                                                <h4 class="text-sm font-medium text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-2 mb-1">
+                                                    {{ homily.title }}
+                                                </h4>
+                                                <div class="flex items-center text-xs text-gray-500 space-x-3">
+                                                    <span><i class="fas fa-user mr-1"></i>{{ homily.preacher|truncatewords:2 }}</span>
+                                                    <span><i class="fas fa-calendar mr-1"></i>{{ homily.date|date:"M d" }}</span>
+                                                </div>
+                                                {% if homily.scripture_reference %}
+                                                <p class="text-xs text-blue-600 mt-1 line-clamp-1">
+                                                    <i class="fas fa-book mr-1"></i>{{ homily.scripture_reference|truncatewords:3 }}
+                                                </p>
+                                                {% endif %}
+                                            </div>
+                                            {% if homily.youtube_url %}
+                                            <i class="fab fa-youtube text-red-600 text-lg flex-shrink-0"></i>
+                                            {% endif %}
+                                        </div>
+                                    </a>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="mt-4 pt-3 border-t border-gray-200">
+                                    <a href="{% url 'spiritual_food:homily_list' %}?year={{ year }}" 
+                                       class="text-sm text-blue-600 hover:text-blue-800 font-medium inline-flex items-center">
+                                        View all from {{ year }} <i class="fas fa-arrow-right ml-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% else %}
+            <!-- No Archive Data -->
+            <div class="bg-white rounded-xl shadow-md p-12 text-center">
+                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-archive text-4xl text-gray-400"></i>
+                </div>
+                <h3 class="text-2xl font-semibold text-gray-800 mb-4">No Archive Available</h3>
+                <p class="text-gray-600 mb-6">
+                    The homily archive is currently empty. Check back soon for new content.
+                </p>
+                <a href="{% url 'spiritual_food:home' %}" 
+                   class="inline-block bg-gradient-primary text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition-all">
+                    <i class="fas fa-home mr-2"></i>Back to Spiritual Food
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+{% if archive_data %}
+<section class="py-12 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="max-w-5xl mx-auto">
+            <h2 class="text-2xl font-bold font-serif text-gray-800 mb-6 text-center">
+                Archive Statistics
+            </h2>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white text-center hover-lift">
+                    <i class="fas fa-calendar-alt text-4xl mb-3 opacity-80"></i>
+                    <p class="text-3xl font-bold mb-1">{{ archive_data|length }}</p>
+                    <p class="text-sm text-white/80">Year{{ archive_data|length|pluralize }}</p>
+                </div>
+                
+                <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white text-center hover-lift">
+                    <i class="fas fa-calendar text-4xl mb-3 opacity-80"></i>
+                    <p class="text-3xl font-bold mb-1">
+                        {% widthratio archive_data.values|length 1 1 %}
+                    </p>
+                    <p class="text-sm text-white/80">Total Months</p>
+                </div>
+                
+                <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white text-center hover-lift">
+                    <i class="fas fa-book-open text-4xl mb-3 opacity-80"></i>
+                    <p class="text-3xl font-bold mb-1">
+                        {% with total=0 %}
+                            {% for year, months in archive_data.items %}
+                                {% for month, homilies in months.items %}
+                                    {% with total=total|add:homilies|length %}{% endwith %}
+                                {% endfor %}
+                            {% endfor %}
+                            {{ total }}
+                        {% endwith %}
+                    </p>
+                    <p class="text-sm text-white/80">Total Homilies</p>
+                </div>
+                
+                <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white text-center hover-lift">
+                    <i class="fas fa-fire text-4xl mb-3 opacity-80"></i>
+                    <p class="text-3xl font-bold mb-1">
+                        {% if archive_data %}
+                            {{ archive_data|length }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </p>
+                    <p class="text-sm text-white/80">Years of Ministry</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Browse by Category -->
+{% if archive_data %}
+<section class="py-12 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="max-w-5xl mx-auto">
+            <h2 class="text-2xl font-bold font-serif text-gray-800 mb-6 text-center">
+                Browse by Other Criteria
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <a href="{% url 'spiritual_food:homily_list' %}" 
+                   class="bg-white rounded-xl shadow-md p-6 hover-lift group text-center">
+                    <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-th-list text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">All Homilies</h3>
+                    <p class="text-sm text-gray-600">Browse complete collection with filters</p>
+                </a>
+                
+                <a href="{% url 'spiritual_food:homily_list' %}?season=advent" 
+                   class="bg-white rounded-xl shadow-md p-6 hover-lift group text-center">
+                    <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-church text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">By Liturgical Season</h3>
+                    <p class="text-sm text-gray-600">Filter by Advent, Lent, Easter, etc.</p>
+                </a>
+                
+                <a href="{% url 'spiritual_food:homily_list' %}" 
+                   class="bg-white rounded-xl shadow-md p-6 hover-lift group text-center">
+                    <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-user text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">By Preacher</h3>
+                    <p class="text-sm text-gray-600">Find homilies by specific preachers</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Call to Action -->
+<section class="py-16 bg-gradient-to-br from-blue-900 to-purple-900 text-white">
+    <div class="container mx-auto px-4">
+        <div class="max-w-3xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold font-serif mb-6">
+                Explore More Spiritual Resources
+            </h2>
+            <p class="text-xl mb-8 text-white/90">
+                Discover prayer services, submit prayer intentions, and grow in faith
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{% url 'spiritual_food:prayer_services' %}" 
+                   class="bg-white text-blue-900 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors inline-flex items-center justify-center">
+                    <i class="fas fa-pray mr-2"></i>Prayer Services
+                </a>
+                <a href="{% url 'spiritual_food:prayer_request' %}" 
+                   class="bg-yellow-500 text-white px-8 py-3 rounded-full font-semibold hover:bg-yellow-600 transition-colors inline-flex items-center justify-center">
+                    <i class="fas fa-hands mr-2"></i>Prayer Request
+                </a>
+                <a href="{% url 'spiritual_food:homily_list' %}" 
+                   class="bg-purple-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-purple-700 transition-colors inline-flex items-center justify-center">
+                    <i class="fas fa-list mr-2"></i>All Homilies
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Auto-open current year on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const currentYear = new Date().getFullYear();
+    const yearElement = document.getElementById('year-' + currentYear);
+    if (yearElement) {
+        yearElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Trigger Alpine.js to open the current year
+        setTimeout(() => {
+            const button = yearElement.querySelector('button');
+            if (button) {
+                button.click();
+            }
+        }, 500);
+    }
+});
+</script>
+{% endblock %}

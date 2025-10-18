@@ -1,6 +1,6 @@
 <!-- seminary/news_detail.html -->
 {% extends 'base.html' %}
-{% load content_filters %}
+{% load seminary_filters %}
 
 {% block title %}{{ news_item.title }} - News - Holy Spirit Major Seminary{% endblock %}
 
@@ -42,7 +42,7 @@
             
             <!-- Article Content -->
             <div class="prose prose-lg max-w-none mb-12">
-                {{ news_item.content|smart_preview:25 }}
+                {{ news_item.content|safe }}
             </div>
             
             <!-- Share Buttons -->

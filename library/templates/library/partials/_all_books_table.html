@@ -1,0 +1,45 @@
+<!-- library/templates/library/partials/_all_books_table.html -->
+<div class="bg-white p-6 rounded-lg shadow-md">
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold">All Books</h3>
+        <a href="{% url 'library:add_book' %}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Add New Book</a>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Copies</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for book in all_books %}
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ book.title }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {% for author in book.authors.all %}{{ author.full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ book.copies_available }}/{{ book.total_copies }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        {% if book.is_available %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                Available
+                            </span>
+                        {% else %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                Not Available
+                            </span>
+                        {% endif %}
+                    </td>
+                                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                                                                    <a href="{% url 'library:edit_book' book.id %}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                                                                                    <a href="{% url 'library:delete_book' book.id %}" class="text-red-600 hover:text-red-900 ml-4">Delete</a>
+                                                                                                </td>                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

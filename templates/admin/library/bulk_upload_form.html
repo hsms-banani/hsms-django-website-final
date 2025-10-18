@@ -1,0 +1,35 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+    &rsaquo; <a href="{% url 'admin:app_list' app_label='library' %}">{% trans 'Library' %}</a>
+    &rsaquo; <a href="{% url 'admin:library_libraryuser_changelist' %}">{% trans 'Library Users' %}</a>
+    &rsaquo; {% trans 'Bulk Upload' %}
+</div>
+{% endblock %}
+
+{% block content_title %}
+<h1>{% trans 'Bulk Upload Library Users' %}</h1>
+{% endblock %}
+
+{% block content %}
+<div>
+    <form method="post" enctype="multipart/form-data" action="{% url 'admin:library_libraryuser_process_upload' %}">
+        {% csrf_token %}
+        <div>
+            <label for="csv_file">{% trans 'CSV file' %}</label>
+            <input type="file" name="csv_file" id="csv_file" accept=".csv">
+        </div>
+        <div class="submit-row">
+            <input type="submit" value="{% trans 'Upload' %}" class="default">
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -2,6 +2,7 @@
 {% extends "library/base.html" %}
 {% load static %}
 {% load string_filters %}
+{% load library_filters %}
 
 {% block library_breadcrumb %}
 <div class="no-print">
@@ -59,6 +60,7 @@
                         </div>
                         
                         <div><strong>Publication Year:</strong> {{ book.publication_year }}</div>
+                        <div><strong>Accession Number:</strong> {{ book.accession_number }}</div>
                         
                         <div><strong>Category:</strong> 
                             <a href="{% url 'library:category_books' book.category.slug %}" 
@@ -233,9 +235,167 @@
     
     <!-- Sidebar -->
     <div class="space-y-6 no-print">
+        <!-- BORROWING SECTION - NEW -->
+        {% if user.is_authenticated %}
+            <div class="bg-white rounded-lg shadow-lg p-6 border-2 border-blue-100">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-book-reader text-blue-600 mr-2"></i>
+                    Borrow This Book
+                </h3>
+                
+                <!-- Availability Status -->
+                <div class="mb-6">
+                    {% if book.is_available %}
+                        <div class="flex items-center text-green-600 mb-3">
+                            <div class="flex-shrink-0 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-check-circle text-2xl"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-lg">Available Now</p>
+                                <p class="text-sm text-gray-600">{{ book.copies_available }} of {{ book.total_copies }} copies available</p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="flex items-center text-red-600 mb-3">
+                            <div class="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-times-circle text-2xl"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-lg">Not Available</p>
+                                <p class="text-sm text-gray-600">All copies are currently checked out</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Book Identification -->
+                <div class="bg-gray-50 rounded-lg p-4 mb-6 space-y-2 text-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600 font-medium">Accession No:</span>
+                        <span class="font-mono font-semibold text-gray-800">{{ book.accession_number }}</span>
+                    </div>
+                    {% if book.volume %}
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600 font-medium">Volume:</span>
+                        <span class="font-semibold text-gray-800">{{ book.volume }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600 font-medium">Call Number:</span>
+                        <span class="font-mono font-semibold text-gray-800">{{ book.full_call_number }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600 font-medium">Location:</span>
+                        <span class="font-semibold text-gray-800">
+                            <i class="fas fa-map-marker-alt text-red-500 mr-1"></i>
+                            {{ book.location_shelf|default:"Main Library" }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Borrow Button or Status -->
+                {% if book.is_available %}
+                    <form method="post" action="{% url 'library:borrow_book' book.slug %}" onsubmit="return confirm('Are you sure you want to borrow this book?');">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center">
+                            <i class="fas fa-book mr-2"></i>
+                            Borrow This Book
+                        </button>
+                    </form>
+                    
+                    <!-- Borrowing Info -->
+                    <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <p class="text-blue-900 font-semibold mb-2 flex items-center text-sm">
+                            <i class="fas fa-info-circle mr-2"></i>Borrowing Terms:
+                        </p>
+                        <ul class="text-blue-800 space-y-1 text-xs">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-blue-600 mr-2 mt-0.5"></i>
+                                <span>14-day loan period</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-blue-600 mr-2 mt-0.5"></i>
+                                <span>Up to 2 renewals allowed</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-blue-600 mr-2 mt-0.5"></i>
+                                <span>$5.00 per day late fee</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-blue-600 mr-2 mt-0.5"></i>
+                                <span>Email reminders before due date</span>
+                            </li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <button disabled class="w-full px-6 py-3 bg-gray-300 text-gray-500 font-bold rounded-lg cursor-not-allowed flex items-center justify-center">
+                        <i class="fas fa-ban mr-2"></i>
+                        Currently Unavailable
+                    </button>
+                    
+                    <div class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <p class="text-sm text-gray-600 text-center">
+                            <i class="fas fa-clock text-gray-400 mr-1"></i>
+                            Check back later or contact the library for availability
+                        </p>
+                    </div>
+                {% endif %}
+
+                <!-- My Books Link -->
+                <div class="mt-6 pt-4 border-t border-gray-200">
+                    <a href="{% url 'library:my_borrowed_books' %}" class="block text-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors">
+                        <i class="fas fa-list-ul mr-2"></i>View My Borrowed Books
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <!-- Login Required -->
+            <div class="bg-white rounded-lg shadow-lg p-6 border-2 border-gray-200">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-book-reader text-blue-600 mr-2"></i>
+                    Want to Borrow?
+                </h3>
+                
+                <div class="text-center py-6">
+                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-user-lock text-gray-400 text-4xl"></i>
+                    </div>
+                    <p class="text-gray-600 mb-4">Please log in to borrow books from our library</p>
+                    <a href="{% url 'login' %}?next={{ request.path }}" class="inline-block px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Log In to Borrow
+                    </a>
+                </div>
+                
+                <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <p class="text-blue-900 font-semibold mb-2 text-sm flex items-center">
+                        <i class="fas fa-gift mr-2"></i>Member Benefits:
+                    </p>
+                    <ul class="text-blue-800 space-y-1 text-xs">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-blue-600 mr-2 mt-0.5"></i>
+                            <span>Borrow up to 5 books at a time</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-blue-600 mr-2 mt-0.5"></i>
+                            <span>Automatic email reminders</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-blue-600 mr-2 mt-0.5"></i>
+                            <span>Renew books online</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-blue-600 mr-2 mt-0.5"></i>
+                            <span>Track your reading history</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        {% endif %}
+        <!-- END BORROWING SECTION -->
+        
         <!-- Availability Card -->
         <div class="bg-white rounded-lg shadow-sm p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Availability</h3>
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Availability Details</h3>
             
             <div class="space-y-4">
                 <!-- Status -->
@@ -363,12 +523,12 @@
                     </button>
 
                     <!-- Share Modal -->
-                    <div x-show="open" @click.away="open = false" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div x-show="open" @click.away="open = false" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" x-cloak>
                         <div class="bg-white rounded-lg p-6 w-full max-w-md mx-auto">
                             <h3 class="text-lg font-semibold mb-4">Share "{{ book.title }}"</h3>
                             <div class="flex items-center space-x-2 mb-4">
                                 <input type="text" value="{{ request.build_absolute_uri }}" readonly class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100">
-                                <button @click="navigator.clipboard.writeText('{{ request.build_absolute_uri }}'); alert('Copied to clipboard!');" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                <button @click="navigator.clipboard.writeText('{{ request.build_absolute_uri }}'); showToast('toast-copied');" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                                     <i class="fas fa-copy"></i>
                                 </button>
                             </div>

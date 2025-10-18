@@ -1,7 +1,7 @@
 <!-- templates/seminary/committees.html -->
 {% extends 'base.html' %}
 {% load static %}
-{% load content_filters %}
+{% load seminary_filters %}
 
 {% block title %}{{ page_title }} - {{ block.super }}{% endblock %}
 
@@ -53,10 +53,10 @@
                    class="px-6 py-2 rounded-full border-2 transition-all duration-300 {% if not selected_type %}bg-gradient-primary text-white border-purple-600{% else %}border-gray-300 text-gray-600 hover:border-purple-400{% endif %}">
                     All Committees
                 </a>
-                {% for type_value, type_label in committee_types %}
-                <a href="?type={{ type_value }}" 
-                   class="px-6 py-2 rounded-full border-2 transition-all duration-300 {% if selected_type == type_value %}bg-gradient-primary text-white border-purple-600{% else %}border-gray-300 text-gray-600 hover:border-purple-400{% endif %}">
-                    {{ type_label }}
+                {% for type in committee_types %}
+                <a href="?type={{ type.slug }}" 
+                   class="px-6 py-2 rounded-full border-2 transition-all duration-300 {% if selected_type == type.slug %}bg-gradient-primary text-white border-purple-600{% else %}border-gray-300 text-gray-600 hover:border-purple-400{% endif %}">
+                    {{ type.name }}
                 </a>
                 {% endfor %}
             </div>
@@ -73,26 +73,10 @@
                     <!-- Committee Icon and Type -->
                     <div class="flex items-center justify-between mb-4">
                         <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-                            {% if committee.committee_type == 'editorial' %}
-                                <i class="fas fa-edit text-blue-600 text-xl"></i>
-                            {% elif committee.committee_type == 'cultural' %}
-                                <i class="fas fa-theater-masks text-green-600 text-xl"></i>
-                            {% elif committee.committee_type == 'pastoral' %}
-                                <i class="fas fa-pray text-purple-600 text-xl"></i>
-                            {% elif committee.committee_type == 'liturgical' %}
-                                <i class="fas fa-church text-red-600 text-xl"></i>
-                            {% elif committee.committee_type == 'academic' %}
-                                <i class="fas fa-graduation-cap text-indigo-600 text-xl"></i>
-                            {% elif committee.committee_type == 'finance' %}
-                                <i class="fas fa-dollar-sign text-yellow-600 text-xl"></i>
-                            {% elif committee.committee_type == 'discipline' %}
-                                <i class="fas fa-gavel text-gray-600 text-xl"></i>
-                            {% else %}
-                                <i class="fas fa-users text-blue-600 text-xl"></i>
-                            {% endif %}
+                            <i class="{{ committee.committee_type.icon_class|default:'fas fa-users' }} text-blue-600 text-xl"></i>
                         </div>
                         <span class="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                            {{ committee.get_committee_type_display }}
+                            {{ committee.committee_type.name }}
                         </span>
                     </div>
 
@@ -102,16 +86,16 @@
                     <!-- Committee Description -->
                     <p class="text-gray-600 mb-4 line-clamp-3">{{ committee.description|smart_preview:25 }}</p>
 
-                    <!-- Chairperson -->
-                    {% if committee.chairperson %}
+                    <!-- Advisor -->
+                    {% if committee.advisor %}
                     <div class="mb-4 p-3 bg-gray-50 rounded-lg">
                         <div class="flex items-center space-x-3">
                             <div class="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
                                 <i class="fas fa-user text-white text-sm"></i>
                             </div>
                             <div>
-                                <p class="text-sm font-semibold text-gray-800">{{ committee.chairperson.name }}</p>
-                                <p class="text-xs text-gray-500">Chairperson</p>
+                                <p class="text-sm font-semibold text-gray-800">{{ committee.advisor.name }}</p>
+                                <p class="text-xs text-gray-500">Advisor</p>
                             </div>
                         </div>
                     </div>
@@ -131,23 +115,23 @@
                         {% endif %}
                     </div>
 
-                    <!-- Committee Members (if any) -->
+                    <!-- Committee Members Accordion -->
                     {% if committee.members.exists %}
                     <div class="mt-4 pt-4 border-t border-gray-200">
-                        <h4 class="text-sm font-semibold text-gray-700 mb-2">Members:</h4>
-                        <div class="space-y-1">
-                            {% for member in committee.members.all|slice:":3" %}
-                            <div class="text-sm text-gray-600 flex items-center space-x-2">
-                                <i class="fas fa-user-circle text-gray-400"></i>
-                                <span>{{ member.name }}</span>
-                                <span class="text-xs text-gray-400">- {{ member.title }}</span>
+                        <button class="accordion-toggle flex items-center justify-between w-full text-sm font-semibold text-gray-700 focus:outline-none">
+                            <span>View Members ({{ committee.members.count }})</span>
+                            <i class="fas fa-chevron-down accordion-icon transition-transform"></i>
+                        </button>
+                        <div class="accordion-content overflow-hidden max-h-0 transition-all duration-300 ease-in-out">
+                            <div class="space-y-2 pt-4">
+                                {% for member in committee.members.all %}
+                                <div class="text-sm text-gray-600 flex items-center space-x-2">
+                                    <i class="fas fa-user-circle text-gray-400"></i>
+                                    <span>{{ member.name }}</span>
+                                    <span class="text-xs text-gray-400">- {{ member.title }}</span>
+                                </div>
+                                {% endfor %}
                             </div>
-                            {% endfor %}
-                            {% if committee.members.count > 3 %}
-                            <p class="text-xs text-gray-500 mt-2">
-                                +{{ committee.members.count|add:"-3" }} more member{{ committee.members.count|add:"-3"|pluralize }}
-                            </p>
-                            {% endif %}
                         </div>
                     </div>
                     {% endif %}
@@ -235,6 +219,23 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add loading state
             this.style.opacity = '0.6';
             this.innerHTML += ' <i class="fas fa-spinner fa-spin ml-2"></i>';
+        });
+    });
+
+    // Accordion functionality
+    const accordionToggles = document.querySelectorAll('.accordion-toggle');
+    accordionToggles.forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const content = this.nextElementSibling;
+            const icon = this.querySelector('.accordion-icon');
+
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+                icon.classList.remove('rotate-180');
+            } else {
+                content.style.maxHeight = content.scrollHeight + 'px';
+                icon.classList.add('rotate-180');
+            }
         });
     });
 });

@@ -45,12 +45,14 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     'django_htmx',
     'tinymce',
+    'django_select2',
     # Removed 'modeltranslation'
 ]
 
 LOCAL_APPS = [
     'seminary',
     'library',
+    'spiritual_food',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -58,6 +60,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.gzip.GZipMiddleware',
+    'django.middleware.locale.LocaleMiddleware',  # For i18n support
     # 'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     # Removed 'django.middleware.locale.LocaleMiddleware',
@@ -87,6 +90,8 @@ TEMPLATES = [
                 'seminary.context_processors.global_announcements',
                 'seminary.context_processors.navigation_pages',
                 'seminary.context_processors.breadcrumb_helper',
+                 'django.template.context_processors.i18n',  # For internationalization
+                'library.context_processors.library_stats',  # Your custom context processor
             ],
         },
     },
@@ -96,14 +101,16 @@ WSGI_APPLICATION = 'hsms.wsgi.application'
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # Cache configuration for production
+
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
         'LOCATION': 'redis://127.0.0.1:6379/1',
-        'TIMEOUT': 300,
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        }
+        },
+        'KEY_PREFIX': 'library',
+        'VERSION': 1,
     }
 }
 # Database
@@ -116,6 +123,20 @@ DATABASES = {
     }
 }
 
+# If using PostgreSQL (recommended for better Unicode and search support):
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'your_database_name',
+#         'USER': 'your_username',
+#         'PASSWORD': 'your_password',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#         'OPTIONS': {
+#             'charset': 'utf8',
+#         },
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -147,7 +168,11 @@ USE_TZ = True
 USE_L10N = False
 
 
-
+# Supported languages
+LANGUAGES = [
+    ('en', 'English'),
+    ('bn', 'বাংলা'),
+]
 
 # TinyMCE Configuration
 TINYMCE_DEFAULT_CONFIG = {
@@ -158,41 +183,59 @@ TINYMCE_DEFAULT_CONFIG = {
     'selector': 'textarea',
     'theme': 'silver',
     'plugins': '''
-        textcolor save link image media preview codesample contextmenu
+        save link image media preview codesample contextmenu
         table code lists fullscreen insertdatetime nonbreaking
-        contextmenu directionality searchreplace wordcount visualblocks
-        visualchars code fullscreen autolink lists charmap print hr
-        anchor pagebreak spellchecker
+        directionality searchreplace wordcount visualblocks
+        visualchars fullscreen autolink charmap anchor pagebreak
     ''',
-    'toolbar1': '''
-        fullscreen preview bold italic underline | fontselect,
-        fontsizeselect | forecolor backcolor | alignleft alignright |
-        aligncenter alignjustify | indent outdent | bullist numlist table |
-        | link image media | codesample |
+    'toolbar': '''
+        undo redo | formatselect | bold italic underline strikethrough | 
+        forecolor backcolor | alignleft aligncenter alignright alignjustify | 
+        bullist numlist outdent indent | removeformat | link image media table | 
+        code fullscreen preview
     ''',
-    'toolbar2': '''
-        visualblocks visualchars |
-        charmap hr pagebreak nonbreaking anchor | code |
-    ''',
-    'contextmenu': 'formats | link image',
-    'menubar': True,
+    'menubar': 'file edit view insert format tools table',
     'statusbar': True,
     'branding': False,
     'convert_urls': False,
     'relative_urls': False,
-    'content_css': '/static/css/tinymce-content.css',  # Custom CSS for content
-    'valid_elements': '''
-        a[href|target|title],strong,b,em,i,u,strike,sub,sup,
-        h1,h2,h3,h4,h5,h6,p,br,img[src|alt|width|height|class],
-        ul,ol,li,table,thead,tbody,tr,td,th,div[class],
-        span[class|style],blockquote,pre,code
+    'content_css': '/static/css/tinymce-content.css',
+    'content_style': '''
+        body { font-family: Inter, sans-serif; font-size: 16px; }
     ''',
+    'valid_elements': '*[*]',  # Allow all elements and attributes including style
+    'extended_valid_elements': '*[*]',
+    'valid_children': '+body[style]',
+    'retain_style_properties': 'color,background-color,font-size,font-family,text-align',
     'formats': {
-        'alignleft': {'selector': 'p,h1,h2,h3,h4,h5,h6,td,th,div,ul,ol,li,table,img', 'classes': 'text-left'},
-        'aligncenter': {'selector': 'p,h1,h2,h3,h4,h5,h6,td,th,div,ul,ol,li,table,img', 'classes': 'text-center'},
-        'alignright': {'selector': 'p,h1,h2,h3,h4,h5,h6,td,th,div,ul,ol,li,table,img', 'classes': 'text-right'},
-        'alignjustify': {'selector': 'p,h1,h2,h3,h4,h5,h6,td,th,div,ul,ol,li,table,img', 'classes': 'text-justify'}
-    }
+        'forecolor': {'inline': 'span', 'styles': {'color': '%value'}},
+        'hilitecolor': {'inline': 'span', 'styles': {'background-color': '%value'}},
+    },
+    'color_map': [
+        '#BFEDD2', 'Light Green',
+        '#FBEEB8', 'Light Yellow',
+        '#F8CAC6', 'Light Red',
+        '#ECCAFA', 'Light Purple',
+        '#C2E0F4', 'Light Blue',
+        '#2DC26B', 'Green',
+        '#F1C40F', 'Yellow',
+        '#E03E2D', 'Red',
+        '#B96AD9', 'Purple',
+        '#3598DB', 'Blue',
+        '#169179', 'Dark Turquoise',
+        '#E67E23', 'Orange',
+        '#BA372A', 'Dark Red',
+        '#843FA1', 'Dark Purple',
+        '#236FA1', 'Dark Blue',
+        '#ECF0F1', 'Light Gray',
+        '#CED4D9', 'Medium Gray',
+        '#95A5A6', 'Gray',
+        '#7E8C8D', 'Dark Gray',
+        '#34495E', 'Navy Blue',
+        '#000000', 'Black',
+        '#FFFFFF', 'White'
+    ],
+    'color_cols': 5,
 }
 
 # Static files (CSS, JavaScript, Images)
@@ -211,13 +254,23 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Email configuration
-EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
-EMAIL_HOST = config('EMAIL_HOST', default='localhost')
-EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='info@hsms.edu.bd')
+# EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+# EMAIL_HOST = config('EMAIL_HOST', default='localhost')
+# EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+# EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+# EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+# EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+# DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='info@hsms.edu.bd')
+
+# Sign up at: https://www.brevo.com/
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp-relay.brevo.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('BREVO_USER')  # Your Brevo username from environment variable
+EMAIL_HOST_PASSWORD = os.getenv('BREVO_API_KEY')  # Your Brevo API key from environment variable
+DEFAULT_FROM_EMAIL = 'library@yourdomain.com'  # Replace with your verified sender email
+
 
 # Security settings for production
 if not DEBUG:
@@ -246,6 +299,8 @@ CACHES = {
     }
 }
 
+SELECT2_CACHE_BACKEND = "default"
+
 # Logging
 LOGGING = {
     'version': 1,
@@ -266,9 +321,10 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': BASE_DIR / 'logs' / 'django.log',
             'formatter': 'verbose',
+            'encoding': 'utf-8',  # Important for Unicode logging
         },
         'console': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
         },
@@ -277,16 +333,16 @@ LOGGING = {
         'handlers': ['console'],
         'level': 'INFO',
     },
-    'loggers': {
+            'loggers': {
         'django': {
             'handlers': ['file', 'console'],
             'level': 'INFO',
-            'propagate': False,
+            'propagate': True,
         },
-        'seminary': {
+        'library': {
             'handlers': ['file', 'console'],
-            'level': 'INFO',
-            'propagate': False,
+            'level': 'DEBUG',
+            'propagate': True,
         },
     },
 }
@@ -294,12 +350,117 @@ LOGGING = {
 # Create logs directory if it doesn't exist
 os.makedirs(BASE_DIR / 'logs', exist_ok=True)
 
+# Library-specific settings for multilingual support
+LIBRARY_SETTINGS = {
+    'DEFAULT_LANGUAGE': 'en',
+    'SUPPORTED_LANGUAGES': ['en', 'bn', 'mixed'],
+    'AUTO_DETECT_LANGUAGE': True,
+    'ENABLE_TRANSLITERATION': False,  # Set to True if you want to add transliteration features
+    'SEARCH_MIN_CHARS': 2,
+    'SEARCH_CACHE_TIMEOUT': 300,  # 5 minutes
+    'BOOKS_PER_PAGE': 16,
+    'QUICK_SEARCH_RESULTS': 10,
+    'LOAN_PERIOD_DAYS': 14,  # Default loan period
+    'MAX_RENEWALS': 2,  # Maximum number of renewals
+    'MAX_BOOKS_PER_USER': 5,  # Maximum books a user can borrow
+    'FINE_PER_DAY': 10.00,  # Fine amount per day (in BDT)
+    'FIRST_REMINDER_DAYS': 3,  # Days before due date to send first reminder
+    'SECOND_REMINDER_DAYS': 1,  # Days before due date to send second reminder
+    'OVERDUE_REMINDER_INTERVAL': 7,  # Send overdue notice every X days
+}
+
+# Default From Email
+DEFAULT_FROM_EMAIL = 'library@hsms.edu'
+SERVER_EMAIL = 'library@hsms.edu'
+
+# Email Subject Prefix
+EMAIL_SUBJECT_PREFIX = '[HSMS Library] '
+
+# Borrowing Settings
+LIBRARY_LOAN_PERIOD_DAYS = 14
+LIBRARY_MAX_RENEWALS = 2
+LIBRARY_MAX_BOOKS_PER_USER = 5
+LIBRARY_FINE_PER_DAY = 10.00  # In BDT
+
+# Email Reminder Days Before Due Date
+LIBRARY_FIRST_REMINDER_DAYS = 3
+LIBRARY_SECOND_REMINDER_DAYS = 1
+
+# Font settings for different languages
+FONT_SETTINGS = {
+    'bangla': {
+        'primary': 'Noto Sans Bengali',
+        'fallback': ['SutonnyMJ', 'Kalpurush', 'sans-serif'],
+        'web_font_url': 'https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700&display=swap'
+    },
+    'english': {
+        'primary': 'Inter',
+        'fallback': ['-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        'web_font_url': 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
+    }
+}
+
+# CSV Import settings
+CSV_IMPORT_SETTINGS = {
+    'MAX_FILE_SIZE': 10 * 1024 * 1024,  # 10MB
+    'ALLOWED_ENCODINGS': ['utf-8', 'utf-8-sig', 'utf-16', 'cp1252'],
+    'DEFAULT_ENCODING': 'utf-8',
+    'CHUNK_SIZE': 1000,  # Process books in chunks
+    'AUTO_DETECT_ENCODING': True,
+}
+
+# Search settings
+SEARCH_SETTINGS = {
+    'ENABLE_POSTGRESQL_SEARCH': True,  # Set to False if not using PostgreSQL
+    'SEARCH_RANK_THRESHOLD': 0.1,
+    'MAX_SEARCH_RESULTS': 100,
+    'HIGHLIGHT_SEARCH_TERMS': True,
+    'SEARCH_FIELDS': {
+        'high_priority': ['title', 'title_bangla'],
+        'medium_priority': ['subtitle', 'subtitle_bangla', 'authors'],
+        'low_priority': ['keywords', 'keywords_bangla', 'isbn', 'call_number'],
+    }
+}
+
+# Performance settings
+PERFORMANCE_SETTINGS = {
+    'ENABLE_QUERY_OPTIMIZATION': True,
+    'USE_SELECT_RELATED': True,
+    'USE_PREFETCH_RELATED': True,
+    'CACHE_QUERY_RESULTS': True,
+    'CACHE_TIMEOUT_SHORT': 300,    # 5 minutes
+    'CACHE_TIMEOUT_MEDIUM': 900,   # 15 minutes
+    'CACHE_TIMEOUT_LONG': 3600,    # 1 hour
+}
+# Security settings for file uploads
+ALLOWED_UPLOAD_EXTENSIONS = ['.csv', '.xlsx', '.xls']
+MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10MB
+
 # File upload settings
-FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+FILE_UPLOAD_PERMISSIONS = 0o644
+THUMBNAIL_SIZE = (800, 600)  
+
+# File upload settings
+FILE_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024  # 200MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024  # 200MB
+MAX_VIDEO_UPLOAD_SIZE = 200 * 1024 * 1024  # 200MB
+
+GALLERY_SETTINGS = {
+    'MAX_VIDEO_SIZE': 200 * 1024 * 1024,  # 200MB
+    'MAX_IMAGE_SIZE': 10 * 1024 * 1024,   # 10MB
+    'ALLOWED_VIDEO_FORMATS': ['.mp4', '.avi', '.mov', '.wmv', '.mkv', '.webm'],
+    'ALLOWED_IMAGE_FORMATS': ['.jpg', '.jpeg', '.png', '.gif', '.webp'],
+}
+
+# Default charset for file operations
+DEFAULT_CHARSET = 'utf-8'
 
 # Pagination settings
-PAGINATE_BY = 12
+PAGINATE_BY = 16
+PAGINATE_ORPHANS = 3
+
+LOGIN_REDIRECT_URL = '/library/'
+LOGOUT_REDIRECT_URL = '/'
 
 # Message tags for Bootstrap styling
 from django.contrib.messages import constants as messages

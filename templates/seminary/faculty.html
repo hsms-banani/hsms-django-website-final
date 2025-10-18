@@ -1,6 +1,6 @@
 <!-- seminary/faculty.html -->
 {% extends 'base.html' %}
-{% load content_filters %}
+{% load seminary_filters %}
 
 {% block title %}Faculty - Holy Spirit Major Seminary{% endblock %}
 
@@ -56,7 +56,7 @@
         {% if faculty_list %}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {% for faculty in faculty_list %}
-                <div class="bg-white rounded-lg shadow-lg p-6 text-center hover-lift">
+                <a href="{% url 'faculty_detail' faculty.pk %}" class="block bg-white rounded-lg shadow-lg p-6 text-center hover-lift">
                     <div class="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-primary overflow-hidden">
                         {% if faculty.photo %}
                         <img src="{{ faculty.photo.url }}" 
@@ -74,11 +74,11 @@
                     <p class="text-gray-500 text-sm mb-4">{{ faculty.specialization }}</p>
                     {% endif %}
                     <p class="text-gray-600 text-sm mb-6">{{ faculty.bio|smart_preview:20 }}</p>
-                    <a href="{% url 'faculty_detail' faculty.pk %}" 
+                    <div 
                        class="inline-block px-6 py-2 bg-gradient-tertiary text-white rounded-lg font-medium hover:shadow-lg transition-all duration-300">
                         View Profile
-                    </a>
-                </div>
+                    </div>
+                </a>
                 {% endfor %}
             </div>
             

@@ -1,0 +1,18 @@
+{% extends "library/base.html" %}
+
+{% block library_title %}Confirm Renewal{% endblock %}
+
+{% block library_content %}
+<div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md text-center">
+    <h1 class="text-2xl font-bold text-gray-800 mb-4">Confirm Renewal</h1>
+    <p class="text-gray-600 mb-6">Are you sure you want to renew the book "<strong>{{ record.book.title }}</strong>"?</p>
+    <p class="text-gray-600 mb-6">The new due date will be <strong>{{ new_due_date|date:"F d, Y" }}</strong>.</p>
+    <form method="post" action="{% url 'library:renew_book' record.id %}">
+        {% csrf_token %}
+        <div class="flex justify-center">
+            <a href="{% url 'library:my_borrowed_books' %}" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 mr-4">Cancel</a>
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Confirm Renewal</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

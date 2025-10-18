@@ -336,18 +336,25 @@ class GalleryItem(models.Model):
     title = models.CharField(max_length=200, blank=True)
     image = models.ImageField(upload_to='gallery/', blank=True, null=True)
     video_url = models.URLField(blank=True, help_text="YouTube, Vimeo, or other video URL")
+    
+    # UPDATED: Removed file size validation, will be handled in settings and admin
     video_file = models.FileField(
         upload_to='gallery/videos/', 
         blank=True, 
         null=True,
-        validators=[FileExtensionValidator(allowed_extensions=['mp4', 'avi', 'mov', 'wmv'])]
+        validators=[FileExtensionValidator(allowed_extensions=['mp4', 'avi', 'mov', 'wmv', 'mkv', 'webm'])],
+        help_text="Maximum file size: 200MB. Supported formats: MP4, AVI, MOV, WMV, MKV, WEBM"
     )
+    
     description = models.TextField(blank=True)
     order = models.PositiveIntegerField(default=0)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         ordering = ['order', '-id']
+        indexes = [
+            models.Index(fields=['gallery', 'order']),
+        ]
     
     def __str__(self):
         return f"{self.gallery.title} - {self.title or 'Item'}"
@@ -393,20 +400,26 @@ class CommitteeMember(models.Model):
         return self.name
 
 
+class CommitteeType(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(unique=True)
+    icon_class = models.CharField(max_length=50, blank=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+
 class Committee(models.Model):
-    COMMITTEE_TYPES = [
-        ('editorial', 'Editorial Committee'),
-        ('cultural', 'Cultural Committee'),
-        ('pastoral', 'Pastoral Committee'),
-        ('liturgical', 'Liturgical Committee'),
-        ('academic', 'Academic Committee'),
-        ('finance', 'Finance Committee'),
-        ('discipline', 'Discipline Committee'),
-        ('other', 'Other'),
-    ]
-    
     name = models.CharField(max_length=200)
-    committee_type = models.CharField(max_length=20, choices=COMMITTEE_TYPES)
+    committee_type = models.ForeignKey(CommitteeType, on_delete=models.SET_NULL, null=True, related_name='committees')
     description = HTMLField(help_text="Committee description with rich text formatting")  # Rich text
     responsibilities = HTMLField(blank=True, help_text="Committee responsibilities and duties")  # Rich text
     advisor = models.ForeignKey(
@@ -509,8 +522,28 @@ class LeadershipMessage(models.Model):
         # Auto-set titles based on message type
         if self.message_type == 'rector' and not self.title:
             self.title = "Welcome from the Rector"
-        elif self.message_type == 'director' and not self.title:
-            self.title = "Message from the Director"
         elif self.message_type == 'spiritual_director' and not self.title:
             self.title = "Spiritual Director's Message"
         super().save(*args, **kwargs)
+
+class CalendarEvent(models.Model):
+    title = models.CharField(max_length=200)
+    description = HTMLField(blank=True)
+    start_date = models.DateField()
+    end_date = models.DateField(blank=True, null=True)
+    start_time = models.TimeField(blank=True, null=True)
+    end_time = models.TimeField(blank=True, null=True)
+    is_all_day = models.BooleanField(default=False)
+    location = models.CharField(max_length=200, blank=True)
+    event_type = models.CharField(max_length=50, blank=True, choices=[
+        ('academic', 'Academic'),
+        ('holiday', 'Holiday'),
+        ('meeting', 'Meeting'),
+        ('other', 'Other')
+    ])
+
+    class Meta:
+        ordering = ['start_date', 'start_time']
+
+    def __str__(self):
+        return self.title

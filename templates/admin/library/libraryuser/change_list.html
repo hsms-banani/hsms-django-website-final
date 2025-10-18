@@ -1,0 +1,16 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls static %}
+
+{% block object-tools-items %}
+    <li>
+        <a href="{% url 'admin:library_libraryuser_bulk_upload' %}" class="addlink">
+            📤 Bulk Upload Users
+        </a>
+    </li>
+    <li>
+        <a href="{% url 'admin:library_libraryuser_download_template' %}" class="viewlink">
+            📄 Download Template
+        </a>
+    </li>
+    {{ block.super }}
+{% endblock %}

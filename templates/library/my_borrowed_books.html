@@ -1,0 +1,237 @@
+<!-- templates/library/my_borrowed_books.html -->
+{% extends "library/base.html" %}
+{% load static %}
+{% load math_filters %}
+
+{% block library_title %}My Borrowed Books{% endblock %}
+{% block library_subtitle %}Manage your book borrowing and returns{% endblock %}
+
+{% block library_content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-blue-100 text-sm font-medium">Currently Borrowed</p>
+                    <p class="text-3xl font-bold mt-2">{{ total_active }}</p>
+                </div>
+                <div class="bg-blue-400 bg-opacity-50 p-3 rounded-full">
+                    <i class="fas fa-book text-2xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-purple-100 text-sm font-medium">Borrowing Limit</p>
+                    <p class="text-3xl font-bold mt-2">{{ total_active }}/5</p>
+                </div>
+                <div class="bg-purple-400 bg-opacity-50 p-3 rounded-full">
+                    <i class="fas fa-layer-group text-2xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gradient-to-br {% if total_fines > 0 %}from-red-500 to-red-600{% else %}from-green-500 to-green-600{% endif %} text-white p-6 rounded-xl shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="{% if total_fines > 0 %}text-red-100{% else %}text-green-100{% endif %} text-sm font-medium">Outstanding Fines</p>
+                                                    <p class="text-3xl font-bold mt-2">৳{{ total_fines|floatformat:2 }}</p>
+                                                </div>
+                                                <div class="{% if total_fines > 0 %}bg-red-400{% else %}bg-green-400{% endif %} bg-opacity-50 p-3 rounded-full">
+                                                    <i class="fas fa-money-bill-wave text-2xl"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                    
+                                    <!-- Currently Borrowed Books -->
+                                    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                                        <div class="flex items-center justify-between mb-6">
+                                            <h2 class="text-2xl font-bold text-gray-800">
+                                                <i class="fas fa-book-reader text-blue-600 mr-2"></i>
+                                                Currently Borrowed Books
+                                            </h2>
+                                            <a href="{% url 'library:borrow_history' %}" class="text-blue-600 hover:text-blue-800 font-medium">
+                                                View Full History <i class="fas fa-arrow-right ml-1"></i>
+                                            </a>
+                                        </div>
+                    
+                                        {% if active_borrows %}
+                                            <div class="space-y-4">
+                                                {% for record in active_borrows %}
+                                                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition {% if record.is_overdue %}border-red-300 bg-red-50{% elif record.days_until_due <= 1 %}border-yellow-300 bg-yellow-50{% endif %}">
+                                                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                                                            <!-- Book Info -->
+                                                            <div class="flex-1">
+                                                                <div class="flex items-start gap-4">
+                                                                    {% if record.book.cover_image %}
+                                                                        <img src="{{ record.book.cover_image.url }}" alt="{{ record.book.title }}" class="w-16 h-20 object-cover rounded shadow">
+                                                                    {% else %}
+                                                                        <div class="w-16 h-20 bg-gradient-to-br from-gray-300 to-gray-400 rounded shadow flex items-center justify-center">
+                                                                            <i class="fas fa-book text-white text-2xl"></i>
+                                                                        </div>
+                                                                    {% endif %}
+                    
+                                                                    <div class="flex-1">
+                                                                        <h3 class="font-bold text-lg text-gray-800 mb-1">
+                                                                            <a href="{% url 'library:book_detail' record.book.slug %}" class="hover:text-blue-600">
+                                                                                {{ record.book.title }}
+                                                                                {% if record.book.volume %}
+                                                                                    <span class="text-sm text-gray-500">({{ record.book.volume }})</span>
+                                                                                {% endif %}
+                                                                            </a>
+                                                                        </h3>
+                                                                        <p class="text-sm text-gray-600 mb-2">
+                                                                            <i class="fas fa-tag mr-1"></i>{{ record.book.accession_number }}
+                                                                            <span class="mx-2">|</span>
+                                                                            <i class="fas fa-map-marker-alt mr-1"></i>{{ record.book.full_call_number }}
+                                                                        </p>
+                                                                        <div class="flex flex-wrap gap-2 text-sm">
+                                                                            <span class="text-gray-600">
+                                                                                <i class="far fa-calendar-alt mr-1"></i>
+                                                                                Borrowed: {{ record.borrow_date|date:"M d, Y" }}
+                                                                            </span>
+                                                                            <span class="font-semibold {% if record.is_overdue %}text-red-600{% elif record.days_until_due <= 1 %}text-yellow-600{% else %}text-blue-600{% endif %}">
+                                                                                <i class="far fa-calendar-check mr-1"></i>
+                                                                                Due: {{ record.due_date|date:"M d, Y" }}
+                                                                                {% if record.days_until_due is not None %}
+                                                                                    ({% if record.days_until_due < 0 %}{{ record.days_until_due|abs }} days overdue{% elif record.days_until_due == 0 %}Due today!{% elif record.days_until_due == 1 %}Due tomorrow{% else %}{{ record.days_until_due }} days left{% endif %})
+                                                                                {% endif %}
+                                                                            </span>
+                                                                        </div>
+                                                                        {% if record.fine_amount > 0 %}
+                                                                            <div class="mt-2 text-sm">
+                                                                                <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full font-semibold">
+                                                                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                                                                    Fine: ৳{{ record.fine_amount|floatformat:2 }} {% if not record.fine_paid %}(Unpaid){% endif %}
+                                                                                </span>
+                                                                            </div>
+                                                                        {% endif %}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                    
+                                                            <!-- Action Buttons -->
+                                                            <div class="flex flex-col gap-2 lg:w-48">
+                                                                {% if record.can_renew %}
+                                                                    <a href="{% url 'library:renew_book' record.id %}" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-center">
+                                                                        <i class="fas fa-redo mr-2"></i>Renew Book
+                                                                    </a>
+                                                                    <p class="text-xs text-gray-600 text-center">
+                                                                        {{ record.renewal_count }}/{{ record.max_renewals }} renewals used
+                                                                    </p>
+                                                                {% else %}
+                                                                    <button disabled class="w-full px-4 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed font-medium">
+                                                                        <i class="fas fa-ban mr-2"></i>Cannot Renew
+                                                                    </button>
+                                                                    <p class="text-xs text-gray-600 text-center">
+                                                                        {% if record.is_overdue %}Book is overdue{% else %}Max renewals reached{% endif %}
+                                                                    </p>
+                                                                {% endif %}
+                    
+                                                                <a href="{% url 'library:return_book' record.id %}" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium text-center">
+                                                                    <i class="fas fa-check mr-2"></i>Request Return
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            <div class="text-center py-12">
+                                                <div class="text-gray-400 mb-4">
+                                                    <i class="fas fa-book-open text-6xl"></i>
+                                                </div>
+                                                <p class="text-gray-600 text-lg mb-4">You haven't borrowed any books yet</p>
+                                                <a href="{% url 'library:home' %}" class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                                                    <i class="fas fa-search mr-2"></i>Browse Library
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                    
+                                    <!-- Recently Returned Books -->
+                                    {% if past_borrows %}
+                                        <div class="bg-white rounded-xl shadow-lg p-6">
+                                            <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                                                <i class="fas fa-history text-purple-600 mr-2"></i>
+                                                Recently Returned Books
+                                            </h2>
+                    
+                                            <div class="space-y-3">
+                                                {% for record in past_borrows %}
+                                                    <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
+                                                        <div class="flex items-center justify-between">
+                                                            <div class="flex-1">
+                                                                <h4 class="font-semibold text-gray-800">
+                                                                    <a href="{% url 'library:book_detail' record.book.slug %}" class="hover:text-blue-600">
+                                                                        {{ record.book.title }}
+                                                                        {% if record.book.volume %}
+                                                                            <span class="text-sm text-gray-500">({{ record.book.volume }})</span>
+                                                                        {% endif %}
+                                                                    </a>
+                                                                </h4>
+                                                                <div class="flex flex-wrap gap-3 text-sm text-gray-600 mt-1">
+                                                                    <span><i class="far fa-calendar mr-1"></i>Borrowed: {{ record.borrow_date|date:"M d, Y" }}</span>
+                                                                    <span><i class="far fa-calendar-check mr-1"></i>Returned: {{ record.return_date|date:"M d, Y" }}</span>
+                                                                    {% if record.fine_amount > 0 %}
+                                                                        <span class="text-red-600 font-semibold">
+                                                                            <i class="fas fa-money-bill-wave mr-1"></i>Fine: ৳{{ record.fine_amount|floatformat:2 }}
+                                                                            {% if record.fine_paid %}<i class="fas fa-check-circle text-green-600 ml-1"></i>{% endif %}
+                                                                        </span>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                            <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium">
+                                                                <i class="fas fa-check-circle mr-1"></i>Returned
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                    
+                                            <!-- Pagination -->
+                                            {% if past_borrows.has_other_pages %}
+                                                <div class="mt-6 flex justify-center">
+                                                    <nav class="flex gap-2">
+                                                        {% if past_borrows.has_previous %}
+                                                            <a href="?page={{ past_borrows.previous_page_number }}" class="px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                                                                <i class="fas fa-chevron-left"></i>
+                                                            </a>
+                                                        {% endif %}
+                    
+                                                        <span class="px-3 py-2 bg-blue-600 text-white rounded">
+                                                            Page {{ past_borrows.number }} of {{ past_borrows.paginator.num_pages }}
+                                                        </span>
+                    
+                                                        {% if past_borrows.has_next %}
+                                                            <a href="?page={{ past_borrows.next_page_number }}" class="px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                                                                <i class="fas fa-chevron-right"></i>
+                                                            </a>
+                                                        {% endif %}
+                                                    </nav>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                    
+                                    <!-- Help Section -->
+                                    <div class="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
+                                        <h3 class="text-lg font-bold text-blue-900 mb-3">
+                                            <i class="fas fa-info-circle mr-2"></i>Borrowing Information
+                                        </h3>
+                                        <ul class="space-y-2 text-sm text-blue-800">
+                                            <li><i class="fas fa-check text-blue-600 mr-2"></i>Books can be borrowed for 14 days</li>
+                                            <li><i class="fas fa-check text-blue-600 mr-2"></i>You can renew books up to 2 times (if no holds)</li>
+                                            <li><i class="fas fa-check text-blue-600 mr-2"></i>Maximum 5 books can be borrowed at a time</li>
+                                            <li><i class="fas fa-check text-blue-600 mr-2"></i>Late returns incur a fine of ৳10.00 per day</li>
+                                            <li><i class="fas fa-check text-blue-600 mr-2"></i>You will receive email reminders before due dates</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+
+{% endblock %}

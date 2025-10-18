@@ -1,0 +1,19 @@
+<!-- library/templates/library/emails/renewal_confirmation.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Renewed</title>
+</head>
+<body>
+    <h2>Book Renewed: {{ book.title }}</h2>
+    <p>Dear {{ borrower.get_full_name }},</p>
+    <p>You have successfully renewed the following book:</p>
+    <ul>
+        <li><strong>Title:</strong> {{ book.title }}</li>
+        <li><strong>Author(s):</strong> {{ book.authors_display }}</li>
+        <li><strong>New Due Date:</strong> {{ new_due_date|date:"F d, Y" }}</li>
+    </ul>
+    <p>You have {{ renewals_remaining }} renewals remaining for this book.</p>
+    <p>Thank you for using the {{ library_name }}.</p>
+</body>
+</html>
