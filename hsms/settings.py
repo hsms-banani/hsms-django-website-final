@@ -70,7 +70,43 @@ MIDDLEWARE = [
     'django_htmx.middleware.HtmxMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'library.middleware.LibrarySecurityMiddleware',
+    'library.middleware.BorrowingActivityLogger',
 ]
+
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': 'logs/library.log',
+            'maxBytes': 1024 * 1024 * 10,  # 10MB
+            'backupCount': 10,
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'library': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
 
 ROOT_URLCONF = 'hsms.urls'
 
@@ -367,6 +403,12 @@ LIBRARY_SETTINGS = {
     'FIRST_REMINDER_DAYS': 3,  # Days before due date to send first reminder
     'SECOND_REMINDER_DAYS': 1,  # Days before due date to send second reminder
     'OVERDUE_REMINDER_INTERVAL': 7,  # Send overdue notice every X days
+
+    'DEFAULT_LOAN_PERIOD': 14,  # days
+    'DEFAULT_RENEWAL_PERIOD': 14,  # days
+    'OVERDUE_FINE_PER_DAY': 10.00,  # BDT
+    'SEND_EMAIL_REMINDERS': True,
+    'REMINDER_DAYS_BEFORE_DUE': [3, 1],  # Send reminders 3 and 1 days before due
 }
 
 # Default From Email

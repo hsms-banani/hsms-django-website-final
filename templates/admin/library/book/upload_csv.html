@@ -1,10 +1,19 @@
 
 {% extends "admin/base_site.html" %}
+{% load i18n static %}
+
 {% block content %}
-<h2>Upload CSV File to Add/Update Books</h2>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <input type="file" name="csv_file">
-    <button type="submit">Upload</button>
-</form>
+<div id="content-main">
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div>
+            <label for="csv_file">{% trans 'Please select a CSV file to upload' %}</label>
+            <input type="file" name="csv_file" id="csv_file" accept=".csv">
+        </div>
+        <div class="submit-row">
+            <input type="submit" value="{% trans 'Upload' %}" class="default">
+        </div>
+    </form>
+    {% include "admin/library/book/import_instructions.html" %}
+</div>
 {% endblock %}

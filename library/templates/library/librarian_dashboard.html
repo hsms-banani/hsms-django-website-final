@@ -88,7 +88,7 @@
                     <span class="text-sm font-medium bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">Total</span>
                 </div>
                 <div>
-                    <p class="text-sm font-medium opacity-90 mb-1">Total Books</p>
+                    <p class="text-sm font-medium opacity-90 mb-1">Total Publications</p>
                     <p class="text-4xl font-bold">{{ total_books|intcomma }}</p>
                 </div>
             </div>
@@ -102,7 +102,7 @@
                     <span class="text-sm font-medium bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">Active</span>
                 </div>
                 <div>
-                    <p class="text-sm font-medium opacity-90 mb-1">Books Borrowed</p>
+                    <p class="text-sm font-medium opacity-90 mb-1">Publications Borrowed</p>
                     <p class="text-4xl font-bold">{{ borrowed_books_count|intcomma }}</p>
                 </div>
             </div>
@@ -116,7 +116,7 @@
                     <span class="text-sm font-medium bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">Urgent</span>
                 </div>
                 <div>
-                    <p class="text-sm font-medium opacity-90 mb-1">Books Overdue</p>
+                    <p class="text-sm font-medium opacity-90 mb-1">Publications Overdue</p>
                     <p class="text-4xl font-bold">{{ overdue_books_count|intcomma }}</p>
                 </div>
             </div>
@@ -250,7 +250,7 @@
                                 <tbody class="bg-white/30 divide-y divide-gray-200">
                                     {% for record in overdue_records|slice:":5" %}
                                     <tr class="hover:bg-white/60 transition-colors">
-                                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{{ record.book.title }}</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{{ record.publication.title }}</td>
                                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{{ record.borrower.get_full_name }}</td>
                                         <td class="px-4 py-3 whitespace-nowrap text-sm text-red-600 font-medium">{{ record.due_date|date:"d M, Y" }}</td>
                                     </tr>

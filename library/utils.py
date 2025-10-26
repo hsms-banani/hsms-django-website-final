@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 # library/utils.py
 # Utility functions for Bangla/Unicode text handling
 
@@ -284,11 +288,15 @@ def generate_random_password(length=12):
     """Generate a secure random password"""
     characters = string.ascii_letters + string.digits + "!@#$%^&*"
     password = ''.join(random.choice(characters) for _ in range(length))
-    # Ensure it has at least one of each type
+    
+    # Ensure password has required character types
     if not any(c.isupper() for c in password):
         password = password[:-1] + random.choice(string.ascii_uppercase)
     if not any(c.isdigit() for c in password):
         password = password[:-1] + random.choice(string.digits)
+    if not any(c in "!@#$%^&*" for c in password):
+        password = password[:-1] + random.choice("!@#$%^&*")
+    
     return password
 
 
@@ -310,64 +318,99 @@ def generate_username_from_name(first_name, last_name, email=None):
     while User.objects.filter(username=username).exists():
         username = f"{base_username}{counter}"
         counter += 1
+        
+        # Safety check to avoid infinite loop
+        if counter > 1000:
+            # Use email-based username as fallback
+            if email:
+                username = email.split('@')[0] + str(random.randint(1000, 9999))
+            else:
+                username = f"user{random.randint(10000, 99999)}"
+            break
     
     return username
 
 
-def validate_user_row(row):
+
+def validate_user_row(row, row_number):
     """Validate a single row of user data"""
     errors = []
     
-    # Required fields
+    # Required fields validation
     if not row.get('first_name', '').strip():
-        errors.append("First name is required")
+        errors.append(f"Row {row_number}: First name is required")
+    elif len(row['first_name'].strip()) > 150:
+        errors.append(f"Row {row_number}: First name too long (max 150 characters)")
     
     if not row.get('last_name', '').strip():
-        errors.append("Last name is required")
+        errors.append(f"Row {row_number}: Last name is required")
+    elif len(row['last_name'].strip()) > 150:
+        errors.append(f"Row {row_number}: Last name too long (max 150 characters)")
     
-    if not row.get('email', '').strip():
-        errors.append("Email is required")
+    # Email validation
+    email = row.get('email', '').strip()
+    if not email:
+        errors.append(f"Row {row_number}: Email is required")
     else:
         try:
-            validate_email(row['email'])
+            validate_email(email)
         except ValidationError:
-            errors.append(f"Invalid email: {row['email']}")
+            errors.append(f"Row {row_number}: Invalid email format: {email}")
         
         # Check if email already exists
-        if User.objects.filter(email=row['email']).exists():
-            errors.append(f"Email already exists: {row['email']}")
-
-    # Check for duplicate username
-    if row.get('username', '').strip():
-        if User.objects.filter(username=row['username']).exists():
-            errors.append(f"Username already exists: {row['username']}")
-
+        if User.objects.filter(email=email).exists():
+            errors.append(f"Row {row_number}: Email already exists: {email}")
+    
+    # Username validation (if provided)
+    username = row.get('username', '').strip()
+    if username:
+        if len(username) > 150:
+            errors.append(f"Row {row_number}: Username too long (max 150 characters)")
+        elif not username.isalnum() and '_' not in username and '.' not in username:
+            errors.append(f"Row {row_number}: Username can only contain letters, numbers, dots, and underscores")
+        elif User.objects.filter(username=username).exists():
+            errors.append(f"Row {row_number}: Username already exists: {username}")
     
     return errors
 
 
+
 def process_bulk_user_csv(csv_file, imported_by):
-    """Process CSV file and create users"""
-    from .models import BulkUserImportLog
+    """Process CSV file and create users with comprehensive error handling"""
+    from .models import BulkUserImportLog, LibraryPasswordSettings
     
-    # Read CSV content
+    # Get default password
+    password_settings = LibraryPasswordSettings.objects.first()
+    default_password = password_settings.default_password if password_settings else None
+
+    # Read CSV content with encoding detection
     try:
         content = csv_file.read().decode('utf-8-sig')  # Handle BOM
     except UnicodeDecodeError:
         try:
             csv_file.seek(0)
             content = csv_file.read().decode('cp1252')
-        except:
-            csv_file.seek(0)
-            content = csv_file.read().decode('latin-1')
+        except Exception:
+            try:
+                csv_file.seek(0)
+                content = csv_file.read().decode('latin-1')
+            except Exception as e:
+                logger.error(f"CSV encoding error: {str(e)}")
+                raise ValidationError(
+                    "Could not decode CSV file. Please ensure it's saved as UTF-8."
+                )
     
     csv_reader = csv.DictReader(StringIO(content))
     
     # Validate headers
     expected_headers = ['first_name', 'last_name', 'email', 'username']
     actual_headers = [header.strip().replace('*', '') for header in csv_reader.fieldnames]
-    if actual_headers != expected_headers:
-        raise ValidationError(f"Invalid CSV headers. Expected: {expected_headers}")
+    
+    if not all(h in actual_headers for h in expected_headers[:3]):  # first 3 are required
+        raise ValidationError(
+            f"Invalid CSV headers. Expected at least: first_name, last_name, email. "
+            f"Found: {', '.join(actual_headers)}"
+        )
     
     # Initialize counters and logs
     total_records = 0
@@ -377,40 +420,51 @@ def process_bulk_user_csv(csv_file, imported_by):
     success_log = []
     created_users = []
     
-    for row_num, row in enumerate(csv_reader, start=2):  # Start at 2 (after header)
+    # Validate all rows first
+    rows_to_process = []
+    for row_num, row in enumerate(csv_reader, start=2):
         total_records += 1
         
-        # Clean row data
-        cleaned_row = {k.strip().replace('*', ''): v.strip() if v else '' for k, v in row.items() if k}
-        
-        # Validate row
-        validation_errors = validate_user_row(cleaned_row)
-        if validation_errors:
-            failed_imports += 1
-            error_log.append(f"Row {row_num}: {', '.join(validation_errors)}")
+        # Skip empty rows
+        if not any(row.values()):
             continue
         
+        # Clean row data
+        cleaned_row = {
+            k.strip().replace('*', ''): v.strip() if v else '' 
+            for k, v in row.items() if k
+        }
+        
+        # Validate row
+        validation_errors = validate_user_row(cleaned_row, row_num)
+        if validation_errors:
+            failed_imports += 1
+            error_log.extend(validation_errors)
+        else:
+            rows_to_process.append((row_num, cleaned_row))
+    
+    # Process valid rows
+    for row_num, cleaned_row in rows_to_process:
         try:
             # Generate username if not provided
             username = cleaned_row.get('username', '').strip()
             if not username:
                 username = generate_username_from_name(
-                    cleaned_row['first_name'], 
-                    cleaned_row['last_name'], 
+                    cleaned_row['first_name'],
+                    cleaned_row['last_name'],
                     cleaned_row['email']
                 )
             
-            # Check if username exists
+            # Double-check username uniqueness
             if User.objects.filter(username=username).exists():
-                # Generate alternative username
                 username = generate_username_from_name(
-                    cleaned_row['first_name'], 
-                    cleaned_row['last_name'], 
+                    cleaned_row['first_name'],
+                    cleaned_row['last_name'],
                     cleaned_row['email']
                 )
             
-            # Generate password
-            password = generate_random_password()
+            # Use default password or generate a random one
+            password = default_password or generate_random_password()
             
             # Create user
             user = User.objects.create_user(
@@ -426,7 +480,9 @@ def process_bulk_user_csv(csv_file, imported_by):
             
             successful_imports += 1
             success_log.append(
-                f"Row {row_num}: Created user '{username}' - {cleaned_row['first_name']} {cleaned_row['last_name']} ({cleaned_row['email']})"
+                f"Row {row_num}: Created user '{username}' - "
+                f"{cleaned_row['first_name']} {cleaned_row['last_name']} "
+                f"({cleaned_row['email']})"
             )
             
             # Store for credentials export
@@ -435,12 +491,17 @@ def process_bulk_user_csv(csv_file, imported_by):
                 'password': password,
                 'email': cleaned_row['email'],
                 'first_name': cleaned_row['first_name'],
-                'last_name': cleaned_row['last_name']
+                'last_name': cleaned_row['last_name'],
+                'row_number': row_num
             })
+            
+            logger.info(f"User created: {username} ({cleaned_row['email']})")
             
         except Exception as e:
             failed_imports += 1
-            error_log.append(f"Row {row_num}: Error creating user - {str(e)}")
+            error_msg = f"Row {row_num}: Error creating user - {str(e)}"
+            error_log.append(error_msg)
+            logger.error(error_msg)
     
     # Create import log
     import_log = BulkUserImportLog.objects.create(
@@ -467,10 +528,10 @@ def generate_credentials_csv(users_data):
     output = StringIO()
     writer = csv.writer(output)
     
-    # Write header
+    # Write header with instructions
     writer.writerow([
-        'Username', 'Password', 'Email', 'First Name', 'Last Name', 
-        'Status', 'Login URL'
+        'Username', 'Password', 'Email', 'First Name', 'Last Name',
+        'Status', 'Login URL', 'Row Number'
     ])
     
     # Write user data
@@ -482,7 +543,8 @@ def generate_credentials_csv(users_data):
             user['first_name'],
             user['last_name'],
             'Active',
-            'http://hsms-banani.org/login/'  # Update with your actual URL
+            'https://hsms-banani.org/login/',  # Update with your actual URL
+            user.get('row_number', '')
         ])
     
     return output.getvalue()

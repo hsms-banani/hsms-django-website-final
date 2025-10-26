@@ -9,11 +9,11 @@
         <h1 class="text-2xl font-bold text-gray-800 mb-6">Borrow Record Details</h1>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-                <h2 class="text-lg font-semibold text-gray-700 mb-2">Book Details</h2>
-                <p><strong>Title:</strong> {{ record.book.title }}</p>
-                <p><strong>Author(s):</strong> {% for author in record.book.authors.all %}{{ author.full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
-                <p><strong>Accession Number:</strong> {{ record.book.accession_number }}</p>
-                <p><strong>Call Number:</strong> {{ record.book.call_number }}</p>
+                <h2 class="text-lg font-semibold text-gray-700 mb-2">Publication Details</h2>
+                <p><strong>Title:</strong> {{ record.publication.title }}</p>
+                <p><strong>Author(s):</strong> {% for author in record.publication.authors.all %}{{ author.full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+                <p><strong>Accession Number:</strong> {{ record.publication.accession_number }}</p>
+                <p><strong>Call Number:</strong> {{ record.publication.call_number }}</p>
             </div>
             <div>
                 <h2 class="text-lg font-semibold text-gray-700 mb-2">Borrower Details</h2>

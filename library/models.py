@@ -1,6 +1,7 @@
-# library/models.py - Enhanced with Borrowing System, Accession Number, and Volume
-
-from django.db import models, connection
+# library/models.py
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -9,10 +10,15 @@ from django.contrib.postgres.search import SearchVectorField
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta
+from django.core.exceptions import ValidationError
 import uuid
 import hashlib
 import unicodedata
 import re
+from django.contrib.auth.hashers import make_password
+import logging
+
+logger = logging.getLogger(__name__)
 
 class LibraryUser(User):
     """Proxy model for library users to have separate admin interface"""
@@ -63,11 +69,11 @@ def create_unicode_safe_slug(text, max_length=50):
     return f"{base}-{hash_suffix}"[:max_length]
 
 class CategoryManager(models.Manager):
-    def with_book_counts(self):
-        return self.annotate(book_count=models.Count('books'))
+    def with_publication_counts(self):
+        return self.annotate(publication_count=models.Count('publications'))
     
     def by_language(self, language_code):
-        return self.filter(books__language=language_code).distinct()
+        return self.filter(publications__language=language_code).distinct()
 
 class Category(models.Model):
     """Book categories/subjects with Unicode support"""
@@ -103,8 +109,8 @@ class Category(models.Model):
         return self.name
 
 class PublisherManager(models.Manager):
-    def with_book_counts(self):
-        return self.annotate(book_count=models.Count('books'))
+    def with_publication_counts(self):
+        return self.annotate(publication_count=models.Count('publications'))
 
 class Publisher(models.Model):
     """Publishers with Unicode support"""
@@ -144,11 +150,11 @@ class Publisher(models.Model):
         return self.name
 
 class AuthorManager(models.Manager):
-    def with_book_counts(self):
-        return self.annotate(book_count=models.Count('books'))
+    def with_publication_counts(self):
+        return self.annotate(publication_count=models.Count('publications'))
     
     def by_language(self, language_code):
-        return self.filter(books__language=language_code).distinct()
+        return self.filter(publications__language=language_code).distinct()
 
 class Author(models.Model):
     """Authors with Unicode support"""
@@ -225,8 +231,8 @@ class BookManager(models.Manager):
     def with_full_details(self):
         return self.select_related('publisher', 'category').prefetch_related('authors')
 
-class Book(models.Model):
-    """Main Book model - Enhanced with Accession Number and Volume"""
+class Publication(models.Model):
+    """Abstract base class for all library publications (e.g., books, magazines)."""
     LANGUAGE_CHOICES = [
         ('en', 'English'), ('bn', 'বাংলা (Bangla)'), ('hi', 'Hindi'),
         ('ur', 'Urdu'), ('es', 'Spanish'), ('fr', 'French'),
@@ -243,38 +249,26 @@ class Book(models.Model):
         ('damaged', 'Damaged'),
         ('repair', 'Under Repair'),
     ]
-    
-    # Basic Information
+
     title = models.CharField(max_length=500, db_index=True)
     title_bangla = models.CharField(max_length=500, blank=True, help_text="Title in Bangla")
     subtitle = models.CharField(max_length=500, blank=True)
     subtitle_bangla = models.CharField(max_length=500, blank=True, help_text="Subtitle in Bangla")
     slug = models.SlugField(max_length=500, unique=True, blank=True, db_index=True)
     
-    # NEW: Accession Number and Volume
     accession_number = models.CharField(
         max_length=50,
         unique=True,
         db_index=True,
-        help_text="Unique accession number for this book copy (e.g., ACC-2024-001)"
-    )
-    volume = models.CharField(
-        max_length=20,
-        blank=True,
-        db_index=True,
-        help_text="Volume number (e.g., v1, v2, Vol. 1, Part 2)"
+        help_text="Unique accession number for this item (e.g., ACC-2024-001)"
     )
     
-    authors = models.ManyToManyField(Author, related_name='books')
-    publisher = models.ForeignKey(Publisher, on_delete=models.CASCADE, related_name='books', db_index=True)
+    publisher = models.ForeignKey(Publisher, on_delete=models.CASCADE, related_name='%(class)s_publications', db_index=True)
     publication_year = models.PositiveIntegerField(
         db_index=True,
         validators=[MinValueValidator(1000), MaxValueValidator(2025)]
     )
     
-    # ISBN and Classification
-    isbn_10 = models.CharField(max_length=10, blank=True, db_index=True, help_text="10-digit ISBN")
-    isbn_13 = models.CharField(max_length=13, blank=True, db_index=True, help_text="13-digit ISBN")
     classification_number = models.CharField(
         max_length=50, db_index=True,
         help_text="Dewey Decimal Classification (e.g., 236.5)"
@@ -288,55 +282,47 @@ class Book(models.Model):
         help_text="Auto-generated from classification + cutter number"
     )
     
-    # Content Details
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='books', db_index=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='%(class)s_publications', db_index=True)
     language = models.CharField(max_length=10, choices=LANGUAGE_CHOICES, default='en', db_index=True)
     pages = models.PositiveIntegerField(blank=True, null=True)
-    edition = models.CharField(max_length=50, blank=True)
     description = models.TextField(blank=True)
     description_bangla = models.TextField(blank=True, help_text="Description in Bangla")
     keywords = models.CharField(max_length=500, blank=True, db_index=True)
     keywords_bangla = models.CharField(max_length=500, blank=True, db_index=True)
     
-    # Physical Details
     total_copies = models.PositiveIntegerField(default=1)
     copies_available = models.PositiveIntegerField(default=1, db_index=True)
     location_shelf = models.CharField(max_length=50, blank=True, help_text="Physical location (e.g., A-1-3)")
     
-    # Status and Metadata
     status = models.CharField(max_length=20, choices=AVAILABILITY_STATUS, default='available', db_index=True)
     acquisition_date = models.DateField(auto_now_add=True, db_index=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     cover_image = models.ImageField(upload_to='library/covers/', blank=True, null=True)
     
-    # Tracking
     times_borrowed = models.PositiveIntegerField(default=0, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True, db_index=True)
     
-    # PostgreSQL Full Text Search
     search_vector = SearchVectorField(null=True, blank=True)
-    
-    objects = BookManager()
-    
+
     class Meta:
+        abstract = True
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['title']),
             models.Index(fields=['accession_number']),
-            models.Index(fields=['volume']),
             models.Index(fields=['call_number']),
             models.Index(fields=['status']),
             models.Index(fields=['-created_at']),
         ]
-    
+
     def save(self, *args, **kwargs):
         if not self.slug:
             title_for_slug = self.title_bangla if self.title_bangla else self.title
             self.slug = create_unicode_safe_slug(title_for_slug)
             counter = 1
             original_slug = self.slug
-            while Book.objects.filter(slug=self.slug).exists():
+            while type(self).objects.filter(slug=self.slug).exists():
                 self.slug = f"{original_slug}-{counter}"
                 counter += 1
         
@@ -347,9 +333,6 @@ class Book(models.Model):
             self.copies_available = self.total_copies
             
         super().save(*args, **kwargs)
-    
-    def get_absolute_url(self):
-        return reverse('library:book_detail', kwargs={'slug': self.slug})
 
     @property
     def is_available(self):
@@ -357,8 +340,30 @@ class Book(models.Model):
 
     @property
     def is_multilingual(self):
-        """Check if the book has content in both English and Bangla."""
         return bool(self.title_bangla or self.description_bangla)
+
+    def __str__(self):
+        title = self.title_bangla if self.title_bangla and not self.title else self.title
+        return f"{title} - {self.accession_number}"
+
+
+class Book(Publication):
+    """Model for books in the library."""
+    authors = models.ManyToManyField(Author, related_name='publications')
+    isbn_10 = models.CharField(max_length=10, blank=True, db_index=True, help_text="10-digit ISBN")
+    isbn_13 = models.CharField(max_length=13, blank=True, db_index=True, help_text="13-digit ISBN")
+    edition = models.CharField(max_length=50, blank=True)
+    volume = models.CharField(
+        max_length=20,
+        blank=True,
+        db_index=True,
+        help_text="Volume number (e.g., v1, v2, Vol. 1, Part 2)"
+    )
+
+    objects = BookManager()
+
+    def get_absolute_url(self):
+        return reverse('library:book_detail', kwargs={'slug': self.slug})
 
     @property
     def full_call_number(self):
@@ -373,6 +378,24 @@ class Book(models.Model):
         volume_str = f" ({self.volume})" if self.volume else ""
         return f"{title}{volume_str} - {self.accession_number}"
 
+
+class Periodical(Publication):
+    """Model for periodicals (magazines, journals) in the library."""
+    issn = models.CharField(max_length=8, blank=True, db_index=True, help_text="8-digit ISSN")
+    issue_date = models.DateField(db_index=True)
+    volume = models.CharField(max_length=20, blank=True, db_index=True)
+    issue_number = models.CharField(max_length=20, blank=True, db_index=True)
+
+    class Meta(Publication.Meta):
+        verbose_name_plural = "Periodicals"
+    
+    def get_absolute_url(self):
+        return reverse('library:periodical_detail', kwargs={'slug': self.slug})
+
+    def __str__(self):
+        title = self.title_bangla if self.title_bangla and not self.title else self.title
+        return f"{title} (V:{self.volume}, I:{self.issue_number}) - {self.accession_number}"
+
 class BorrowRecord(models.Model):
     """Track book borrowing with email reminder support"""
     STATUS_CHOICES = [
@@ -382,9 +405,12 @@ class BorrowRecord(models.Model):
         ('lost', 'Lost'),
     ]
     
-    # Foreign Keys
-    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='borrow_records')
-    borrower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='borrowed_books')
+    # Generic Foreign Key to Publication
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True)
+    object_id = models.PositiveIntegerField(null=True)
+    publication = GenericForeignKey('content_type', 'object_id')
+    
+    borrower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='borrowed_records', related_query_name='borrowed_record')
     
     # Borrowing Details
     borrow_date = models.DateTimeField(default=timezone.now, db_index=True)
@@ -422,17 +448,70 @@ class BorrowRecord(models.Model):
         verbose_name = "Borrow Record"
         verbose_name_plural = "Borrow Records"
     
+
+    def clean(self):
+        """Validate borrow record before saving"""
+        super().clean()
+        
+        # Validate due date is in future
+        if self.due_date and self.due_date < timezone.now().date():
+            raise ValidationError({
+                'due_date': 'Due date cannot be in the past.'
+            })
+        
+        # Validate borrow date is not in future
+        if self.borrow_date and self.borrow_date > timezone.now():
+            raise ValidationError({
+                'borrow_date': 'Borrow date cannot be in the future.'
+            })
+        
+        # Validate return date is after borrow date
+        if self.return_date and self.borrow_date:
+            if self.return_date.date() < self.borrow_date.date():
+                raise ValidationError({
+                    'return_date': 'Return date cannot be before borrow date.'
+                })
+        
+        # Validate fine amount is non-negative
+        if self.fine_amount and self.fine_amount < 0:
+            raise ValidationError({
+                'fine_amount': 'Fine amount cannot be negative.'
+            })
+        
     def save(self, *args, **kwargs):
-        # Calculate fine for overdue books
+        """Override save to run validation"""
+        self.full_clean()
+        
+        # Auto-update overdue status and calculate fines
         if self.status == 'active' and timezone.now().date() > self.due_date:
             self.status = 'overdue'
             days_overdue = (timezone.now().date() - self.due_date).days
-            # Use the configurable fine from LibrarySetting
             setting = LibrarySetting.objects.first()
             fine_per_day = setting.overdue_fine_per_day if setting else 10.00
             self.fine_amount = days_overdue * fine_per_day
         
         super().save(*args, **kwargs)
+
+    @property
+    def is_renewable(self):
+        """Check if book can be renewed"""
+        if self.status != 'active':
+            return False
+        
+        if self.is_overdue:
+            return False
+        
+        setting = LibrarySetting.objects.first()
+        max_renewals = setting.max_renewals if setting else 2
+        
+        if self.renewal_count >= max_renewals:
+            return False
+        
+        # Check if there are holds/reservations for this book
+        # (Future feature: implement hold system)
+        
+        return True
+
     
     @property
     def is_overdue(self):
@@ -465,14 +544,37 @@ class BorrowRecord(models.Model):
     
     def return_book(self):
         """Mark book as returned and update availability"""
+        logger.info(f"Returning publication: {self.publication.title}, copies available before: {self.publication.copies_available}, status before: {self.publication.status}")
         self.return_date = timezone.now()
         self.status = 'returned'
-        self.book.copies_available += 1
-        self.book.save()
+        self.publication.copies_available += 1
+        if self.publication.copies_available > 0:
+            self.publication.status = 'available'
+        self.publication.save()
         self.save()
+        logger.info(f"Returned publication: {self.publication.title}, copies available after: {self.publication.copies_available}, status after: {self.publication.status}")
+
+    def undo_return(self):
+        """Undo a return, reverting the publication to its previous state."""
+        logger.info(f"Undoing return for publication: {self.publication.title}, copies available before: {self.publication.copies_available}, status before: {self.publication.status}")
+        if self.status != 'returned':
+            raise ValueError("This publication has not been returned yet.")
+
+        self.return_date = None
+        if self.due_date < timezone.now().date():
+            self.status = 'overdue'
+        else:
+            self.status = 'active'
+        
+        self.publication.copies_available -= 1
+        if self.publication.copies_available == 0:
+            self.publication.status = 'checked_out'
+        self.publication.save()
+        self.save()
+        logger.info(f"Undone return for publication: {self.publication.title}, copies available after: {self.publication.copies_available}, status after: {self.publication.status}")
     
     def __str__(self):
-        return f"{self.borrower.get_full_name()} - {self.book.title} (Due: {self.due_date})"
+        return f"{self.borrower.get_full_name()} - {self.publication.title} (Due: {self.due_date})"
 
 class BookSearch(models.Model):
     """Track popular searches"""
@@ -519,6 +621,61 @@ class LibrarySetting(models.Model):
         default=5, 
         help_text="Maximum number of books a user can borrow at a time"
     )
+
+    # Additional settings
+    send_reminder_3_days = models.BooleanField(
+        default=True,
+        help_text="Send reminder 3 days before due date"
+    )
+    
+    send_reminder_1_day = models.BooleanField(
+        default=True,
+        help_text="Send reminder 1 day before due date"
+    )
+    
+    send_overdue_notices = models.BooleanField(
+        default=True,
+        help_text="Send overdue notices automatically"
+    )
+    
+    overdue_notice_frequency_days = models.PositiveIntegerField(
+        default=7,
+        help_text="How often to send overdue notices (in days)"
+    )
+    
+    allow_self_return = models.BooleanField(
+        default=False,
+        help_text="Allow users to mark books as returned (requires staff approval)"
+    )
+    
+    require_librarian_approval = models.BooleanField(
+        default=False,
+        help_text="Require librarian approval for borrowing"
+    )
+    
+    def clean(self):
+        """Validate library settings"""
+        super().clean()
+        
+        if self.overdue_fine_per_day < 0:
+            raise ValidationError({
+                'overdue_fine_per_day': 'Fine amount cannot be negative.'
+            })
+        
+        if self.loan_period < 1:
+            raise ValidationError({
+                'loan_period': 'Loan period must be at least 1 day.'
+            })
+        
+        if self.max_renewals < 0:
+            raise ValidationError({
+                'max_renewals': 'Maximum renewals cannot be negative.'
+            })
+        
+        if self.max_books_per_user < 1:
+            raise ValidationError({
+                'max_books_per_user': 'Must allow at least 1 book per user.'
+            })
     
     class Meta:
         verbose_name = "Library Setting"
@@ -533,3 +690,36 @@ class LibrarySetting(models.Model):
 
     def __str__(self):
         return "Library Settings"
+
+
+class LibraryPasswordSettings(models.Model):
+    """Singleton model to store the default password for new users"""
+    default_password = models.CharField(
+        max_length=255, 
+        help_text="Default password for new library users. This will be hashed automatically."
+    )
+
+    def save(self, *args, **kwargs):
+        """Enforce a single instance and hash the password"""
+        if not self.pk and LibraryPasswordSettings.objects.exists():
+            raise ValidationError("There can be only one LibraryPasswordSettings instance.")
+        
+        # Hash the password before saving
+        self.default_password = make_password(self.default_password)
+        return super(LibraryPasswordSettings, self).save(*args, **kwargs)
+
+    def clean(self):
+        """Validate library password settings"""
+        super().clean()
+        
+        if not self.default_password:
+            raise ValidationError({
+                'default_password': 'Default password cannot be empty.'
+            })
+
+    class Meta:
+        verbose_name = "Library Password Setting"
+        verbose_name_plural = "Library Password Settings"
+
+    def __str__(self):
+        return "Library Password Settings"

@@ -10,6 +10,7 @@ from library.models import Book, Author, Category, Publisher
 from library.utils import normalize_unicode_text, create_multilingual_slug
 import csv
 import chardet
+import re
 from decimal import Decimal
 
 class Command(BaseCommand):
@@ -54,21 +55,31 @@ class Command(BaseCommand):
                 last_name = ''
             
             # Normalize names
-            first_name = normalize_unicode_text(first_name)
-            last_name = normalize_unicode_text(last_name)
+            first_name_normalized = normalize_unicode_text(first_name)
+            last_name_normalized = normalize_unicode_text(last_name)
             
-            # Create or get author
-            author, created = Author.objects.get_or_create(
-                first_name=first_name,
-                last_name=last_name,
-                defaults={
-                    'slug': create_multilingual_slug(f"{first_name} {last_name}")
-                }
-            )
-            authors.append(author)
-            
-            if created:
+            # Try to find author by normalized names
+            author = Author.objects.filter(
+                first_name__iexact=first_name_normalized,
+                last_name__iexact=last_name_normalized
+            ).first()
+
+            if not author:
+                base_slug = create_multilingual_slug(f"{first_name} {last_name}")
+                slug = base_slug
+                counter = 1
+                while Author.objects.filter(slug=slug).exists():
+                    slug = f"{base_slug}-{counter}"
+                    counter += 1
+
+                author = Author.objects.create(
+                    first_name=first_name,
+                    last_name=last_name,
+                    slug=slug
+                )
                 self.stdout.write(self.style.SUCCESS(f'  Created author: {author.full_name}'))
+            
+            authors.append(author)
         
         return authors
 
@@ -77,13 +88,22 @@ class Command(BaseCommand):
         if not category_name:
             raise ValueError("Category is required")
         
-        category_name = normalize_unicode_text(category_name)
-        category, created = Category.objects.get_or_create(
-            name=category_name,
-            defaults={'slug': create_multilingual_slug(category_name)}
-        )
+        category_name_normalized = normalize_unicode_text(category_name)
         
-        if created:
+        category = Category.objects.filter(name__iexact=category_name_normalized).first()
+        
+        if not category:
+            base_slug = create_multilingual_slug(category_name)
+            slug = base_slug
+            counter = 1
+            while Category.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+
+            category = Category.objects.create(
+                name=category_name,
+                slug=slug
+            )
             self.stdout.write(self.style.SUCCESS(f'  Created category: {category.name}'))
         
         return category
@@ -93,13 +113,22 @@ class Command(BaseCommand):
         if not publisher_name:
             raise ValueError("Publisher is required")
         
-        publisher_name = normalize_unicode_text(publisher_name)
-        publisher, created = Publisher.objects.get_or_create(
-            name=publisher_name,
-            defaults={'slug': create_multilingual_slug(publisher_name)}
-        )
+        publisher_name_normalized = normalize_unicode_text(publisher_name)
         
-        if created:
+        publisher = Publisher.objects.filter(name__iexact=publisher_name_normalized).first()
+
+        if not publisher:
+            base_slug = create_multilingual_slug(publisher_name)
+            slug = base_slug
+            counter = 1
+            while Publisher.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+
+            publisher = Publisher.objects.create(
+                name=publisher_name,
+                slug=slug
+            )
             self.stdout.write(self.style.SUCCESS(f'  Created publisher: {publisher.name}'))
         
         return publisher
@@ -118,6 +147,7 @@ class Command(BaseCommand):
         success_count = 0
         error_count = 0
         skipped_count = 0
+        error_messages = []
         
         try:
             with open(csv_file, 'r', encoding=encoding) as file:
@@ -127,13 +157,13 @@ class Command(BaseCommand):
                     content = content[1:]
                 
                 reader = csv.DictReader(content.splitlines())
-                
                 # Validate required columns
                 required_fields = ['title', 'author', 'publisher', 'publication_year', 
                                  'classification_number', 'cutter_number', 'category', 
                                  'accession_number']
                 
-                missing_fields = [field for field in required_fields if field.rstrip('*') not in reader.fieldnames]
+                fieldnames_without_star = [fn.rstrip('* ') for fn in reader.fieldnames]
+                missing_fields = [field for field in required_fields if field not in fieldnames_without_star]
                 if missing_fields:
                     raise CommandError(f'Missing required columns: {", ".join(missing_fields)}')
                 
@@ -143,11 +173,11 @@ class Command(BaseCommand):
                     try:
                         with transaction.atomic():
                             # Check if book with accession number already exists
-                            accession_number = normalize_unicode_text(row.get('accession_number', '').strip())
+                            accession_number = normalize_unicode_text(row.get('accession_number*', '').strip())
                             if not accession_number:
-                                self.stdout.write(
-                                    self.style.ERROR(f'Row {row_num}: Missing accession_number')
-                                )
+                                error_msg = f'Row {row_num}: Missing accession_number'
+                                self.stdout.write(self.style.ERROR(error_msg))
+                                error_messages.append(error_msg)
                                 error_count += 1
                                 continue
                             
@@ -159,30 +189,36 @@ class Command(BaseCommand):
                                 continue
                             
                             # Get related objects
-                            authors = self.get_or_create_authors(row.get('author', ''))
-                            category = self.get_or_create_category(row.get('category', ''))
-                            publisher = self.get_or_create_publisher(row.get('publisher', ''))
+                            authors = self.get_or_create_authors(row.get('author*', ''))
+                            category = self.get_or_create_category(row.get('category*', ''))
+                            publisher = self.get_or_create_publisher(row.get('publisher*', ''))
                             
                             if not authors:
                                 raise ValueError("At least one author is required")
                             
                             # Prepare book data
+                            title = normalize_unicode_text(row.get('title*', '').strip())
+                            title_bangla = normalize_unicode_text(row.get('title_bangla', '').strip())
+
+                            if not title and title_bangla:
+                                title = title_bangla
+
                             book_data = {
-                                'title': normalize_unicode_text(row.get('title', '').strip()),
-                                'title_bangla': normalize_unicode_text(row.get('title_bangla', '').strip()),
+                                'title': title,
+                                'title_bangla': title_bangla,
                                 'subtitle': normalize_unicode_text(row.get('subtitle', '').strip()),
                                 'subtitle_bangla': normalize_unicode_text(row.get('subtitle_bangla', '').strip()),
                                 'accession_number': accession_number,
                                 'volume': normalize_unicode_text(row.get('volume', '').strip()),
                                 'publisher': publisher,
-                                'publication_year': int(row.get('publication_year', 2024)),
+                                'publication_year': int(row.get('publication_year*', 2024)),
                                 'isbn_10': row.get('isbn_10', '').strip(),
                                 'isbn_13': row.get('isbn_13', '').strip(),
-                                'classification_number': row.get('classification_number', '').strip(),
-                                'cutter_number': row.get('cutter_number', '').strip(),
+                                'classification_number': row.get('classification_number*', '').strip(),
+                                'cutter_number': row.get('cutter_number*', '').strip(),
                                 'category': category,
                                 'language': row.get('language', 'en').strip() or 'en',
-                                'pages': int(row.get('pages', 0)) if row.get('pages', '').strip() else None,
+                                'pages': 0,
                                 'edition': normalize_unicode_text(row.get('edition', '').strip()),
                                 'description': normalize_unicode_text(row.get('description', '').strip()),
                                 'description_bangla': normalize_unicode_text(row.get('description_bangla', '').strip()),
@@ -193,6 +229,17 @@ class Command(BaseCommand):
                                 'location_shelf': row.get('location_shelf', '').strip(),
                                 'status': row.get('status', 'available').strip() or 'available',
                             }
+
+                            # Handle pages with a regex to extract the main number
+                            pages_str = row.get('pages', '').strip()
+                            if pages_str:
+                                try:
+                                    # Find the last number in the string
+                                    page_numbers = re.findall(r'\d+', pages_str)
+                                    if page_numbers:
+                                        book_data['pages'] = int(page_numbers[-1])
+                                except (ValueError, TypeError):
+                                    book_data['pages'] = 0
                             
                             # Add price if provided
                             price = row.get('price', '').strip()
@@ -224,9 +271,9 @@ class Command(BaseCommand):
                                 success_count += 1
                     
                     except Exception as e:
-                        self.stdout.write(
-                            self.style.ERROR(f'✗ Row {row_num}: {str(e)}')
-                        )
+                        error_msg = f'✗ Row {row_num}: {str(e)}'
+                        self.stdout.write(self.style.ERROR(error_msg))
+                        error_messages.append(error_msg)
                         error_count += 1
                         continue
         
@@ -243,5 +290,8 @@ class Command(BaseCommand):
         self.stdout.write(f'  ✗ Errors: {error_count}')
         self.stdout.write('='*60 + '\n')
         
+        if error_messages:
+            raise CommandError("\n".join(error_messages))
+
         if dry_run:
             self.stdout.write(self.style.WARNING('This was a DRY RUN. No data was saved.\n'))

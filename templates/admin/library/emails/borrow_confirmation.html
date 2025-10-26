@@ -1,0 +1,137 @@
+<!-- templates/library/emails/borrow_confirmation.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #f8f9fa;
+            padding: 30px;
+            border: 1px solid #e0e0e0;
+        }
+        .book-details {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .important {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .footer {
+            background: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 0 0 10px 10px;
+            font-size: 14px;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table td {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        table td:first-child {
+            font-weight: bold;
+            width: 40%;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 style="margin: 0;">📚 Book Borrowed Successfully!</h1>
+    </div>
+    
+    <div class="content">
+        <p>Dear <strong>{{ borrower.get_full_name }}</strong>,</p>
+        
+        <p>Great choice! You have successfully borrowed the following book from {{ library_name }}:</p>
+        
+        <div class="book-details">
+            <h2 style="margin-top: 0; color: #667eea;">{{ book.title }}</h2>
+            
+            <table>
+                <tr>
+                    <td>Author(s):</td>
+                    <td>{{ book.authors_list }}</td>
+                </tr>
+                <tr>
+                    <td>Accession Number:</td>
+                    <td><code>{{ book.accession_number }}</code></td>
+                </tr>
+                <tr>
+                    <td>Call Number:</td>
+                    <td><code>{{ book.call_number }}</code></td>
+                </tr>
+                <tr>
+                    <td>Borrow Date:</td>
+                    <td>{{ borrow_record.borrow_date|date:"F d, Y" }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Due Date:</strong></td>
+                    <td><strong style="color: #dc3545;">{{ due_date|date:"F d, Y" }}</strong></td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="important">
+            <h3 style="margin-top: 0;">⚠️ Important Reminders:</h3>
+            <ul style="margin: 10px 0;">
+                <li>Please return the book by <strong>{{ due_date|date:"F d, Y" }}</strong></li>
+                <li>You can renew this book up to <strong>2 times</strong> if needed</li>
+                <li>Late returns incur a fine of <strong>৳10.00 per day</strong></li>
+                <li>We'll send you reminders before the due date</li>
+            </ul>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="http://hsms-banani.org/library/my-books/" class="button">
+                View My Borrowed Books
+            </a>
+        </div>
+        
+        <p style="color: #666; font-size: 14px; margin-top: 30px;">
+            <strong>Need Help?</strong><br>
+            Contact us at library@hsms-banani.org or visit the library during opening hours.
+        </p>
+    </div>
+    
+    <div class="footer">
+        <p style="margin: 0;">{{ library_name }}</p>
+        <p style="margin: 5px 0 0 0; font-size: 12px; opacity: 0.8;">
+            Promoting knowledge and learning
+        </p>
+    </div>
+</body>
+</html>

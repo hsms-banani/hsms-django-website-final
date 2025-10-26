@@ -1,0 +1,413 @@
+<!-- templates/library/librarian_dashboard.html - ENHANCED -->
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Librarian Dashboard{% endblock %}
+
+{% block extrastyle %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    .dashboard-card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .dashboard-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .stat-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+    }
+    
+    .stat-value {
+        font-size: 32px;
+        font-weight: bold;
+        margin: 0;
+    }
+    
+    .stat-label {
+        color: #666;
+        font-size: 14px;
+        margin: 5px 0 0 0;
+    }
+    
+    .alert-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    
+    .alert-danger {
+        background: #fee;
+        color: #c00;
+    }
+    
+    .alert-warning {
+        background: #ffc;
+        color: #860;
+    }
+    
+    .alert-success {
+        background: #efe;
+        color: #060;
+    }
+    
+    .quick-action-btn {
+        display: inline-block;
+        padding: 10px 20px;
+        margin: 5px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    
+    .btn-primary {
+        background: #417690;
+        color: white;
+    }
+    
+    .btn-success {
+        background: #28a745;
+        color: white;
+    }
+    
+    .btn-warning {
+        background: #ffc107;
+        color: #333;
+    }
+    
+    .quick-action-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <h1 style="margin-bottom: 30px;">
+        <i class="fas fa-tachometer-alt"></i> Librarian Dashboard
+    </h1>
+    
+    <!-- Alert Bar for Overdue Books -->
+    {% if overdue_books_count > 0 %}
+    <div style="background: #fee; border-left: 4px solid #c00; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+        <strong><i class="fas fa-exclamation-triangle"></i> Alert:</strong>
+        You have <strong>{{ overdue_books_count }}</strong> overdue book(s) that need attention.
+        <a href="{% url 'admin:library_borrowrecord_changelist' %}?status__exact=overdue" 
+           style="margin-left: 10px; color: #c00; text-decoration: underline;">
+            View Overdue Books
+        </a>
+    </div>
+    {% endif %}
+    
+    {% if due_soon.count > 0 %}
+    <div style="background: #ffc; border-left: 4px solid #860; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+        <strong><i class="fas fa-clock"></i> Notice:</strong>
+        {{ due_soon.count }} book(s) due within 3 days.
+        <button onclick="document.getElementById('due-soon-section').scrollIntoView({behavior: 'smooth'})" 
+                style="margin-left: 10px; background: none; border: none; color: #860; text-decoration: underline; cursor: pointer;">
+            View Details
+        </button>
+    </div>
+    {% endif %}
+    
+    <!-- Statistics Cards Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+        
+        <!-- Total Publications -->
+        <div class="dashboard-card stat-card">
+            <div>
+                <p class="stat-value">{{ total_publications }}</p>
+                <p class="stat-label">Total Publications</p>
+                <small style="color: #999;">
+                    Books: {{ total_books }} | Periodicals: {{ total_periodicals }}
+                </small>
+            </div>
+            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <i class="fas fa-book"></i>
+            </div>
+        </div>
+        
+        <!-- Active Borrows -->
+        <div class="dashboard-card stat-card">
+            <div>
+                <p class="stat-value">{{ borrowed_books_count }}</p>
+                <p class="stat-label">Currently Borrowed</p>
+                {% if overdue_books_count > 0 %}
+                <span class="alert-badge alert-danger">{{ overdue_books_count }} Overdue</span>
+                {% endif %}
+            </div>
+            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <i class="fas fa-book-reader"></i>
+            </div>
+        </div>
+        
+        <!-- Total Users -->
+        <div class="dashboard-card stat-card">
+            <div>
+                <p class="stat-value">{{ total_users }}</p>
+                <p class="stat-label">Library Members</p>
+                <small style="color: #999;">
+                    Active borrowers: {{ active_borrowers }}
+                </small>
+            </div>
+            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+        
+        <!-- Fines -->
+        <div class="dashboard-card stat-card">
+            <div>
+                <p class="stat-value">৳{{ total_fines|floatformat:2 }}</p>
+                <p class="stat-label">Total Fines</p>
+                <small style="color: #999;">
+                    Unpaid: ৳{{ unpaid_fines|floatformat:2 }}
+                </small>
+            </div>
+            <div class="stat-icon" style="background: {% if unpaid_fines > 0 %}linear-gradient(135deg, #fa709a 0%, #fee140 100%){% else %}linear-gradient(135deg, #30cfd0 0%, #330867 100%){% endif %};">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="dashboard-card" style="margin-bottom: 30px;">
+        <h3 style="margin-top: 0;">
+            <i class="fas fa-bolt"></i> Quick Actions
+        </h3>
+        <div>
+            <a href="{% url 'admin:library_book_add' %}" class="quick-action-btn btn-primary">
+                <i class="fas fa-plus"></i> Add New Book
+            </a>
+            <a href="{% url 'admin:library_book_upload_csv' %}" class="quick-action-btn btn-success">
+                <i class="fas fa-upload"></i> Bulk Import Books
+            </a>
+            <a href="{% url 'admin:library_libraryuser_bulk_upload' %}" class="quick-action-btn btn-success">
+                <i class="fas fa-users"></i> Bulk Import Users
+            </a>
+            <a href="{% url 'admin:library_borrowrecord_changelist' %}?status__exact=overdue" class="quick-action-btn btn-warning">
+                <i class="fas fa-exclamation-triangle"></i> View Overdue Books
+            </a>
+            <a href="{% url 'library:generate_report' 'overdue' %}" class="quick-action-btn btn-warning">
+                <i class="fas fa-file-download"></i> Export Overdue Report
+            </a>
+        </div>
+    </div>
+    
+    <!-- Due Soon Section -->
+    {% if due_soon %}
+    <div id="due-soon-section" class="dashboard-card" style="margin-bottom: 30px;">
+        <h3 style="margin-top: 0; color: #856404;">
+            <i class="fas fa-clock"></i> Books Due Soon (Next 3 Days)
+        </h3>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                    <th style="padding: 10px; text-align: left;">Book</th>
+                    <th style="padding: 10px; text-align: left;">Borrower</th>
+                    <th style="padding: 10px; text-align: left;">Due Date</th>
+                    <th style="padding: 10px; text-align: center;">Days Left</th>
+                    <th style="padding: 10px; text-align: center;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in due_soon %}
+                <tr style="border-bottom: 1px solid #dee2e6;">
+                    <td style="padding: 10px;">
+                        <strong>{{ record.publication.title }}</strong><br>
+                        <small style="color: #666;">{{ record.publication.accession_number }}</small>
+                    </td>
+                    <td style="padding: 10px;">
+                        {{ record.borrower.get_full_name }}<br>
+                        <small style="color: #666;">{{ record.borrower.email }}</small>
+                    </td>
+                    <td style="padding: 10px;">
+                        {{ record.due_date|date:"M d, Y" }}
+                    </td>
+                    <td style="padding: 10px; text-align: center;">
+                        <span class="alert-badge alert-warning">
+                            {{ record.days_until_due }} day{{ record.days_until_due|pluralize }}
+                        </span>
+                    </td>
+                    <td style="padding: 10px; text-align: center;">
+                        <a href="{% url 'admin:library_borrowrecord_reminder' record.id %}" 
+                           class="button"
+                           style="font-size: 12px; padding: 5px 10px;">
+                            <i class="fas fa-envelope"></i> Send Reminder
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    
+    <!-- Two Column Layout -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+        
+        <!-- Recent Borrows -->
+        <div class="dashboard-card">
+            <h3 style="margin-top: 0;">
+                <i class="fas fa-clock"></i> Recent Borrows
+            </h3>
+            {% if recent_borrows %}
+            <table style="width: 100%; font-size: 14px;">
+                {% for record in recent_borrows %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px 0;">
+                        <strong>{{ record.publication.title|truncatechars:30 }}</strong><br>
+                        <small style="color: #666;">{{ record.borrower.get_full_name }}</small>
+                    </td>
+                    <td style="padding: 8px 0; text-align: right;">
+                        <small>{{ record.borrow_date|date:"M d" }}</small>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            <div style="text-align: right; margin-top: 10px;">
+                <a href="{% url 'admin:library_borrowrecord_changelist' %}" 
+                   style="color: #417690; text-decoration: none;">
+                    View All →
+                </a>
+            </div>
+            {% else %}
+            <p style="color: #999; text-align: center; padding: 20px 0;">No recent borrows</p>
+            {% endif %}
+        </div>
+        
+        <!-- Popular Books -->
+        <div class="dashboard-card">
+            <h3 style="margin-top: 0;">
+                <i class="fas fa-fire"></i> Most Popular Books
+            </h3>
+            {% if popular_books %}
+            <table style="width: 100%; font-size: 14px;">
+                {% for book in popular_books %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px 0;">
+                        <strong>{{ book.title|truncatechars:30 }}</strong><br>
+                        <small style="color: #666;">{{ book.authors_list|truncatechars:30 }}</small>
+                    </td>
+                    <td style="padding: 8px 0; text-align: right;">
+                        <span class="alert-badge" style="background: #ffe0e0; color: #c00;">
+                            {{ book.times_borrowed }}×
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% else %}
+            <p style="color: #999; text-align: center; padding: 20px 0;">No borrowing data yet</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Low Stock Alert -->
+    {% if low_stock_books %}
+    <div class="dashboard-card" style="margin-bottom: 30px; border-left: 4px solid #ffc107;">
+        <h3 style="margin-top: 0; color: #856404;">
+            <i class="fas fa-exclamation-triangle"></i> Low Stock Alert
+        </h3>
+        <p style="color: #856404; margin-bottom: 15px;">
+            The following books have limited copies available and may need reordering:
+        </p>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #fff3cd;">
+                    <th style="padding: 10px; text-align: left;">Book</th>
+                    <th style="padding: 10px; text-align: center;">Available</th>
+                    <th style="padding: 10px; text-align: center;">Total</th>
+                    <th style="padding: 10px; text-align: center;">Times Borrowed</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for book in low_stock_books %}
+                <tr style="border-bottom: 1px solid #dee2e6;">
+                    <td style="padding: 10px;">
+                        <a href="{% url 'admin:library_book_change' book.id %}" style="color: #417690;">
+                            {{ book.title }}
+                        </a>
+                    </td>
+                    <td style="padding: 10px; text-align: center;">
+                        <strong style="color: #c00;">{{ book.copies_available }}</strong>
+                    </td>
+                    <td style="padding: 10px; text-align: center;">
+                        {{ book.total_copies }}
+                    </td>
+                    <td style="padding: 10px; text-align: center;">
+                        {{ book.times_borrowed }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    
+    <!-- Top Borrowers -->
+    {% if top_borrowers %}
+    <div class="dashboard-card">
+        <h3 style="margin-top: 0;">
+            <i class="fas fa-trophy"></i> Top Borrowers
+        </h3>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f8f9fa;">
+                    <th style="padding: 10px; text-align: left;">Rank</th>
+                    <th style="padding: 10px; text-align: left;">Member</th>
+                    <th style="padding: 10px; text-align: center;">Total Borrows</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for borrower in top_borrowers %}
+                <tr style="border-bottom: 1px solid #dee2e6;">
+                    <td style="padding: 10px;">
+                        {% if forloop.counter == 1 %}
+                            <i class="fas fa-trophy" style="color: #ffd700;"></i>
+                        {% elif forloop.counter == 2 %}
+                            <i class="fas fa-medal" style="color: #c0c0c0;"></i>
+                        {% elif forloop.counter == 3 %}
+                            <i class="fas fa-medal" style="color: #cd7f32;"></i>
+                        {% else %}
+                            {{ forloop.counter }}
+                        {% endif %}
+                    </td>
+                    <td style="padding: 10px;">
+                        <strong>{{ borrower.get_full_name }}</strong><br>
+                        <small style="color: #666;">{{ borrower.email }}</small>
+                    </td>
+                    <td style="padding: 10px; text-align: center;">
+                        <strong>{{ borrower.borrow_count }}</strong>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

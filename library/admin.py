@@ -8,6 +8,8 @@ from django.urls import path, reverse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseRedirect
 from django.core.exceptions import ValidationError
+from django.core.management import call_command
+from django.core.management.base import CommandError
 from .models import Category, Publisher, Author, Book, BookSearch, BorrowRecord, LibrarySetting
 from .email_service import LibraryEmailService
 from django.core.files.storage import FileSystemStorage
@@ -19,17 +21,17 @@ from django.http import HttpResponse
 from django.utils.html import format_html
 from .models import LibraryUser, BulkUserImportLog
 from .utils import process_bulk_user_csv, generate_credentials_csv
+from .models import BorrowRecord, LibraryPasswordSettings
+from .email_service import LibraryEmailService
 import csv
 
 class LibraryUserCreationForm(UserCreationForm):
     class Meta:
         model = LibraryUser
-        fields = ('username', 'email', 'first_name', 'last_name')
+        fields = ('username', 'email', 'first_name', 'last_name', 'is_staff')
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.is_staff = False
-        user.is_superuser = False
         if commit:
             user.save()
         return user
@@ -41,36 +43,40 @@ class LibraryUserAdmin(UserAdmin):
     """Admin interface for library users only"""
     add_form = LibraryUserCreationForm
     
-    list_display = ('username', 'email', 'full_name', 'is_active', 'date_joined', 'last_login')
-    list_filter = ('is_active', 'date_joined', 'last_login')
+    list_display = ('username', 'email', 'full_name', 'is_active', 'is_staff', 'date_joined', 'last_login')
+    list_filter = ('is_active', 'is_staff', 'date_joined', 'last_login')
     search_fields = ('username', 'email', 'first_name', 'last_name')
     
-    # Simplified fieldsets without problematic fields
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'password1', 'password2', 'email', 'first_name', 'last_name'),
+            'fields': ('username', 'default_password', 'email', 'first_name', 'last_name', 'is_staff'),
         }),
     )
     
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         ('Personal Info', {'fields': ('first_name', 'last_name', 'email')}),
-        ('Status', {'fields': ('is_active',)}),
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important Dates', {'fields': ('last_login', 'date_joined')}),
     )
     
     readonly_fields = ('last_login', 'date_joined')
     
     def get_queryset(self, request):
-        """Only show non-staff users"""
-        qs = super().get_queryset(request)
-        return qs.filter(is_staff=False)
+        """Show all users"""
+        return super().get_queryset(request)
     
     def save_model(self, request, obj, form, change):
-        """Ensure users remain non-staff"""
-        obj.is_staff = False
-        obj.is_superuser = False
+        """Set default password for new users"""
+        if not change:  # New user
+            password_settings = LibraryPasswordSettings.objects.first()
+            if password_settings:
+                obj.set_password(password_settings.default_password)
+            else:
+                # Fallback if no default password is set
+                obj.set_password(User.objects.make_random_password())
+        
         super().save_model(request, obj, form, change)
     
     def get_form(self, request, obj=None, **kwargs):
@@ -247,6 +253,16 @@ class LibraryUserAdmin(UserAdmin):
         return super().changelist_view(request, extra_context=extra_context)
 
 
+@admin.register(LibraryPasswordSettings)
+class LibraryPasswordSettingsAdmin(admin.ModelAdmin):
+    """Admin interface for library password settings"""
+    list_display = ('__str__',)
+
+    def has_add_permission(self, request):
+        return not LibraryPasswordSettings.objects.exists()
+
+
+
 @admin.register(BulkUserImportLog)
 class BulkUserImportLogAdmin(admin.ModelAdmin):
     """Admin for viewing bulk import logs"""
@@ -407,8 +423,10 @@ class BookAdmin(admin.ModelAdmin):
             try:
                 call_command('import_books', file_path)
                 self.message_user(request, "Successfully imported books from CSV file.")
-            except Exception as e:
+            except CommandError as e:
                 self.message_user(request, f"Error importing books: {e}", level=messages.ERROR)
+            except Exception as e:
+                self.message_user(request, f"An unexpected error occurred: {e}", level=messages.ERROR)
 
             return redirect("..")
         
@@ -419,6 +437,21 @@ class BookAdmin(admin.ModelAdmin):
         extra_context = extra_context or {}
         extra_context['download_csv_template_url'] = reverse('library:download_csv_template')
         extra_context['upload_csv_url'] = reverse('admin:library_book_upload_csv')
+        from django.template.loader import render_to_string
+        from django.utils.safestring import mark_safe
+        instructions = render_to_string('admin/library/book/import_instructions.html', request=request)
+        extra_context['import_instructions'] = mark_safe(
+            f'<div id="import-instructions-container" style="display: none;">{instructions}</div>'
+            '<script>'
+            'document.addEventListener("DOMContentLoaded", function() {'
+            '    const instructions = document.getElementById("import-instructions-container");'
+            '    const content = document.getElementById("content-main");'
+            '    if (instructions && content) {'
+            '        content.insertAdjacentHTML("afterbegin", instructions.innerHTML);'
+            '    }'
+            '});'
+            '</script>'
+        )
         return super().changelist_view(request, extra_context=extra_context)
 
     def authors_display(self, obj):
@@ -506,6 +539,7 @@ class BorrowRecordAdmin(admin.ModelAdmin):
             path('<int:record_id>/return/', self.admin_site.admin_view(self.return_book), name='library_borrowrecord_return'),
             path('<int:record_id>/send-reminder/', self.admin_site.admin_view(self.send_reminder), name='library_borrowrecord_reminder'),
             path('<int:record_id>/mark-as-paid/', self.admin_site.admin_view(self.mark_as_paid), name='library_borrowrecord_mark_as_paid'),
+            path('<int:record_id>/undo-return/', self.admin_site.admin_view(self.undo_return), name='library_borrowrecord_undo_return'),
         ]
         return custom_urls + urls
     
@@ -576,9 +610,69 @@ class BorrowRecordAdmin(admin.ModelAdmin):
         buttons.append(
             f'<a class="button" href="{reminder_url}" style="background-color: #F59E0B; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none;">Send Reminder</a>'
         )
+
+        if obj.status == 'returned' and obj.return_date and (timezone.now() - obj.return_date).days < 1:
+            undo_return_url = reverse('admin:library_borrowrecord_undo_return', args=[obj.id])
+            buttons.append(
+                f'<a class="button" href="{undo_return_url}" style="background-color: #78716c; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; margin-left: 5px;">Undo Return</a>'
+            )
         
         return format_html(''.join(buttons))
     actions_column.short_description = 'Actions'
+
+
+    def changelist_view(self, request, extra_context=None):
+        """Add summary statistics to changelist"""
+        extra_context = extra_context or {}
+        
+        # Get statistics
+        active_count = BorrowRecord.objects.filter(status='active').count()
+        overdue_count = BorrowRecord.objects.filter(status='overdue').count()
+        total_fines = BorrowRecord.objects.filter(
+            fine_amount__gt=0, 
+            fine_paid=False
+        ).aggregate(models.Sum('fine_amount'))['fine_amount__sum'] or 0
+        
+        extra_context['stats'] = {
+            'active_count': active_count,
+            'overdue_count': overdue_count,
+            'total_unpaid_fines': total_fines,
+        }
+        
+        return super().changelist_view(request, extra_context=extra_context)
+    
+    def send_bulk_reminders(self, request, queryset):
+        """Send reminder emails to selected borrowers"""
+        sent_count = 0
+        error_count = 0
+        
+        for record in queryset.filter(status__in=['active', 'overdue']):
+            try:
+                if record.status == 'overdue':
+                    LibraryEmailService.send_overdue_notice(record)
+                elif record.days_until_due <= 3:
+                    LibraryEmailService.send_first_reminder(record)
+                sent_count += 1
+            except Exception as e:
+                error_count += 1
+                logger.error(f"Failed to send reminder for record {record.id}: {str(e)}")
+        
+        if sent_count > 0:
+            self.message_user(
+                request,
+                f'Successfully sent {sent_count} reminder emails.',
+                messages.SUCCESS
+            )
+        if error_count > 0:
+            self.message_user(
+                request,
+                f'Failed to send {error_count} emails.',
+                messages.WARNING
+            )
+    
+    send_bulk_reminders.short_description = "Send reminder emails to selected borrowers"
+    
+    actions = ['mark_as_returned', 'send_reminders_action', 'calculate_fines', 'send_bulk_reminders']
     
     def renew_book(self, request, record_id):
         record = get_object_or_404(BorrowRecord, id=record_id)
@@ -629,6 +723,15 @@ class BorrowRecordAdmin(admin.ModelAdmin):
         record.fine_paid = True
         record.save()
         messages.success(request, f'Fine for "{record.book.title}" marked as paid.')
+        return HttpResponseRedirect(reverse('admin:library_borrowrecord_changelist'))
+
+    def undo_return(self, request, record_id):
+        record = get_object_or_404(BorrowRecord, id=record_id)
+        try:
+            record.undo_return()
+            messages.success(request, f'Return of "{record.book.title}" has been undone.')
+        except ValueError as e:
+            messages.error(request, str(e))
         return HttpResponseRedirect(reverse('admin:library_borrowrecord_changelist'))
     
     actions = ['mark_as_returned', 'send_reminders_action', 'calculate_fines']

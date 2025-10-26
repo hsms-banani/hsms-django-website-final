@@ -685,7 +685,7 @@ function containsBanglaCharacters(text) {
 }
 
 // Language filter functionality
-function setLanguageFilter(lang) {
+function setLanguageFilter(event, lang) {
     // Update active button
     document.querySelectorAll('.language-toggle button').forEach(btn => {
         btn.classList.remove('active');
@@ -695,13 +695,14 @@ function setLanguageFilter(lang) {
     // Apply filter (you can integrate this with your existing filter form)
     const form = document.getElementById('filter-form');
     if (form) {
-        const langInput = form.querySelector('input[name="language"]') || document.createElement('input');
-        langInput.type = 'hidden';
-        langInput.name = 'language';
-        langInput.value = lang === 'all' ? '' : lang;
-        if (!form.contains(langInput)) {
+        let langInput = form.querySelector('input[name="language"]');
+        if (!langInput) {
+            langInput = document.createElement('input');
+            langInput.type = 'hidden';
+            langInput.name = 'language';
             form.appendChild(langInput);
         }
+        langInput.value = lang === 'all' ? '' : lang;
         
         // Trigger form submission via HTMX
         htmx.trigger(form, 'submit');
@@ -758,9 +759,9 @@ function setLanguageFilter(lang) {
                 
                 <!-- Language Toggle (Optional) -->
                 <div class="language-toggle">
-                    <button type="button" class="active" onclick="setLanguageFilter('all')">All</button>
-                    <button type="button" onclick="setLanguageFilter('en')">English</button>
-                    <button type="button" onclick="setLanguageFilter('bn')">বাংলা</button>
+                    <button type="button" class="active" onclick="setLanguageFilter(event, 'all')">All</button>
+                    <button type="button" onclick="setLanguageFilter(event, 'en')">English</button>
+                    <button type="button" onclick="setLanguageFilter(event, 'bn')">বাংলা</button>
                 </div>
             </div>
         </div>

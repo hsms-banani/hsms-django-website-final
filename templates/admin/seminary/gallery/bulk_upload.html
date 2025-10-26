@@ -310,7 +310,7 @@
             Select Photos
         </button>
         <p style="margin-top: 15px; font-size: 12px; color: #a0aec0;">
-            Supported formats: JPG, PNG, GIF, WebP (Max 10MB per file)
+            Supported formats: JPG, PNG, GIF, WebP, TIF, TIFF (Max 20MB per file)
         </p>
     </div>
 
@@ -378,8 +378,8 @@
                 alert(`${file.name} is not an image file`);
                 return false;
             }
-            if (file.size > 10 * 1024 * 1024) {
-                alert(`${file.name} is too large (max 10MB)`);
+            if (file.size > 20 * 1024 * 1024) { // 20MB limit
+                alert(`${file.name} is too large (max 20MB)`);
                 return false;
             }
             return true;
@@ -452,7 +452,15 @@
                 }
             });
 
-            const result = await response.json();
+            const responseText = await response.text();
+            let result;
+            try {
+                result = JSON.parse(responseText);
+            } catch (e) {
+                console.error("Failed to parse JSON:", responseText);
+                alert("An unexpected error occurred. The server returned an invalid response.");
+                return;
+            }
 
             if (result.success) {
                 document.getElementById('successCount').textContent = result.successful;

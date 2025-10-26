@@ -115,14 +115,23 @@
                                         {% endif %}
 
                                         <div class="flex-1 min-w-0">
-                                            <a href="{% url 'library:book_detail' record.book.slug %}" class="font-semibold text-gray-800 hover:text-blue-600 block">
-                                                {{ record.book.title }}
-                                                {% if record.book.volume %}
-                                                    <span class="text-sm text-gray-500">({{ record.book.volume }})</span>
-                                                {% endif %}
-                                            </a>
+                                            {% if record.publication.get_absolute_url %}
+                                                <a href="{{ record.publication.get_absolute_url }}" class="font-semibold text-gray-800 hover:text-blue-600 block">
+                                                    {{ record.publication.title }}
+                                                    {% if record.publication.volume %}
+                                                        <span class="text-sm text-gray-500">({{ record.publication.volume }})</span>
+                                                    {% endif %}
+                                                </a>
+                                            {% else %}
+                                                <span class="font-semibold text-gray-800">
+                                                    {{ record.publication.title }}
+                                                    {% if record.publication.volume %}
+                                                        <span class="text-sm text-gray-500">({{ record.publication.volume }})</span>
+                                                    {% endif %}
+                                                </span>
+                                            {% endif %}
                                             <p class="text-sm text-gray-600 mt-1">
-                                                {% for author in record.book.authors.all|slice:":2" %}
+                                                {% for author in record.publication.authors.all|slice:":2" %}
                                                     {{ author.full_name }}{% if not forloop.last %}, {% endif %}
                                                 {% endfor %}
                                             </p>

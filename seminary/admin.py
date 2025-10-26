@@ -465,8 +465,10 @@ class GalleryAdmin(admin.ModelAdmin):
                 return JsonResponse({'error': 'No files uploaded'}, status=400)
 
             # Validate file types
-            allowed_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+            allowed_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.tif', '.tiff']
             results = []
+            max_size_mb = 20
+            max_size_bytes = max_size_mb * 1024 * 1024
 
             for idx, file in enumerate(uploaded_files):
                 file_ext = os.path.splitext(file.name)[1].lower()
@@ -475,16 +477,16 @@ class GalleryAdmin(admin.ModelAdmin):
                     results.append({
                         'filename': file.name,
                         'status': 'error',
-                        'message': f'Invalid file type: {file_ext}'
+                        'message': f'Invalid file type: {file_ext}. Allowed types are: {", ".join(allowed_extensions)}'
                     })
                     continue
 
-                # Check file size (10MB limit)
-                if file.size > 10 * 1024 * 1024:
+                # Check file size
+                if file.size > max_size_bytes:
                     results.append({
                         'filename': file.name,
                         'status': 'error',
-                        'message': 'File too large (max 10MB)'
+                        'message': f'File too large (max {max_size_mb}MB)'
                     })
                     continue
 
@@ -523,7 +525,8 @@ class GalleryAdmin(admin.ModelAdmin):
         except Gallery.DoesNotExist:
             return JsonResponse({'error': 'Gallery not found'}, status=404)
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            # Catch any other exceptions and return a generic error
+            return JsonResponse({'error': 'An unexpected error occurred during upload. Please check server logs for details.'}, status=500)
 
     # Add bulk upload button to change form
     def change_view(self, request, object_id, form_url='', extra_context=None):

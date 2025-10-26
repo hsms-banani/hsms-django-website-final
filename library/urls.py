@@ -1,6 +1,7 @@
 # library/urls.py - Enhanced with Borrowing System
 
-from django.urls import path
+from django.urls import path, reverse_lazy
+from django.contrib.auth import views as auth_views
 from . import views, views_borrowing
 
 app_name = 'library'
@@ -67,4 +68,23 @@ urlpatterns = [
     path('dashboard/renew-book/<int:record_id>/', views.dashboard_renew_book, name='dashboard_renew_book'),
     path('dashboard/return-book/<int:record_id>/', views.dashboard_return_book, name='dashboard_return_book'),
     path('dashboard/mark-as-paid/<int:record_id>/', views.dashboard_mark_as_paid, name='dashboard_mark_as_paid'),
+    path('dashboard/download-returned-csv/', views.download_returned_books_csv, name='download_returned_books_csv'),
+
+    # Password reset
+    path('password_reset/', auth_views.PasswordResetView.as_view(
+        template_name='registration/password_reset/password_reset_form.html',
+        email_template_name='registration/password_reset/password_reset_email.html',
+        subject_template_name='registration/password_reset/password_reset_subject.txt',
+        success_url=reverse_lazy('library:password_reset_done')
+    ), name='password_reset'),
+    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(
+        template_name='registration/password_reset/password_reset_done.html'
+    ), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
+        template_name='registration/password_reset/password_reset_confirm.html',
+        success_url=reverse_lazy('library:password_reset_complete')
+    ), name='password_reset_confirm'),
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(
+        template_name='registration/password_reset/password_reset_complete.html'
+    ), name='password_reset_complete'),
 ]

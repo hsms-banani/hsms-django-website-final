@@ -32,8 +32,8 @@
                 {% for record in overdue_records %}
                 <tr class="hover:bg-red-50 transition-colors duration-150">
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">{{ record.book.title }}</div>
-                        <div class="text-xs text-gray-500">{{ record.book.accession_number }}</div>
+                        <div class="text-sm font-medium text-gray-900">{{ record.publication.title }}</div>
+                        <div class="text-xs text-gray-500">{{ record.publication.accession_number }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm text-gray-900">{{ record.borrower.get_full_name }}</div>

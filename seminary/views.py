@@ -573,7 +573,7 @@ def academic_calendar(request):
     year = int(request.GET.get('year', today.year))
     month = int(request.GET.get('month', today.month))
 
-    cal = calendar.Calendar()
+    cal = calendar.Calendar(firstweekday=6)
     calendar_weeks = []
 
     events = {}
@@ -606,6 +606,7 @@ def academic_calendar(request):
         'calendar_weeks': calendar_weeks,
         'prev_month': {'month': prev_month_date.month, 'year': prev_month_date.year},
         'next_month': {'month': next_month_date.month, 'year': next_month_date.year},
+        'day_names': ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
     }
 
     return render(request, 'seminary/academic_calendar.html', context)

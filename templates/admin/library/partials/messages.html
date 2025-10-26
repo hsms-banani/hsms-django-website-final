@@ -1,0 +1,62 @@
+<!-- templates/library/partials/messages.html -->
+{% if messages %}
+<div class="fixed top-4 right-4 z-50 space-y-2" id="message-container">
+    {% for message in messages %}
+    <div class="message-alert max-w-md p-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out
+                {% if message.tags == 'success' %}bg-green-50 border-l-4 border-green-500{% endif %}
+                {% if message.tags == 'error' %}bg-red-50 border-l-4 border-red-500{% endif %}
+                {% if message.tags == 'warning' %}bg-yellow-50 border-l-4 border-yellow-500{% endif %}
+                {% if message.tags == 'info' %}bg-blue-50 border-l-4 border-blue-500{% endif %}"
+         data-message-id="{{ forloop.counter }}">
+        <div class="flex items-start">
+            <div class="flex-shrink-0">
+                {% if message.tags == 'success' %}
+                    <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                {% elif message.tags == 'error' %}
+                    <i class="fas fa-exclamation-circle text-red-500 text-xl"></i>
+                {% elif message.tags == 'warning' %}
+                    <i class="fas fa-exclamation-triangle text-yellow-500 text-xl"></i>
+                {% else %}
+                    <i class="fas fa-info-circle text-blue-500 text-xl"></i>
+                {% endif %}
+            </div>
+            <div class="ml-3 flex-1">
+                <p class="text-sm font-medium
+                          {% if message.tags == 'success' %}text-green-800{% endif %}
+                          {% if message.tags == 'error' %}text-red-800{% endif %}
+                          {% if message.tags == 'warning' %}text-yellow-800{% endif %}
+                          {% if message.tags == 'info' %}text-blue-800{% endif %}">
+                    {{ message }}
+                </p>
+            </div>
+            <button onclick="dismissMessage({{ forloop.counter }})" 
+                    class="ml-3 flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+function dismissMessage(id) {
+    const messageEl = document.querySelector(`[data-message-id="${id}"]`);
+    if (messageEl) {
+        messageEl.style.transform = 'translateX(400px)';
+        messageEl.style.opacity = '0';
+        setTimeout(() => messageEl.remove(), 300);
+    }
+}
+
+// Auto-dismiss messages after 5 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    const messages = document.querySelectorAll('.message-alert');
+    messages.forEach((msg, index) => {
+        setTimeout(() => {
+            const id = msg.getAttribute('data-message-id');
+            dismissMessage(id);
+        }, 5000 + (index * 500)); // Stagger dismissal
+    });
+});
+</script>
+{% endif %}

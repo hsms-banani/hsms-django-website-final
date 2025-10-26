@@ -3,8 +3,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db import connections
 from django.http import JsonResponse, HttpResponse
-from django.db.models import Q, Count, Case, When, Prefetch
-
+from django.db.models import Q, Count, Case, When, Prefetch, Sum, Avg, Q, F
+from django.db.models.functions import TruncDate
+from datetime import datetime, timedelta
 from django.core.paginator import Paginator
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 from django.views.decorators.http import require_http_methods
@@ -17,7 +18,7 @@ from thefuzz import process
 from thefuzz import fuzz
 import re
 import unicodedata
-from .models import Book, Category, Author, Publisher, BookSearch, BorrowRecord
+from .models import Book, Category, Author, Publisher, BookSearch, BorrowRecord, Periodical
 from .forms import BookForm
 from .email_service import LibraryEmailService
 from django.contrib.auth.models import User
@@ -29,6 +30,8 @@ from django.core.management import call_command
 from django.contrib import messages
 import csv
 import hashlib
+from django.utils.safestring import mark_safe
+from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
 # Cache timeouts
@@ -319,8 +322,8 @@ def library_home(request):
     filter_options = cache.get(f'library_filter_options_v3_{user_language}')
     if not filter_options:
         categories = Category.objects.annotate(
-            book_count=Count('books')
-        ).filter(book_count__gt=0).only('id', 'name', 'name_bangla', 'slug').order_by('name')
+            publication_count=Count('book_publications') + Count('periodical_publications')
+        ).filter(publication_count__gt=0).only('id', 'name', 'name_bangla', 'slug').order_by('name')
         
         filter_options = {
             'categories': categories,
@@ -621,11 +624,11 @@ def search_authors(request):
             authors = Author.objects.filter(
                 Q(first_name__icontains=query) | Q(last_name__icontains=query) |
                 Q(first_name_bangla__icontains=query) | Q(last_name_bangla__icontains=query)
-            ).annotate(book_count=Count('books')).order_by('-book_count')[:10]
+            ).annotate(publication_count=Count('publications')).order_by('-publication_count')[:10]
         else:
             authors = Author.objects.filter(
                 Q(first_name__icontains=query) | Q(last_name__icontains=query)
-            ).annotate(book_count=Count('books')).order_by('-book_count')[:10]
+            ).annotate(publication_count=Count('publications')).order_by('-publication_count')[:10]
     
     return render(request, 'library/partials/_author_search_results.html', {
         'authors': authors,
@@ -640,8 +643,8 @@ def search_publishers(request):
         query = normalize_search_query(query)
         publishers = (
             Publisher.objects.filter(name__icontains=query)
-            .annotate(book_count=Count('books'))
-            .order_by('-book_count')[:10]
+            .annotate(publication_count=Count('publications'))
+            .order_by('-publication_count')[:10]
         )
     
     return render(request, 'library/partials/_publisher_search_results.html', {
@@ -653,7 +656,7 @@ def search_publishers(request):
 def category_list(request):
     """Display all categories with multilingual names"""
     categories = Category.objects.annotate(
-        book_count=Count('books')
+        publication_count=Count('book_publications') + Count('periodical_publications')
     ).only('id', 'name', 'name_bangla', 'slug', 'description', 'description_bangla').order_by('name')
     
     return render(request, 'library/category_list.html', {
@@ -679,7 +682,7 @@ def category_books(request, slug):
 def author_list(request):
     """Display all authors with multilingual names"""
     authors = Author.objects.annotate(
-        book_count=Count('books')
+        publication_count=Count('publications')
     ).only(
         'id', 'first_name', 'last_name', 'first_name_bangla', 
         'last_name_bangla', 'slug', 'bio', 'bio_bangla', 'primary_language'
@@ -719,7 +722,7 @@ def publisher_list(request):
     publishers = cache.get('library_publisher_list_v2')
     if not publishers:
         publishers = Publisher.objects.annotate(
-            book_count=Count('books')
+            publication_count=Count('publications')
         ).only('id', 'name', 'name_bangla', 'slug').order_by('name')
         cache.set('library_publisher_list_v2', publishers, CACHE_TIMEOUT_MEDIUM)
 
@@ -812,7 +815,7 @@ def get_authors_for_category(request):
     category_slug = request.GET.get('category')
     authors = Author.objects.all()
     if category_slug:
-        authors = authors.filter(books__category__slug=category_slug).distinct()
+        authors = authors.filter(publications__category__slug=category_slug).distinct()
     
     authors = authors.order_by('last_name', 'first_name')
     
@@ -820,31 +823,118 @@ def get_authors_for_category(request):
         'authors': authors
     })
 
-@staff_member_required
 def librarian_dashboard(request):
-    """Display a dashboard for librarians to manage the library."""
-    # Stats Cards
+    """Enhanced dashboard with comprehensive statistics and charts"""
+    
+    # Basic Stats
+    total_publications = Book.objects.count() + Periodical.objects.count()
     total_books = Book.objects.count()
-    borrowed_books_count = BorrowRecord.objects.filter(status__in=['active', 'overdue']).count()
+    total_periodicals = Periodical.objects.count()
+    
+    # Borrowing Stats
+    active_borrows = BorrowRecord.objects.filter(status__in=['active', 'overdue'])
+    borrowed_books_count = active_borrows.count()
     overdue_books_count = BorrowRecord.objects.filter(status='overdue').count()
+    
+    # User Stats
     total_users = User.objects.filter(is_staff=False).count()
-
-    # Data for tables
-    all_books = Book.objects.all().order_by('-created_at')
-    borrowed_records = BorrowRecord.objects.filter(status__in=['active', 'overdue']).select_related('book', 'borrower').order_by('-due_date')
-    overdue_records = borrowed_records.filter(status='overdue')
-    returned_records = BorrowRecord.objects.filter(status='returned').select_related('book', 'borrower').order_by('-return_date')
-
+    active_borrowers = BorrowRecord.objects.filter(
+        status__in=['active', 'overdue']
+    ).values('borrower').distinct().count()
+    
+    # Financial Stats
+    total_fines = BorrowRecord.objects.filter(
+        fine_amount__gt=0
+    ).aggregate(total=Sum('fine_amount'))['total'] or 0
+    
+    unpaid_fines = BorrowRecord.objects.filter(
+        fine_amount__gt=0,
+        fine_paid=False
+    ).aggregate(total=Sum('fine_amount'))['total'] or 0
+    
+    paid_fines = total_fines - unpaid_fines
+    
+    # Recent Activity
+    recent_borrows = BorrowRecord.objects.prefetch_related(
+        'borrower', 'publication'
+    ).order_by('-borrow_date')[:10]
+    
+    recent_returns = BorrowRecord.objects.filter(
+        status='returned'
+    ).prefetch_related(
+        'borrower', 'publication'
+    ).order_by('-return_date')[:10]
+    
+    # Popular Books
+    popular_books = Book.objects.filter(
+        times_borrowed__gt=0
+    ).order_by('-times_borrowed')[:10]
+    
+    # Books that need attention (low availability)
+    low_stock_books = Book.objects.filter(
+        copies_available__lte=1,
+        copies_available__gt=0,
+        total_copies__gt=1
+    ).order_by('copies_available')[:10]
+    
+    # Borrowing trends (last 30 days)
+    thirty_days_ago = timezone.now() - timedelta(days=30)
+    daily_borrows = BorrowRecord.objects.filter(
+        borrow_date__gte=thirty_days_ago
+    ).annotate(
+        date=TruncDate('borrow_date')
+    ).values('date').annotate(
+        count=Count('id')
+    ).order_by('date')
+    
+    # Category distribution
+    category_stats = Category.objects.annotate(
+        book_count=Count('book_publications')
+    ).order_by('-book_count')[:10]
+    
+    # Users with most borrows
+    top_borrowers = User.objects.filter(
+        is_staff=False
+    ).annotate(
+        borrow_count=Count('borrowed_record__id')
+    ).filter(borrow_count__gt=0).order_by('-borrow_count')[:10]
+    
+    # Due date alerts
+    due_soon = BorrowRecord.objects.filter(
+        status='active',
+        due_date__lte=timezone.now().date() + timedelta(days=3),
+        due_date__gte=timezone.now().date()
+    ).prefetch_related('borrower', 'publication').order_by('due_date')
+    
     context = {
+        # Basic stats
+        'total_publications': total_publications,
         'total_books': total_books,
+        'total_periodicals': total_periodicals,
         'borrowed_books_count': borrowed_books_count,
         'overdue_books_count': overdue_books_count,
         'total_users': total_users,
-        'all_books': all_books,
-        'borrowed_records': borrowed_records,
-        'overdue_records': overdue_records,
-        'returned_records': returned_records,
-        'active_tab': 'dashboard',  # For navigation highlighting
+        'active_borrowers': active_borrowers,
+        
+        # Financial stats
+        'total_fines': total_fines,
+        'unpaid_fines': unpaid_fines,
+        'paid_fines': paid_fines,
+        
+        # Recent activity
+        'recent_borrows': recent_borrows,
+        'recent_returns': recent_returns,
+        'due_soon': due_soon,
+        
+        # Analysis
+        'popular_books': popular_books,
+        'low_stock_books': low_stock_books,
+        'category_stats': category_stats,
+        'top_borrowers': top_borrowers,
+        'daily_borrows': daily_borrows,
+        
+        # For navigation
+        'active_tab': 'dashboard',
     }
     
     return render(request, 'library/librarian_dashboard.html', context)
@@ -859,19 +949,45 @@ def get_all_books_table(request):
 
 @staff_member_required
 def get_borrowed_books_table(request):
-    borrowed_records = BorrowRecord.objects.filter(status__in=['active', 'overdue']).select_related('book', 'borrower').order_by('-due_date')
-    return render(request, 'library/partials/_borrowed_books_table.html', {'borrowed_records': borrowed_records})
+    query = request.GET.get('q')
+    borrowed_records = BorrowRecord.objects.filter(
+        status__in=['active', 'overdue']
+    ).select_related('borrower').prefetch_related('publication').order_by('-due_date')
+
+    if query:
+        book_type = ContentType.objects.get_for_model(Book)
+        periodical_type = ContentType.objects.get_for_model(Periodical)
+
+        book_q = Q(
+            content_type=book_type,
+            object_id__in=Book.objects.filter(Q(title__icontains=query) | Q(accession_number__icontains=query) | Q(call_number__icontains=query)).values('id')
+        )
+        periodical_q = Q(
+            content_type=periodical_type,
+            object_id__in=Periodical.objects.filter(Q(title__icontains=query) | Q(accession_number__icontains=query) | Q(call_number__icontains=query)).values('id')
+        )
+        borrower_q = Q(borrower__first_name__icontains=query) | Q(borrower__last_name__icontains=query) | Q(borrower__email__icontains=query)
+
+        borrowed_records = borrowed_records.filter(book_q | periodical_q | borrower_q)
+
+        for record in borrowed_records:
+            if record.publication:
+                record.highlighted_title = mark_safe(
+                    record.publication.title.replace(query, f'<span class="bg-yellow-200">{query}</span>')
+                )
+
+    return render(request, 'library/partials/_borrowed_books_table.html', {'borrowed_records': borrowed_records, 'query': query})
 
 @staff_member_required
 def get_overdue_books_table(request):
-    overdue_records = BorrowRecord.objects.filter(status='overdue').select_related('book', 'borrower').order_by('-due_date')
+    overdue_records = BorrowRecord.objects.filter(status='overdue').select_related('borrower').prefetch_related('publication').order_by('-due_date')
     return render(request, 'library/partials/_overdue_books_table.html', {'overdue_records': overdue_records})
 
 @staff_member_required
 def get_dashboard_content(request):
     all_books = Book.objects.all().order_by('-created_at')[:5]
-    overdue_records = BorrowRecord.objects.filter(status='overdue').select_related('book', 'borrower').order_by('-due_date')[:5]
-    returned_records = BorrowRecord.objects.filter(status='returned').select_related('book', 'borrower').order_by('-return_date')[:5]
+    overdue_records = BorrowRecord.objects.filter(status='overdue').select_related('borrower').prefetch_related('publication').order_by('-due_date')[:5]
+    returned_records = BorrowRecord.objects.filter(status='returned').select_related('borrower').prefetch_related('publication').order_by('-return_date')[:5]
     context = {
         'all_books': all_books,
         'overdue_records': overdue_records,
@@ -905,7 +1021,7 @@ def delete_book(request, book_id):
 
 @staff_member_required
 def borrow_record_detail(request, record_id):
-    record = get_object_or_404(BorrowRecord.objects.select_related('book', 'borrower'), id=record_id)
+    record = get_object_or_404(BorrowRecord.objects.select_related('publication', 'borrower'), id=record_id)
     return render(request, 'library/borrow_record_detail.html', {'record': record})
 
 @staff_member_required
@@ -943,15 +1059,15 @@ def generate_report(request, report_type):
     writer = csv.writer(response)
 
     if report_type == 'borrowed':
-        writer.writerow(['Book Title', 'Borrower', 'Borrow Date', 'Due Date', 'Status'])
-        records = BorrowRecord.objects.filter(status__in=['active', 'overdue']).select_related('book', 'borrower')
+        writer.writerow(['Publication Title', 'Borrower', 'Borrow Date', 'Due Date', 'Status'])
+        records = BorrowRecord.objects.filter(status__in=['active', 'overdue']).select_related('publication', 'borrower')
         for record in records:
-            writer.writerow([record.book.title, record.borrower.get_full_name(), record.borrow_date.strftime('%Y-%m-%d'), record.due_date.strftime('%Y-%m-%d'), record.get_status_display()])
+            writer.writerow([record.publication.title, record.borrower.get_full_name(), record.borrow_date.strftime('%Y-%m-%d'), record.due_date.strftime('%Y-%m-%d'), record.get_status_display()])
     elif report_type == 'overdue':
-        writer.writerow(['Book Title', 'Borrower', 'Due Date', 'Fine'])
-        records = BorrowRecord.objects.filter(status='overdue').select_related('book', 'borrower')
+        writer.writerow(['Publication Title', 'Borrower', 'Due Date', 'Fine'])
+        records = BorrowRecord.objects.filter(status='overdue').select_related('publication', 'borrower')
         for record in records:
-            writer.writerow([record.book.title, record.borrower.get_full_name(), record.due_date.strftime('%Y-%m-%d'), record.fine_amount])
+            writer.writerow([record.publication.title, record.borrower.get_full_name(), record.due_date.strftime('%Y-%m-%d'), record.fine_amount])
     else:
         return HttpResponse("Invalid report type.", status=400)
 
@@ -963,7 +1079,7 @@ def dashboard_renew_book(request, record_id):
     if request.method == 'POST':
         try:
             record.renew()
-            messages.success(request, f'Book "{record.book.title}" renewed for {record.borrower.get_full_name()}.')
+            messages.success(request, f'Publication "{record.publication.title}" renewed for {record.borrower.get_full_name()}.')
         except ValueError as e:
             messages.error(request, str(e))
         
@@ -978,7 +1094,7 @@ def dashboard_return_book(request, record_id):
     record = get_object_or_404(BorrowRecord, id=record_id)
     if request.method == 'POST':
         record.return_book()
-        messages.success(request, f'Book "{record.book.title}" returned by {record.borrower.get_full_name()}.')
+        messages.success(request, f'Publication "{record.publication.title}" returned by {record.borrower.get_full_name()}.')
         response = render(request, 'library/partials/_borrowed_books_table.html', {'borrowed_records': BorrowRecord.objects.filter(status__in=['active', 'overdue'])} )
         response['HX-Trigger'] = 'close-modal'
         return response
@@ -990,7 +1106,7 @@ def dashboard_mark_as_paid(request, record_id):
     if request.method == 'POST':
         record.fine_paid = True
         record.save()
-        messages.success(request, f'Fine for "{record.book.title}" marked as paid for {record.borrower.get_full_name()}.')
+        messages.success(request, f'Fine for "{record.publication.title}" marked as paid for {record.borrower.get_full_name()}.')
         response = render(request, 'library/partials/_overdue_books_table.html', {'overdue_records': BorrowRecord.objects.filter(status='overdue')} )
         response['HX-Trigger'] = 'close-modal'
         return response
@@ -998,5 +1114,20 @@ def dashboard_mark_as_paid(request, record_id):
 
 @staff_member_required
 def get_returned_books_table(request):
-    returned_records = BorrowRecord.objects.filter(status='returned').select_related('book', 'borrower').order_by('-return_date')
+    returned_records = BorrowRecord.objects.filter(status='returned').select_related('borrower').prefetch_related('publication').order_by('-return_date')
     return render(request, 'library/partials/_returned_books_table.html', {'returned_records': returned_records})
+
+@staff_member_required
+def download_returned_books_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="returned_books_report_{timezone.now().strftime("%Y-%m-%d")}.csv'
+
+    writer = csv.writer(response)
+    writer.writerow(['Publication Title', 'Borrower', 'Return Date', 'Fine'])
+
+    records = BorrowRecord.objects.filter(status='returned').select_related('borrower').prefetch_related('publication')
+    for record in records:
+        publication_title = record.publication.title if record.publication else "[Deleted Publication]"
+        writer.writerow([publication_title, record.borrower.get_full_name(), record.return_date.strftime('%Y-%m-%d'), record.fine_amount])
+
+    return response
