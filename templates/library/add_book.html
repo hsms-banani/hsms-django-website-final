@@ -1,0 +1,180 @@
+{% extends "library/base.html" %}
+{% load static %}
+
+{% block library_title %}Add New Book{% endblock %}
+{% block library_subtitle %}Enter the details for the new publication{% endblock %}
+
+{% block library_content %}
+<div class="bg-white p-8 rounded-2xl shadow-lg">
+    <form method="post" enctype="multipart/form-data" class="space-y-8">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            <!-- Left Column -->
+            <div class="space-y-6">
+                
+                <!-- Basic Information -->
+                <fieldset class="p-6 border rounded-xl">
+                    <legend class="text-lg font-semibold text-gray-700 px-2">Basic Information</legend>
+                    <div class="space-y-4 pt-4">
+                        <div>
+                            <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                            {{ form.title }}
+                        </div>
+                        <div>
+                            <label for="{{ form.title_bangla.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Title (Bangla)</label>
+                            {{ form.title_bangla }}
+                        </div>
+                        <div>
+                            <label for="{{ form.subtitle.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Subtitle</label>
+                            {{ form.subtitle }}
+                        </div>
+                         <div>
+                            <label for="{{ form.authors.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Authors</label>
+                            {{ form.authors }}
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Identification -->
+                <fieldset class="p-6 border rounded-xl">
+                    <legend class="text-lg font-semibold text-gray-700 px-2">Identification</legend>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+                        <div>
+                            <label for="{{ form.accession_number.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Accession No.</label>
+                            {{ form.accession_number }}
+                        </div>
+                        <div>
+                            <label for="{{ form.volume.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Volume</label>
+                            {{ form.volume }}
+                        </div>
+                        <div>
+                            <label for="{{ form.isbn_10.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">ISBN-10</label>
+                            {{ form.isbn_10 }}
+                        </div>
+                        <div>
+                            <label for="{{ form.isbn_13.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">ISBN-13</label>
+                            {{ form.isbn_13 }}
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Classification -->
+                <fieldset class="p-6 border rounded-xl">
+                    <legend class="text-lg font-semibold text-gray-700 px-2">Classification</legend>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+                        <div>
+                            <label for="{{ form.classification_number.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Classification No.</label>
+                            {{ form.classification_number }}
+                        </div>
+                        <div>
+                            <label for="{{ form.cutter_number.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Cutter No.</label>
+                            {{ form.cutter_number }}
+                        </div>
+                         <div>
+                            <label for="{{ form.category.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                            {{ form.category }}
+                        </div>
+                        <div>
+                            <label for="{{ form.language.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Language</label>
+                            {{ form.language }}
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-6">
+
+                <!-- Publication Details -->
+                 <fieldset class="p-6 border rounded-xl">
+                    <legend class="text-lg font-semibold text-gray-700 px-2">Publication</legend>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+                        <div>
+                            <label for="{{ form.publisher.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Publisher</label>
+                            {{ form.publisher }}
+                        </div>
+                        <div>
+                            <label for="{{ form.publication_year.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Publication Year</label>
+                            {{ form.publication_year }}
+                        </div>
+                        <div>
+                            <label for="{{ form.edition.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Edition</label>
+                            {{ form.edition }}
+                        </div>
+                        <div>
+                            <label for="{{ form.pages.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Pages</label>
+                            {{ form.pages }}
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Description -->
+                <fieldset class="p-6 border rounded-xl">
+                    <legend class="text-lg font-semibold text-gray-700 px-2">Description</legend>
+                     <div class="space-y-4 pt-4">
+                        <div>
+                            <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            {{ form.description }}
+                        </div>
+                        <div>
+                            <label for="{{ form.description_bangla.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Description (Bangla)</label>
+                            {{ form.description_bangla }}
+                        </div>
+                        <div>
+                            <label for="{{ form.keywords.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Keywords</label>
+                            {{ form.keywords }}
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Inventory -->
+                <fieldset class="p-6 border rounded-xl">
+                    <legend class="text-lg font-semibold text-gray-700 px-2">Inventory & Location</legend>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+                        <div>
+                            <label for="{{ form.total_copies.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Total Copies</label>
+                            {{ form.total_copies }}
+                        </div>
+                        <div>
+                            <label for="{{ form.copies_available.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Copies Available</label>
+                            {{ form.copies_available }}
+                        </div>
+                        <div>
+                            <label for="{{ form.location_shelf.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Shelf Location</label>
+                            {{ form.location_shelf }}
+                        </div>
+                         <div>
+                            <label for="{{ form.price.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                            {{ form.price }}
+                        </div>
+                        <div>
+                            <label for="{{ form.status.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                            {{ form.status }}
+                        </div>
+                    </div>
+                </fieldset>
+                
+                <!-- Cover Image -->
+                <fieldset class="p-6 border rounded-xl">
+                    <legend class="text-lg font-semibold text-gray-700 px-2">Cover Image</legend>
+                    <div class="pt-4">
+                        {{ form.cover_image }}
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="pt-8 mt-8 border-t border-gray-200 flex justify-end gap-4">
+            <a href="{% url 'library:librarian_dashboard' %}" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                Cancel
+            </a>
+            <button type="submit" class="px-8 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all">
+                Add Book
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

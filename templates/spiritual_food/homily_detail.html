@@ -114,19 +114,64 @@
             {% if youtube_embed_id %}
             <div class="mb-8">
                 <div class="aspect-w-16 aspect-h-9 bg-black rounded-xl overflow-hidden shadow-2xl">
-                    <iframe 
-                        src="https://www.youtube.com/embed/{{ youtube_embed_id }}" 
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen
-                        class="w-full h-full"
-                        style="min-height: 400px;"
-                    ></iframe>
+                    <div id="player" style="min-height: 400px;"></div>
                 </div>
+                {% if homily.youtube_url %}
                 <p class="text-center mt-4 text-gray-600">
-                    <i class="fab fa-youtube text-red-600 mr-2"></i>Watch on YouTube
+                    <a href="{{ homily.youtube_url }}" target="_blank" class="text-red-600 hover:text-red-700 font-semibold">
+                        <i class="fab fa-youtube text-red-600 mr-2"></i>Watch on YouTube
+                    </a>
                 </p>
+                {% endif %}
             </div>
+
+            <script>
+              // This code loads the IFrame Player API code asynchronously.
+              var tag = document.createElement('script');
+              tag.src = "https://www.youtube.com/iframe_api";
+              var firstScriptTag = document.getElementsByTagName('script')[0];
+              firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+              // This function creates an <iframe> (and YouTube player)
+              // after the API code downloads.
+              var player;
+              function onYouTubeIframeAPIReady() {
+                player = new YT.Player('player', {
+                  height: '100%',
+                  width: '100%',
+                  videoId: '{{ youtube_embed_id }}',
+                  playerVars: {
+                    'playsinline': 1,
+                    'origin': '{{ request.scheme }}://{{ request.get_host }}'
+                  },
+                  events: {
+                    'onReady': onPlayerReady,
+                    'onError': onPlayerError
+                  }
+                });
+              }
+
+              // The API will call this function when the video player is ready.
+              function onPlayerReady(event) {
+                // You can add code here to play the video automatically if needed:
+                // event.target.playVideo();
+              }
+
+              // This function will be called if an error occurs in the player.
+              function onPlayerError(event) {
+                  console.error("YouTube Player Error:", event.data);
+                  const playerDiv = document.getElementById('player');
+                  if (playerDiv) {
+                      playerDiv.innerHTML = `<div class="w-full h-full flex items-center justify-center bg-gray-800 text-white p-4">
+                          <div class="text-center">
+                              <p class="text-lg font-semibold mb-2">Could not load YouTube video.</p>
+                              <p class="text-sm">This may be due to a configuration issue on YouTube's side or privacy restrictions on the video.</p>
+                              <p class="text-xs mt-2 text-gray-400">Error Code: ${event.data}</p>
+                          </div>
+                      </div>`;
+                  }
+              }
+            </script>
             {% endif %}
 
             <!-- Text Content -->

@@ -126,8 +126,8 @@ TEMPLATES = [
                 'seminary.context_processors.global_announcements',
                 'seminary.context_processors.navigation_pages',
                 'seminary.context_processors.breadcrumb_helper',
-                 'django.template.context_processors.i18n',  # For internationalization
-                'library.context_processors.library_stats',  # Your custom context processor
+                'django.template.context_processors.i18n', 
+                'library.context_processors.library_stats', 
             ],
         },
     },

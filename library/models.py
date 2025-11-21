@@ -574,7 +574,9 @@ class BorrowRecord(models.Model):
         logger.info(f"Undone return for publication: {self.publication.title}, copies available after: {self.publication.copies_available}, status after: {self.publication.status}")
     
     def __str__(self):
-        return f"{self.borrower.get_full_name()} - {self.publication.title} (Due: {self.due_date})"
+        publication_title = self.publication.title if self.publication else "Unknown Publication"
+        borrower_name = self.borrower.get_full_name() if self.borrower else "Unknown Borrower"
+        return f"{borrower_name} - {publication_title} (Due: {self.due_date})"
 
 class BookSearch(models.Model):
     """Track popular searches"""

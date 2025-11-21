@@ -2,7 +2,7 @@
 
 from django.contrib import admin, messages
 from django.utils.html import format_html
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Sum
 from django.utils import timezone
 from django.urls import path, reverse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -57,7 +57,7 @@ class LibraryUserAdmin(UserAdmin):
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         ('Personal Info', {'fields': ('first_name', 'last_name', 'email')}),
-        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser')}),
         ('Important Dates', {'fields': ('last_login', 'date_joined')}),
     )
     
@@ -79,14 +79,7 @@ class LibraryUserAdmin(UserAdmin):
         
         super().save_model(request, obj, form, change)
     
-    def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
-        # Remove permission-related fields
-        if 'user_permissions' in form.base_fields:
-            del form.base_fields['user_permissions']
-        if 'groups' in form.base_fields:
-            del form.base_fields['groups']
-        return form
+    
     
     def full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}".strip() or "-"
@@ -330,7 +323,7 @@ class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
     
     def book_count(self, obj):
-        return obj.books.count()
+        return obj.book_publications.count()
     book_count.short_description = 'Books'
 
 @admin.register(Publisher)
@@ -341,7 +334,7 @@ class PublisherAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
     
     def book_count(self, obj):
-        return obj.books.count()
+        return obj.book_publications.count()
     book_count.short_description = 'Books Published'
 
 @admin.register(Author)
@@ -352,7 +345,7 @@ class AuthorAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('first_name', 'last_name')}
     
     def book_count(self, obj):
-        return obj.books.count()
+        return obj.publications.count()
     book_count.short_description = 'Books Written'
 
 @admin.register(Book)
@@ -503,7 +496,7 @@ class BorrowRecordAdmin(admin.ModelAdmin):
     ]
     search_fields = [
         'borrower__username', 'borrower__email', 'borrower__first_name', 
-        'borrower__last_name', 'book__title', 'book__accession_number'
+        'borrower__last_name'
     ]
     readonly_fields = [
         'borrow_date', 'created_at', 'updated_at', 'first_reminder_sent',
@@ -512,7 +505,7 @@ class BorrowRecordAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Borrowing Information', {
-            'fields': ('book', 'borrower', 'borrow_date', 'due_date', 'return_date')
+            'fields': (('content_type', 'object_id'), 'borrower', 'borrow_date', 'due_date', 'return_date')
         }),
         ('Status & Fines', {
             'fields': ('status', 'fine_amount', 'fine_paid')
@@ -549,10 +542,14 @@ class BorrowRecordAdmin(admin.ModelAdmin):
     borrower_name.admin_order_field = 'borrower__last_name'
     
     def book_title(self, obj):
-        volume_str = f" ({obj.book.volume})" if obj.book.volume else ""
-        return f"{obj.book.title}{volume_str}"
-    book_title.short_description = 'Book'
-    book_title.admin_order_field = 'book__title'
+        publication = obj.publication
+        if not publication:
+            return "N/A"
+        volume_str = ""
+        if hasattr(publication, 'volume') and publication.volume:
+            volume_str = f" ({publication.volume})"
+        return f"{publication.title}{volume_str}"
+    book_title.short_description = 'Publication'
     
     def status_badge(self, obj):
         colors = {
@@ -631,7 +628,7 @@ class BorrowRecordAdmin(admin.ModelAdmin):
         total_fines = BorrowRecord.objects.filter(
             fine_amount__gt=0, 
             fine_paid=False
-        ).aggregate(models.Sum('fine_amount'))['fine_amount__sum'] or 0
+        ).aggregate(Sum('fine_amount'))['fine_amount__sum'] or 0
         
         extra_context['stats'] = {
             'active_count': active_count,
@@ -722,14 +719,14 @@ class BorrowRecordAdmin(admin.ModelAdmin):
         record = get_object_or_404(BorrowRecord, id=record_id)
         record.fine_paid = True
         record.save()
-        messages.success(request, f'Fine for "{record.book.title}" marked as paid.')
+        messages.success(request, f'Fine for "{record.publication.title}" marked as paid.')
         return HttpResponseRedirect(reverse('admin:library_borrowrecord_changelist'))
 
     def undo_return(self, request, record_id):
         record = get_object_or_404(BorrowRecord, id=record_id)
         try:
             record.undo_return()
-            messages.success(request, f'Return of "{record.book.title}" has been undone.')
+            messages.success(request, f'Return of "{record.publication.title}" has been undone.')
         except ValueError as e:
             messages.error(request, str(e))
         return HttpResponseRedirect(reverse('admin:library_borrowrecord_changelist'))

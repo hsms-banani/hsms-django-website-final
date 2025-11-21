@@ -2,7 +2,7 @@
 {% load static library_extras humanize %}
 
 <div id="results-counter" class="flex items-center justify-between mb-6">
-    <p class="text-sm text-gray-600">Showing <span class="font-semibold">{{ page_obj.start_index }}-{{ page_obj.end_index }}</span> of <span class="font-semibold">{{ page_obj.paginator.count|intcomma }}</span> results</p>
+    <p class="text-sm text-gray-600">Showing <span class="font-semibold">{{ page_obj.start_index }}-{{ page_obj.end_index }}</span> results</p>
 </div>
 
 <div class="book-grid mb-8">

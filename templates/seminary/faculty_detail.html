@@ -1,128 +1,538 @@
-<!-- seminary/faculty_detail.html -->
+<!-- seminary/faculty_detail.html - REDESIGNED -->
 {% extends 'base.html' %}
 {% load seminary_filters %}
 
 {% block title %}{{ faculty.name }} - Faculty - Holy Spirit Major Seminary{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Hero section with parallax effect */
+    .profile-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .profile-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    
+    /* Profile image with 3D effect */
+    .profile-image-3d {
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.5s ease;
+    }
+    
+    .profile-image-3d:hover {
+        transform: rotateY(5deg) rotateX(5deg);
+    }
+    
+    .profile-image-3d::before {
+        content: '';
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        right: -10px;
+        bottom: -10px;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
+        border-radius: 50%;
+        z-index: -1;
+        filter: blur(20px);
+    }
+    
+    /* Animated info cards */
+    .info-card {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 2rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .info-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+        transition: left 0.5s;
+    }
+    
+    .info-card:hover::before {
+        left: 100%;
+    }
+    
+    .info-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+    }
+    
+    /* Contact item with icon animation */
+    .contact-item {
+        transition: all 0.3s ease;
+        position: relative;
+        padding-left: 3rem;
+    }
+    
+    .contact-item i {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 2.5rem;
+        height: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 50%;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .contact-item:hover i {
+        transform: translateY(-50%) scale(1.2) rotate(10deg);
+    }
+    
+    .contact-item:hover {
+        padding-left: 3.5rem;
+    }
+    
+    /* Tabs with modern design */
+    .tab-button {
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    .tab-button::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        transition: width 0.3s ease;
+    }
+    
+    .tab-button.active::after {
+        width: 100%;
+    }
+    
+    /* Related faculty card */
+    .related-card {
+        background: white;
+        border-radius: 1.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        transition: all 0.4s ease;
+        position: relative;
+    }
+    
+    .related-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .related-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .related-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+    }
+    
+    /* Badge animations */
+    .badge-animated {
+        display: inline-block;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    /* Floating decorative elements */
+    .float-element {
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.1;
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translate(0, 0); }
+        33% { transform: translate(30px, -30px); }
+        66% { transform: translate(-20px, 20px); }
+    }
+    
+    /* Skills/expertise bars */
+    .skill-bar {
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 10px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .skill-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        border-radius: 10px;
+        transition: width 1.5s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .skill-bar-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        animation: shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+    
+    /* Timeline design */
+    .timeline-item {
+        position: relative;
+        padding-left: 3rem;
+        padding-bottom: 2rem;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: 0.75rem;
+        top: 0;
+        bottom: -2rem;
+        width: 2px;
+        background: linear-gradient(180deg, #667eea, #764ba2);
+    }
+    
+    .timeline-item:last-child::before {
+        display: none;
+    }
+    
+    .timeline-dot {
+        position: absolute;
+        left: 0;
+        top: 0.5rem;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background: white;
+        border: 3px solid #667eea;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    /* Social links hover effect */
+    .social-link {
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .social-link::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.5s, height 0.5s;
+    }
+    
+    .social-link:hover::before {
+        width: 150%;
+        height: 150%;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<!-- Page Header -->
-<section class="bg-gradient-primary text-white py-20">
-    <div class="container mx-auto px-4">
-        <div class="max-w-4xl mx-auto">
-            <nav class="text-lg opacity-80 mb-8">
-                <a href="{% url 'home' %}" class="hover:text-blue-200 transition-colors">Home</a>
-                <span class="mx-3">/</span>
+<!-- Profile Hero Section -->
+<section class="profile-hero text-white py-24 relative">
+    <!-- Floating decorative elements -->
+    <div class="float-element w-32 h-32 bg-purple-500 top-10 right-10" style="animation-delay: 0s;"></div>
+    <div class="float-element w-24 h-24 bg-blue-500 bottom-20 left-20" style="animation-delay: 2s;"></div>
+    <div class="float-element w-20 h-20 bg-pink-500 top-40 left-1/4" style="animation-delay: 4s;"></div>
+    
+    <div class="container mx-auto px-4 relative z-10">
+        <div class="max-w-6xl mx-auto">
+            <!-- Breadcrumb -->
+            <nav class="text-sm opacity-90 mb-8 flex items-center">
+                <a href="{% url 'home' %}" class="hover:text-blue-200 transition-colors flex items-center">
+                    <i class="fas fa-home mr-2"></i>Home
+                </a>
+                <i class="fas fa-chevron-right mx-3 text-xs"></i>
                 <a href="{% url 'faculty_list' %}" class="hover:text-blue-200 transition-colors">Faculty</a>
-                <span class="mx-3">/</span>
-                <span>{{ faculty.name }}</span>
+                <i class="fas fa-chevron-right mx-3 text-xs"></i>
+                <span class="font-semibold">{{ faculty.name }}</span>
             </nav>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-                <div class="md:col-span-1">
-                    <div class="w-64 h-64 mx-auto rounded-full bg-white/20 overflow-hidden">
-                        {% if faculty.photo %}
-                        <img src="{{ faculty.photo.url }}" 
-                             alt="{{ faculty.name }}" 
-                             class="w-full h-full object-cover">
-                        {% else %}
-                        <div class="w-full h-full flex items-center justify-center text-white text-6xl">
-                            <i class="fas fa-user"></i>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
+                <!-- Profile Image -->
+                <div class="lg:col-span-1">
+                    <div class="profile-image-3d mx-auto max-w-sm">
+                        <div class="w-full aspect-square rounded-3xl overflow-hidden shadow-2xl border-4 border-white/30">
+                            {% if faculty.photo %}
+                            <img src="{{ faculty.photo.url }}" 
+                                 alt="{{ faculty.name }}" 
+                                 class="w-full h-full object-cover">
+                            {% else %}
+                            <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-400 to-blue-500 text-white text-8xl">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                            {% endif %}
                         </div>
-                        {% endif %}
+                        
+                        <!-- Quick Stats -->
+                        <div class="mt-6 grid grid-cols-2 gap-4">
+                            <div class="bg-white/20 backdrop-blur-sm rounded-2xl p-4 text-center">
+                                <i class="fas fa-star text-2xl mb-2"></i>
+                                <div class="text-xs opacity-80">Department</div>
+                                <div class="text-sm font-bold mt-1">{{ faculty.get_department_display|truncatewords:2 }}</div>
+                            </div>
+                            {% if faculty.joined_date %}
+                            <div class="bg-white/20 backdrop-blur-sm rounded-2xl p-4 text-center">
+                                <i class="fas fa-calendar-check text-2xl mb-2"></i>
+                                <div class="text-xs opacity-80">Since</div>
+                                <div class="text-sm font-bold mt-1">{{ faculty.joined_date|date:"Y" }}</div>
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
                 
-                <div class="md:col-span-2 text-center md:text-left">
-                    <h1 class="text-4xl font-bold font-serif mb-4">{{ faculty.name }}</h1>
-                    <h2 class="text-2xl mb-4 opacity-90">{{ faculty.title }}</h2>
-                    <div class="flex flex-wrap justify-center md:justify-start gap-4 mb-6">
-                        <span class="bg-white/20 px-4 py-2 rounded-full">{{ faculty.get_department_display }}</span>
+                <!-- Profile Info -->
+                <div class="lg:col-span-2">
+                    <h1 class="text-5xl md:text-6xl font-bold font-serif mb-4">{{ faculty.name }}</h1>
+                    <h2 class="text-2xl md:text-3xl mb-6 opacity-95 flex items-center">
+                        <i class="fas fa-award mr-3"></i>{{ faculty.title }}
+                    </h2>
+                    
+                    <!-- Badges -->
+                    <div class="flex flex-wrap gap-3 mb-8">
+                        <span class="badge-animated bg-white/25 backdrop-blur-sm px-5 py-2 rounded-full font-semibold flex items-center">
+                            <i class="fas fa-building mr-2"></i>{{ faculty.get_department_display }}
+                        </span>
                         {% if faculty.specialization %}
-                        <span class="bg-white/20 px-4 py-2 rounded-full">{{ faculty.specialization }}</span>
+                        <span class="badge-animated bg-white/25 backdrop-blur-sm px-5 py-2 rounded-full font-semibold flex items-center">
+                            <i class="fas fa-lightbulb mr-2"></i>{{ faculty.specialization }}
+                        </span>
                         {% endif %}
                     </div>
+                    
+                    <!-- Quick Contact -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                        {% if faculty.email %}
+                        <a href="mailto:{{ faculty.email }}" class="bg-white/20 backdrop-blur-sm rounded-2xl p-4 hover:bg-white/30 transition-all flex items-center group">
+                            <div class="w-12 h-12 bg-white/30 rounded-full flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                                <i class="fas fa-envelope text-xl"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs opacity-80">Email</div>
+                                <div class="font-semibold">{{ faculty.email|truncatechars:30 }}</div>
+                            </div>
+                        </a>
+                        {% endif %}
+                        
+                        {% if faculty.phone %}
+                        <a href="tel:{{ faculty.phone }}" class="bg-white/20 backdrop-blur-sm rounded-2xl p-4 hover:bg-white/30 transition-all flex items-center group">
+                            <div class="w-12 h-12 bg-white/30 rounded-full flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                                <i class="fas fa-phone text-xl"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs opacity-80">Phone</div>
+                                <div class="font-semibold">{{ faculty.phone }}</div>
+                            </div>
+                        </a>
+                        {% endif %}
+                    </div>
+                    
+                    {% if faculty.office_hours %}
+                    <div class="bg-white/20 backdrop-blur-sm rounded-2xl p-4 inline-flex items-center">
+                        <i class="fas fa-clock text-2xl mr-3"></i>
+                        <div>
+                            <div class="text-xs opacity-80">Office Hours</div>
+                            <div class="font-semibold">{{ faculty.office_hours }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- Wave separator -->
+    <div class="absolute bottom-0 left-0 right-0">
+        <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z" fill="white"/>
+        </svg>
+    </div>
 </section>
 
-<!-- Faculty Details -->
+<!-- Main Content -->
 <section class="py-16 bg-white">
     <div class="container mx-auto px-4">
-        <div class="max-w-4xl mx-auto">
+        <div class="max-w-6xl mx-auto">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                <!-- Main Content -->
-                <div class="lg:col-span-2">
-                    <h3 class="text-2xl font-bold font-serif mb-6">About {{ faculty.name }}</h3>
-                    <div class="prose prose-lg max-w-none mb-8">
-                        {{ faculty.bio|smart_preview:50 }}
+                <!-- Main Content Column -->
+                <div class="lg:col-span-2 space-y-8">
+                    <!-- About Section -->
+                    <div class="info-card">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl flex items-center justify-center text-white text-xl mr-4">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <h3 class="text-3xl font-bold font-serif text-gray-800">About {{ faculty.name|truncatewords:2 }}</h3>
+                        </div>
+                        <div class="prose prose-lg max-w-none text-gray-600 leading-relaxed">
+                            {{ faculty.bio|smart_preview:100 }}
+                        </div>
                     </div>
                     
+                    <!-- Qualifications Section -->
                     {% if faculty.qualifications %}
-                    <h3 class="text-2xl font-bold font-serif mb-6">Qualifications</h3>
-                    <div class="prose prose-lg max-w-none mb-8">
-                        {{ faculty.qualifications|smart_preview:50 }}
+                    <div class="info-card">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl flex items-center justify-center text-white text-xl mr-4">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <h3 class="text-3xl font-bold font-serif text-gray-800">Qualifications</h3>
+                        </div>
+                        <div class="prose prose-lg max-w-none text-gray-600 leading-relaxed">
+                            {{ faculty.qualifications|smart_preview:100 }}
+                        </div>
                     </div>
                     {% endif %}
+                    
+                    <!-- Additional Info Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="info-card">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-gradient-to-br from-purple-100 to-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-book-reader text-3xl text-purple-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-800 mb-2">Teaching Excellence</h4>
+                                <p class="text-sm text-gray-600">Committed to inspiring and guiding students</p>
+                            </div>
+                        </div>
+                        
+                        <div class="info-card">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-gradient-to-br from-purple-100 to-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-users text-3xl text-purple-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-800 mb-2">Mentorship</h4>
+                                <p class="text-sm text-gray-600">Dedicated to student development and success</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Sidebar -->
-                <div class="lg:col-span-1">
-                    <div class="bg-gray-50 rounded-lg p-6">
-                        <h4 class="text-xl font-bold mb-4">Contact Information</h4>
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- Contact Card -->
+                    <div class="info-card sticky top-24">
+                        <h4 class="text-2xl font-bold mb-6 flex items-center text-gray-800">
+                            <i class="fas fa-address-card mr-3 text-purple-600"></i>Contact
+                        </h4>
                         
-                        {% if faculty.email %}
-                        <div class="mb-4">
-                            <div class="flex items-center mb-2">
-                                <i class="fas fa-envelope text-blue-600 mr-3"></i>
-                                <span class="font-medium">Email</span>
+                        <div class="space-y-6">
+                            {% if faculty.email %}
+                            <div class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <div>
+                                    <div class="text-xs text-gray-500 mb-1">Email Address</div>
+                                    <a href="mailto:{{ faculty.email }}" class="text-purple-600 hover:text-purple-800 font-medium break-all">
+                                        {{ faculty.email }}
+                                    </a>
+                                </div>
                             </div>
-                            <a href="mailto:{{ faculty.email }}" class="text-blue-600 hover:text-blue-800">
-                                {{ faculty.email }}
+                            {% endif %}
+                            
+                            {% if faculty.phone %}
+                            <div class="contact-item">
+                                <i class="fas fa-phone"></i>
+                                <div>
+                                    <div class="text-xs text-gray-500 mb-1">Phone Number</div>
+                                    <a href="tel:{{ faculty.phone }}" class="text-purple-600 hover:text-purple-800 font-medium">
+                                        {{ faculty.phone }}
+                                    </a>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if faculty.office_hours %}
+                            <div class="contact-item">
+                                <i class="fas fa-clock"></i>
+                                <div>
+                                    <div class="text-xs text-gray-500 mb-1">Office Hours</div>
+                                    <span class="text-gray-700 font-medium">{{ faculty.office_hours }}</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="contact-item">
+                                <i class="fas fa-building"></i>
+                                <div>
+                                    <div class="text-xs text-gray-500 mb-1">Department</div>
+                                    <span class="text-gray-700 font-medium">{{ faculty.get_department_display }}</span>
+                                </div>
+                            </div>
+                            
+                            {% if faculty.joined_date %}
+                            <div class="contact-item">
+                                <i class="fas fa-calendar"></i>
+                                <div>
+                                    <div class="text-xs text-gray-500 mb-1">Joined</div>
+                                    <span class="text-gray-700 font-medium">{{ faculty.joined_date|date:"F Y" }}</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Action Button -->
+                        <div class="mt-8 pt-6 border-t border-gray-100">
+                            <a href="{% url 'contact' %}" class="block w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white text-center py-3 rounded-xl font-semibold hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                                <i class="fas fa-envelope mr-2"></i>Get In Touch
                             </a>
                         </div>
-                        {% endif %}
-                        
-                        {% if faculty.phone %}
-                        <div class="mb-4">
-                            <div class="flex items-center mb-2">
-                                <i class="fas fa-phone text-blue-600 mr-3"></i>
-                                <span class="font-medium">Phone</span>
-                            </div>
-                            <a href="tel:{{ faculty.phone }}" class="text-blue-600 hover:text-blue-800">
-                                {{ faculty.phone }}
-                            </a>
-                        </div>
-                        {% endif %}
-                        
-                        {% if faculty.office_hours %}
-                        <div class="mb-4">
-                            <div class="flex items-center mb-2">
-                                <i class="fas fa-clock text-blue-600 mr-3"></i>
-                                <span class="font-medium">Office Hours</span>
-                            </div>
-                            <span class="text-gray-700">{{ faculty.office_hours }}</span>
-                        </div>
-                        {% endif %}
-                        
-                        <div class="mb-4">
-                            <div class="flex items-center mb-2">
-                                <i class="fas fa-building text-blue-600 mr-3"></i>
-                                <span class="font-medium">Department</span>
-                            </div>
-                            <span class="text-gray-700">{{ faculty.get_department_display }}</span>
-                        </div>
-                        
-                        {% if faculty.joined_date %}
-                        <div class="mb-4">
-                            <div class="flex items-center mb-2">
-                                <i class="fas fa-calendar text-blue-600 mr-3"></i>
-                                <span class="font-medium">Joined</span>
-                            </div>
-                            <span class="text-gray-700">{{ faculty.joined_date|date:"M Y" }}</span>
-                        </div>
-                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -132,35 +542,75 @@
 
 <!-- Related Faculty -->
 {% if related_faculty %}
-<section class="py-16 bg-gray-50">
+<section class="py-20 bg-gradient-to-br from-gray-50 via-white to-gray-50">
     <div class="container mx-auto px-4">
-        <div class="max-w-4xl mx-auto">
-            <h3 class="text-2xl font-bold font-serif text-center mb-12">Other Faculty in {{ faculty.get_department_display }}</h3>
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-12">
+                <h3 class="text-4xl font-bold font-serif text-gray-800 mb-4">
+                    Meet Our Team in {{ faculty.get_department_display }}
+                </h3>
+                <p class="text-gray-600 text-lg">Discover other distinguished faculty members</p>
+            </div>
+            
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {% for related in related_faculty %}
-                <div class="bg-white rounded-lg p-6 text-center hover-lift">
-                    <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-primary overflow-hidden">
+                <div class="related-card group">
+                    <div class="relative h-64 overflow-hidden">
                         {% if related.photo %}
                         <img src="{{ related.photo.url }}" 
                              alt="{{ related.name }}" 
-                             class="w-full h-full object-cover">
+                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                         {% else %}
-                        <div class="w-full h-full flex items-center justify-center text-white text-xl">
-                            <i class="fas fa-user"></i>
+                        <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-400 to-blue-500 text-white text-6xl group-hover:scale-110 transition-transform duration-500">
+                            <i class="fas fa-user-graduate"></i>
                         </div>
                         {% endif %}
+                        
+                        <!-- Overlay -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </div>
-                    <h4 class="text-lg font-semibold mb-1">{{ related.name }}</h4>
-                    <p class="text-blue-600 text-sm mb-3">{{ related.title }}</p>
-                    <a href="{% url 'faculty_detail' related.pk %}" 
-                       class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                        View Profile <i class="fas fa-arrow-right ml-1"></i>
-                    </a>
+                    
+                    <div class="p-6">
+                        <h4 class="text-xl font-bold mb-2 text-gray-800 group-hover:text-purple-600 transition-colors">
+                            {{ related.name }}
+                        </h4>
+                        <p class="text-purple-600 font-medium mb-4 flex items-center text-sm">
+                            <i class="fas fa-award mr-2"></i>{{ related.title|truncatewords:5 }}
+                        </p>
+                        <a href="{% url 'faculty_detail' related.pk %}" 
+                           class="inline-flex items-center text-purple-600 hover:text-purple-800 font-semibold group">
+                            View Profile 
+                            <i class="fas fa-arrow-right ml-2 group-hover:translate-x-2 transition-transform"></i>
+                        </a>
+                    </div>
                 </div>
                 {% endfor %}
+            </div>
+            
+            <div class="text-center mt-12">
+                <a href="{% url 'faculty_list' %}?dept={{ faculty.department }}" 
+                   class="inline-block px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                    <i class="fas fa-users mr-2"></i>View All {{ faculty.get_department_display }} Faculty
+                </a>
             </div>
         </div>
     </div>
 </section>
 {% endif %}
+
+<!-- Back to Faculty List CTA -->
+<section class="py-12 bg-white border-t border-gray-100">
+    <div class="container mx-auto px-4">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+            <div>
+                <h4 class="text-2xl font-bold text-gray-800 mb-2">Explore More Faculty</h4>
+                <p class="text-gray-600">Discover our talented educators and their expertise</p>
+            </div>
+            <a href="{% url 'faculty_list' %}" 
+               class="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:shadow-xl hover:-translate-y-1 transition-all duration-300 whitespace-nowrap">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Faculty List
+            </a>
+        </div>
+    </div>
+</section>
 {% endblock %}
