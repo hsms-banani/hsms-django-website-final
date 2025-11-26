@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Liturgical Calendar" %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .liturgical-card {
+        border-left-width: 4px;
+        transition: all 0.3s ease-in-out;
+    }
+    .liturgical-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    .border-green { border-color: #28a745; }
+    .bg-green { background-color: #28a745; }
+    .text-green { color: #28a745; }
+
+    .border-white { border-color: #f8f9fa; }
+    .bg-white { background-color: #f8f9fa; }
+    .text-white { color: #f8f9fa; }
+
+    .border-red { border-color: #dc3545; }
+    .bg-red { background-color: #dc3545; }
+    .text-red { color: #dc3545; }
+
+    .border-violet { border-color: #8f00ff; }
+    .bg-violet { background-color: #8f00ff; }
+    .text-violet { color: #8f00ff; }
+
+    .border-rose { border-color: #ffc0cb; }
+    .bg-rose { background-color: #ffc0cb; }
+    .text-rose { color: #ffc0cb; }
+
+    .holy-day-badge {
+        background-color: #C70039; /* Crimson Red */
+        color: white;
+        font-size: 10px;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 9999px;
+        text-transform: uppercase;
+    }
+    .current-day-glow {
+        box-shadow: 0 0 15px rgba(212, 175, 55, 0.8);
+        border: 1px solid #D4AF37;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50">
+    <div class="container mx-auto px-4 py-12">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-extrabold font-serif text-gray-800 tracking-tight">{% trans "Liturgical Calendar" %}</h1>
+            <p class="mt-4 text-lg text-gray-600">{% trans "A guide to the seasons and saints of the Church's year." %}</p>
+        </div>
+
+        {% for month, events in events_by_month.items %}
+        <div class="mb-16">
+            <h2 class="text-3xl font-bold mb-8 pb-3 text-gray-700 border-b-2 border-gray-200">{{ month }}</h2>
+            <div class="space-y-4">
+                {% for event in events %}
+                {% now "Y-m-d" as today_date %}
+                <div class="liturgical-card bg-white rounded-lg shadow-sm border-{{ event.color }}
+                    {% if event.date|date:"Y-m-d" == today_date %} current-day-glow{% endif %}">
+                    
+                    <div class="p-5 grid grid-cols-12 gap-4 items-center">
+                        <div class="col-span-12 md:col-span-1 text-center">
+                            <div class="text-3xl font-bold text-{{ event.color }}">
+                                {{ event.date|date:"d" }}
+                            </div>
+                            <div class="text-xs text-gray-500 uppercase">{{ event.date|date:"D" }}</div>
+                        </div>
+
+                        <div class="col-span-12 md:col-span-8">
+                            <h3 class="text-xl font-semibold text-gray-800">{{ event.name }}</h3>
+                            <div class="text-sm text-gray-500">
+                                <p>Season: {{ event.get_season_display }}</p>
+                                <p>Cycle: {{ event.get_cycle_display }}</p>
+                            </div>
+                            <div class="mt-2 text-sm">
+                                <p><strong>1st Reading:</strong> {{ event.first_reading }}</p>
+                                <p><strong>Responsorial Psalm:</strong> {{ event.responsorial_psalm }}</p>
+                                <p><strong>2nd Reading:</strong> {{ event.second_reading }}</p>
+                                <p><strong>Gospel:</strong> {{ event.gospel }}</p>
+                            </div>
+                            {% if event.saints.all %}
+                            <div class="mt-2 text-sm">
+                                <strong>Saints:</strong>
+                                {% for saint in event.saints.all %}
+                                    {{ saint.name }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-span-12 md:col-span-3 text-right">
+                            <span class="px-3 py-1 inline-flex text-xs font-semibold rounded-full text-white bg-{{ event.color }}">
+                                {{ event.get_rank_display }}
+                            </span>
+                            {% if event.is_holy_day_of_obligation %}
+                                <div class="mt-2">
+                                    <span class="holy-day-badge">{% trans "Holy Day of Obligation" %}</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-16">
+            <i class="fas fa-calendar-times fa-4x text-gray-300"></i>
+            <p class="mt-4 text-xl text-gray-500">{% trans "No liturgical events found for this period." %}</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

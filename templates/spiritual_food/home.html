@@ -5,6 +5,21 @@
 {% block title %}Spiritual Food{% endblock %}
 
 {% block content %}
+{% if banner %}
+<section class="relative bg-cover bg-center text-white py-32" style="background-image: url('{{ banner.image.url }}');">
+    <div class="absolute inset-0 bg-black opacity-60"></div>
+    <div class="container mx-auto px-4 relative">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-5xl font-bold font-serif mb-4 animate-fade-in-up">{{ banner.title|default:"Spiritual Food" }}</h1>
+            {% if banner.subtitle %}
+            <p class="text-xl opacity-90 animate-fade-in-up" style="animation-delay: 0.2s;">
+                {{ banner.subtitle }}
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% else %}
 <!-- Hero Section with Scrolling Announcements -->
 <section class="bg-gradient-primary py-20 relative overflow-hidden">
     <div class="absolute inset-0 opacity-10">
@@ -94,6 +109,7 @@
         {% endif %}
     </div>
 </section>
+{% endif %}
 
 <!-- Quick Access Cards -->
 <section class="py-16 bg-gray-50">
@@ -183,7 +199,7 @@
                     </h3>
                     
                     <p class="text-gray-600 text-sm mb-3 line-clamp-2">
-                        {{ homily.summary }}
+                        {{ homily.summary|safe }}
                     </p>
                     
                     <div class="flex items-center justify-between text-sm text-gray-500 mb-4">

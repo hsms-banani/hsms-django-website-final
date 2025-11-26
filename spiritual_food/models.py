@@ -254,6 +254,75 @@ class DonationInfo(models.Model):
     def __str__(self):
         return f"{self.get_payment_method_display()} - {self.account_number}"
 
+
+class Saint(models.Model):
+    name = models.CharField(max_length=200)
+    bio = models.TextField(blank=True)
+    feast_day = models.DateField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+class LiturgicalCalendar(models.Model):
+    """Model for Liturgical Calendar events"""
+    SEASON_CHOICES = [
+        ('advent', 'Advent'),
+        ('christmas', 'Christmas'),
+        ('ordinary', 'Ordinary Time'),
+        ('lent', 'Lent'),
+        ('easter', 'Easter'),
+    ]
+    
+    RANK_CHOICES = [
+        ('solemnity', 'Solemnity'),
+        ('sunday', 'Sunday'),
+        ('feast', 'Feast'),
+        ('memorial', 'Memorial'),
+        ('optional-memorial', 'Optional Memorial'),
+        ('weekday', 'Weekday'),
+    ]
+
+    COLOR_CHOICES = [
+        ('green', 'Green'),
+        ('white', 'White'),
+        ('red', 'Red'),
+        ('violet', 'Violet'),
+        ('rose', 'Rose'),
+    ]
+
+    CYCLE_CHOICES = [
+        ('A', 'Year A'),
+        ('B', 'Year B'),
+        ('C', 'Year C'),
+        ('I', 'Year I'),
+        ('II', 'Year II'),
+    ]
+
+    name = models.CharField(max_length=200)
+    date = models.DateField(unique=True)
+    season = models.CharField(max_length=20, choices=SEASON_CHOICES, blank=True)
+    rank = models.CharField(max_length=20, choices=RANK_CHOICES, default='weekday')
+    color = models.CharField(max_length=10, choices=COLOR_CHOICES, default='green')
+    
+    first_reading = models.CharField(max_length=100, blank=True)
+    responsorial_psalm = models.CharField(max_length=100, blank=True)
+    second_reading = models.CharField(max_length=100, blank=True)
+    gospel = models.CharField(max_length=100, blank=True)
+    
+    cycle = models.CharField(max_length=2, choices=CYCLE_CHOICES, blank=True)
+    saints = models.ManyToManyField(Saint, blank=True)
+    is_holy_day_of_obligation = models.BooleanField(default=False, help_text="Is this a holy day of obligation?")
+    
+    class Meta:
+        ordering = ['date']
+        verbose_name = "Liturgical Calendar Event"
+        verbose_name_plural = "Liturgical Calendar Events"
+
+    def __str__(self):
+        return f"{self.name} - {self.date.strftime('%B %d, %Y')}"
+
+        
+
 class PrayerRequestSettings(models.Model):
     """Singleton model to configure prayer request handling"""
     send_email_notifications = models.BooleanField(

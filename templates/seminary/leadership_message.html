@@ -348,7 +348,7 @@
                     </a>
                     {% else %}
                     <!-- Spiritual Director specific links -->
-                    <a href="{% url 'spiritual_food' %}" 
+                    <a href="{% url 'spiritual_food:home' %}" 
                        class="block p-6 bg-white bg-opacity-10 rounded-lg backdrop-filter backdrop-blur-lg hover:bg-opacity-20 transition-all duration-300 hover:transform hover:scale-105">
                         <div class="w-12 h-12 bg-white bg-opacity-20 text-white rounded-lg flex items-center justify-center mb-4 mx-auto">
                             <i class="fas fa-dove"></i>
@@ -357,7 +357,7 @@
                         <p class="text-sm opacity-90">Nourishment for the soul and spirit</p>
                     </a>
                     
-                    <a href="{% url 'prayer_services' %}" 
+                    <a href="{% url 'spiritual_food:prayer_services' %}" 
                        class="block p-6 bg-white bg-opacity-10 rounded-lg backdrop-filter backdrop-blur-lg hover:bg-opacity-20 transition-all duration-300 hover:transform hover:scale-105">
                         <div class="w-12 h-12 bg-white bg-opacity-20 text-white rounded-lg flex items-center justify-center mb-4 mx-auto">
                             <i class="fas fa-praying-hands"></i>
@@ -366,7 +366,7 @@
                         <p class="text-sm opacity-90">Join us in prayer and worship</p>
                     </a>
                     
-                    <a href="{% url 'homilies' %}" 
+                    <a href="{% url 'spiritual_food:homily_list' %}" 
                        class="block p-6 bg-white bg-opacity-10 rounded-lg backdrop-filter backdrop-blur-lg hover:bg-opacity-20 transition-all duration-300 hover:transform hover:scale-105">
                         <div class="w-12 h-12 bg-white bg-opacity-20 text-white rounded-lg flex items-center justify-center mb-4 mx-auto">
                             <i class="fas fa-cross"></i>

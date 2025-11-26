@@ -4,8 +4,36 @@ from django.utils.html import format_html
 from django.urls import reverse
 from .models import (
     Announcement, PrayerService, HomilyCategory, 
-    Homily, PrayerRequest, DonationInfo, PrayerRequestSettings
+    Homily, PrayerRequest, DonationInfo, PrayerRequestSettings, LiturgicalCalendar, Saint
 )
+
+@admin.register(Saint)
+class SaintAdmin(admin.ModelAdmin):
+    list_display = ('name', 'feast_day')
+    search_fields = ('name',)
+
+@admin.register(LiturgicalCalendar)
+class LiturgicalCalendarAdmin(admin.ModelAdmin):
+    list_display = ['name', 'date', 'rank', 'color', 'is_holy_day_of_obligation']
+    list_filter = ['rank', 'season', 'color', 'is_holy_day_of_obligation', 'date']
+    search_fields = ['name', 'first_reading', 'responsorial_psalm', 'second_reading', 'gospel']
+    date_hierarchy = 'date'
+    
+    fieldsets = (
+        ('Event Information', {
+            'fields': ('name', 'date', 'season', 'rank', 'color', 'is_holy_day_of_obligation')
+        }),
+        ('Readings', {
+            'fields': ('cycle', 'first_reading', 'responsorial_psalm', 'second_reading', 'gospel'),
+            'classes': ('collapse',)
+        }),
+        ('Saints', {
+            'fields': ('saints',),
+            'classes': ('collapse',)
+        }),
+    )
+    filter_horizontal = ('saints',)
+
 
 
 @admin.register(PrayerRequestSettings)

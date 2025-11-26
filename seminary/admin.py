@@ -1,4 +1,4 @@
-# seminary/admin.py - Updated with TinyMCE
+# seminary/admin.py 
 import os
 from django.contrib import admin
 from django.http import JsonResponse
@@ -96,6 +96,26 @@ class SiteSettingsAdmin(admin.ModelAdmin):
     
     def has_add_permission(self, request):
         return not SiteSettings.objects.exists()
+
+
+@admin.register(Banner)
+class BannerAdmin(admin.ModelAdmin):
+    list_display = ('page', 'title', 'is_active')
+    search_fields = ('page', 'title', 'subtitle')
+    list_editable = ('is_active',)
+    fieldsets = (
+        ('Banner Information', {
+            'fields': ('page', 'title', 'subtitle')
+        }),
+        ('Image', {
+            'fields': ('image',),
+            'description': "Please upload an image with a recommended size of 1920x400 pixels for the best appearance."
+        }),
+        ('Activation', {
+            'fields': ('is_active',)
+        }),
+    )
+
 
 @admin.register(Page)
 class PageAdmin(admin.ModelAdmin):

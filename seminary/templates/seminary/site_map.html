@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Site Map - Holy Spirit Major Seminary{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <h1 class="text-center mb-5">Site Map</h1>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Main</h5>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><a href="{% url 'home' %}">Home</a></li>
+                        <li class="list-group-item"><a href="{% url 'about_seminary' %}">About Us</a></li>
+                        <li class="list-group-item"><a href="{% url 'contact' %}">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Our Seminary</h5>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><a href="{% url 'rector_welcome' %}">Rector's Welcome</a></li>
+                        <li class="list-group-item"><a href="{% url 'mission_vision' %}">Mission & Vision</a></li>
+                        <li class="list-group-item"><a href="{% url 'seminary_history' %}">History</a></li>
+                        <li class="list-group-item"><a href="{% url 'formation_program' %}">Formation Program</a></li>
+                        <li class="list-group-item"><a href="{% url 'rules_regulations' %}">Rules & Regulations</a></li>
+                        <li class="list-group-item"><a href="{% url 'committees' %}">Committees</a></li>
+                    </ul>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">News</h5>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for item in news %}
+                            <li class="list-group-item"><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Events</h5>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for item in events %}
+                            <li class="list-group-item"><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">HSIT - About</h5>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><a href="{% url 'hsit_about' %}">About HSIT</a></li>
+                        <li class="list-group-item"><a href="{% url 'director_message' %}">Director's Message</a></li>
+                        <li class="list-group-item"><a href="{% url 'philosophy_department' %}">Philosophy Department</a></li>
+                        <li class="list-group-item"><a href="{% url 'theology_department' %}">Theology Department</a></li>
+                        <li class="list-group-item"><a href="{% url 'faculty_list' %}">Faculty List</a></li>
+                    </ul>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">HSIT - Academic</h5>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><a href="{% url 'academic_calendar' %}">Academic Calendar</a></li>
+                        <li class="list-group-item"><a href="{% url 'student_list' %}">Student List</a></li>
+                    </ul>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Library</h5>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><a href="{% url 'library:home' %}">Library Home</a></li>
+                        <li class="list-group-item"><a href="{% url 'library:category_list' %}">Categories</a></li>
+                        <li class="list-group-item"><a href="{% url 'library:author_list' %}">Authors</a></li>
+                        <li class="list-group-item"><a href="{% url 'library:publisher_list' %}">Publishers</a></li>
+                    </ul>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Publications</h5>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for item in publications %}
+                            <li class="list-group-item"><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Faculty</h5>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for item in faculty %}
+                            <li class="list-group-item"><a href="{{ item.get_absolute_url }}">{{ item.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Resources</h5>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><a href="{% url 'publications' %}">Publications</a></li>
+                        <li class="list-group-item"><a href="{% url 'spiritual_food' %}">Spiritual Food</a></li>
+                        <li class="list-group-item"><a href="{% url 'news_list' %}">News</a></li>
+                        <li class="list-group-item"><a href="{% url 'events_list' %}">Events</a></li>
+                        <li class="list-group-item"><a href="{% url 'gallery_list' %}">Gallery</a></li>
+                    </ul>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Legal</h5>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><a href="{% url 'terms_of_service' %}">Terms of Service</a></li>
+                        <li class="list-group-item"><a href="{% url 'privacy_policy' %}">Privacy Policy</a></li>
+                        <li class="list-group-item"><a href="{% url 'site_map' %}">Sitemap</a></li>
+                    </ul>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Pages</h5>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for item in pages %}
+                            <li class="list-group-item"><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Gallery</h5>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for item in galleries %}
+                            <li class="list-group-item"><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,4 +1,4 @@
-# library/admin.py - Enhanced with Borrowing System
+# library/admin.py 
 
 from django.contrib import admin, messages
 from django.utils.html import format_html
@@ -50,7 +50,7 @@ class LibraryUserAdmin(UserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'default_password', 'email', 'first_name', 'last_name', 'is_staff'),
+            'fields': ('username', 'email', 'first_name', 'last_name', 'is_staff'),
         }),
     )
     

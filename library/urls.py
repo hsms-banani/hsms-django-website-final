@@ -1,14 +1,30 @@
-# library/urls.py - Enhanced with Borrowing System
+# library/urls.py - UPDATED
 
-from django.urls import path, reverse_lazy
-from django.contrib.auth import views as auth_views
-from . import views, views_borrowing
+from django.urls import path
+from . import views, views_borrowing, views_dashboard
 
 app_name = 'library'
 
 urlpatterns = [
-    # Librarian Dashboard
-    path('dashboard/', views.librarian_dashboard, name='librarian_dashboard'),
+    # Enhanced Dashboard
+    path('dashboard/', views_dashboard.enhanced_dashboard, name='enhanced_dashboard'),
+    
+    # Dashboard API Endpoints
+    path('dashboard/api/search-books/', views_dashboard.manual_borrow_search, name='dashboard_search_books'),
+    path('dashboard/api/search-users/', views_dashboard.manual_borrow_user_search, name='dashboard_search_users'),
+    path('dashboard/api/manual-borrow/', views_dashboard.process_manual_borrow, name='process_manual_borrow'),
+    path('dashboard/api/renew/<int:record_id>/', views_dashboard.dashboard_action_renew, name='dashboard_action_renew'),
+    path('dashboard/api/return/<int:record_id>/', views_dashboard.dashboard_action_return, name='dashboard_action_return'),
+    path('dashboard/api/reminder/<int:record_id>/', views_dashboard.dashboard_action_reminder, name='dashboard_action_reminder'),
+    path('dashboard/api/mark-paid/<int:record_id>/', views_dashboard.dashboard_mark_fine_paid, name='dashboard_mark_fine_paid'),
+    path('dashboard/api/export-borrows/', views_dashboard.export_current_borrows, name='export_current_borrows'),
+    
+    # Dashboard Tables
+    path('dashboard/api/active-borrows/', views_dashboard.get_active_borrows_table, name='get_active_borrows_table'),
+    path('dashboard/api/bulk-reminders/', views_dashboard.bulk_send_reminders, name='bulk_send_reminders'),
+    
+    # Old Dashboard (keep for backwards compatibility)
+    path('dashboard/old/', views.librarian_dashboard, name='librarian_dashboard'),
 
     # Main library pages
     path('', views.library_home, name='home'),
@@ -45,7 +61,7 @@ urlpatterns = [
     path('api/search-authors/', views.search_authors, name='search_authors'),
     path('api/search-publishers/', views.search_publishers, name='search_publishers'),
 
-    # Dashboard partials
+    # Old Dashboard partials (keep for compatibility)
     path('api/get-all-books-table/', views.get_all_books_table, name='get_all_books_table'),
     path('api/get-borrowed-books-table/', views.get_borrowed_books_table, name='get_borrowed_books_table'),
     path('api/get-overdue-books-table/', views.get_overdue_books_table, name='get_overdue_books_table'),
@@ -64,27 +80,9 @@ urlpatterns = [
     # Reporting
     path('dashboard/generate-report/<str:report_type>/', views.generate_report, name='generate_report'),
 
-    # Manual actions from dashboard
+    # Manual actions from old dashboard
     path('dashboard/renew-book/<int:record_id>/', views.dashboard_renew_book, name='dashboard_renew_book'),
     path('dashboard/return-book/<int:record_id>/', views.dashboard_return_book, name='dashboard_return_book'),
     path('dashboard/mark-as-paid/<int:record_id>/', views.dashboard_mark_as_paid, name='dashboard_mark_as_paid'),
     path('dashboard/download-returned-csv/', views.download_returned_books_csv, name='download_returned_books_csv'),
-
-    # Password reset
-    path('password_reset/', auth_views.PasswordResetView.as_view(
-        template_name='registration/password_reset/password_reset_form.html',
-        email_template_name='registration/password_reset/password_reset_email.html',
-        subject_template_name='registration/password_reset/password_reset_subject.txt',
-        success_url=reverse_lazy('library:password_reset_done')
-    ), name='password_reset'),
-    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(
-        template_name='registration/password_reset/password_reset_done.html'
-    ), name='password_reset_done'),
-    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
-        template_name='registration/password_reset/password_reset_confirm.html',
-        success_url=reverse_lazy('library:password_reset_complete')
-    ), name='password_reset_confirm'),
-    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(
-        template_name='registration/password_reset/password_reset_complete.html'
-    ), name='password_reset_complete'),
 ]

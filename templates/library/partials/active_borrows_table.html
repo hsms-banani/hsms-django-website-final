@@ -1,0 +1,118 @@
+<!-- templates/library/partials/active_borrows_table.html -->
+{% if page_obj %}
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Book</th>
+            <th>Borrower</th>
+            <th>Borrow Date</th>
+            <th>Due Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in page_obj %}
+        <tr>
+            <td>
+                <strong>{{ record.publication.title|truncatechars:50 }}</strong><br>
+                <small>{{ record.publication.accession_number }} | {{ record.publication.call_number }}</small>
+            </td>
+            <td>
+                <strong>{{ record.borrower.get_full_name }}</strong><br>
+                <small>{{ record.borrower.email }}</small>
+            </td>
+            <td>{{ record.borrow_date|date:"M d, Y" }}</td>
+            <td>
+                {{ record.due_date|date:"M d, Y" }}
+                {% if record.status == 'active' and record.days_until_due %}
+                <br><small style="color: {% if record.days_until_due <= 3 %}#f56565{% else %}#718096{% endif %};">
+                    {% if record.days_until_due > 0 %}
+                        In {{ record.days_until_due }} day{{ record.days_until_due|pluralize }}
+                    {% elif record.days_until_due == 0 %}
+                        Due today
+                    {% else %}
+                        {{ record.days_until_due|abs }} day{{ record.days_until_due|abs|pluralize }} overdue
+                    {% endif %}
+                </small>
+                {% endif %}
+            </td>
+            <td>
+                {% if record.status == 'active' %}
+                <span class="badge badge-success">Active</span>
+                {% elif record.status == 'overdue' %}
+                <span class="badge badge-danger">Overdue</span>
+                {% endif %}
+                
+                {% if record.fine_amount > 0 %}
+                <br><span class="badge {% if record.fine_paid %}badge-success{% else %}badge-danger{% endif %}" style="margin-top: 5px;">
+                    ৳{{ record.fine_amount|floatformat:2 }} {% if record.fine_paid %}Paid{% else %}Unpaid{% endif %}
+                </span>
+                {% endif %}
+            </td>
+            <td>
+                <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                    {% if record.can_renew %}
+                    <button class="action-btn action-renew" onclick="renewBook({{ record.id }})" title="Renew">
+                        <i class="fas fa-sync"></i> Renew
+                    </button>
+                    {% endif %}
+                    
+                    <button class="action-btn action-return" onclick="returnBook({{ record.id }})" title="Return">
+                        <i class="fas fa-undo"></i> Return
+                    </button>
+                    
+                    <button class="action-btn action-reminder" onclick="sendReminder({{ record.id }})" title="Send Reminder">
+                        <i class="fas fa-envelope"></i> Remind
+                    </button>
+                    
+                    {% if record.fine_amount > 0 and not record.fine_paid %}
+                    <button class="action-btn action-paid" onclick="markPaid({{ record.id }})" title="Mark Fine as Paid">
+                        <i class="fas fa-check"></i> Mark Paid
+                    </button>
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding: 15px; background: #f7fafc; border-radius: 8px;">
+    <div style="color: #718096; font-size: 14px;">
+        Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} results
+    </div>
+    <div style="display: flex; gap: 5px;">
+        {% if page_obj.has_previous %}
+        <button class="action-btn" 
+                hx-get="{% url 'library:get_active_borrows_table' %}?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+                hx-target="#active-borrows-table"
+                style="background: #667eea; color: white;">
+            <i class="fas fa-chevron-left"></i> Previous
+        </button>
+        {% endif %}
+        
+        <span style="padding: 6px 12px; background: white; border-radius: 6px; font-weight: 600; color: #667eea;">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+        
+        {% if page_obj.has_next %}
+        <button class="action-btn" 
+                hx-get="{% url 'library:get_active_borrows_table' %}?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+                hx-target="#active-borrows-table"
+                style="background: #667eea; color: white;">
+            Next <i class="fas fa-chevron-right"></i>
+        </button>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="empty-state">
+    <i class="fas fa-inbox"></i>
+    <p>No active borrows found</p>
+</div>
+{% endif %}

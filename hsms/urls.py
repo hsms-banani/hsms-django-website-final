@@ -29,6 +29,7 @@ from seminary.sitemaps import (
     FacultySitemap, 
     GallerySitemap
 )
+from seminary.views import site_map
 
 sitemaps = {
     'static': StaticViewSitemap,
@@ -47,8 +48,12 @@ urlpatterns = [
     path('tinymce/', include('tinymce.urls')),
     path('select2/', include('django_select2.urls')),
     path('library/', include('library.urls')), 
+    path('api/students/', include('students.api_urls')),
+    path('utils/', include('utils.urls')),
+    path('students/', include('students.urls')), 
     path('spiritual-food/', include('spiritual_food.urls')),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
+    path('sitemap/', site_map, name='site_map'),
     path('login/', auth_views.LoginView.as_view(), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     # Removed i18n URLs

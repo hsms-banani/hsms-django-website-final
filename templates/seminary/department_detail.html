@@ -7,6 +7,33 @@
 
 {% block content %}
 <!-- Hero Section -->
+{% if banner %}
+<section class="relative bg-cover bg-center text-white py-32" style="background-image: url('{{ banner.image.url }}');">
+    <div class="absolute inset-0 bg-black opacity-60"></div>
+    <div class="container mx-auto px-4 relative">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-5xl font-bold font-serif mb-4 animate-fade-in-up">{{ banner.title|default:page.title }}</h1>
+            {% if banner.subtitle %}
+            <p class="text-xl opacity-90 animate-fade-in-up" style="animation-delay: 0.2s;">
+                {{ banner.subtitle }}
+            </p>
+            {% endif %}
+            {% if breadcrumbs %}
+            <nav class="text-lg opacity-90 animate-fade-in-up" style="animation-delay: 0.2s;">
+                {% for breadcrumb_title, breadcrumb_url in breadcrumbs %}
+                    {% if breadcrumb_url %}
+                        <a href="{% url breadcrumb_url %}" class="hover:text-blue-200 transition-colors">{{ breadcrumb_title }}</a>
+                    {% else %}
+                        <span>{{ breadcrumb_title }}</span>
+                    {% endif %}
+                    {% if not forloop.last %}<span class="mx-3">/</span>{% endif %}
+                {% endfor %}
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% else %}
 <section class="bg-gradient-primary text-white py-20 relative overflow-hidden">
     <div class="absolute inset-0 bg-black opacity-10"></div>
     <div class="container mx-auto px-4 relative z-10">
@@ -37,21 +64,9 @@
     <div class="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -translate-y-32 translate-x-32"></div>
     <div class="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-5 rounded-full translate-y-24 -translate-x-24"></div>
 </section>
+{% endif %}
 
-<!-- Breadcrumb -->
-<div class="bg-gray-50 py-4">
-    <div class="container mx-auto px-4">
-        <nav class="text-sm">
-            <ol class="flex items-center space-x-2 text-gray-600">
-                <li><a href="{% url 'home' %}" class="hover:text-blue-600">Home</a></li>
-                <li><i class="fas fa-chevron-right text-xs"></i></li>
-                <li><a href="{% url 'hsit_about' %}" class="hover:text-blue-600">About HSIT</a></li>
-                <li><i class="fas fa-chevron-right text-xs"></i></li>
-                <li class="text-gray-800 font-medium">Department of {{ department_name }}</li>
-            </ol>
-        </nav>
-    </div>
-</div>
+
 
 <!-- Department Overview -->
 <section class="py-16 bg-white">

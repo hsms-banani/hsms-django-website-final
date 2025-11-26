@@ -107,6 +107,13 @@ def about_seminary(request):
 def mission_vision(request):
     """Mission and Vision page with enhanced content"""
     page = get_object_or_404(Page, slug='mission-vision', is_published=True)
+    try:
+        banner = Banner.objects.get(page='about', is_active=True)
+    except Banner.DoesNotExist:
+        try:
+            banner = Banner.objects.get(page='default-banner', is_active=True)
+        except Banner.DoesNotExist:
+            banner = None
     
     context = {
         'page': page,
@@ -114,7 +121,8 @@ def mission_vision(request):
             ('Home', 'home'),
             ('Our Seminary', 'about_seminary'),
             (page.title, None)
-        ]
+        ],
+        'banner': banner,
     }
     
     if request.headers.get('HX-Request'):
@@ -126,6 +134,16 @@ def seminary_history(request):
     """Seminary history page with timeline"""
     page = get_object_or_404(Page, slug='seminary-history', is_published=True)
     
+    try:
+        banner = Banner.objects.get(page='seminary-history', is_active=True)
+    except Banner.DoesNotExist:
+        try:
+            banner = Banner.objects.get(page='default-banner', is_active=True)
+        except Banner.DoesNotExist:
+            banner = None
+    
+    print(f"Banner for seminary-history: {banner}")
+            
     # You can add historical events or milestones here
     context = {
         'page': page,
@@ -133,7 +151,8 @@ def seminary_history(request):
             ('Home', 'home'),
             ('Our Seminary', 'about_seminary'),
             (page.title, None)
-        ]
+        ],
+        'banner': banner,
     }
     
     if request.headers.get('HX-Request'):
@@ -145,6 +164,14 @@ def formation_program(request):
     """Seminary formation program with detailed information"""
     page = get_object_or_404(Page, slug='formation-program', is_published=True)
     
+    try:
+        banner = Banner.objects.get(page='formation-program', is_active=True)
+    except Banner.DoesNotExist:
+        try:
+            banner = Banner.objects.get(page='default-banner', is_active=True)
+        except Banner.DoesNotExist:
+            banner = None
+            
     context = {
         'page': page,
         # Fix: Use departments__slug instead of department
@@ -160,7 +187,8 @@ def formation_program(request):
             ('Home', 'home'),
             ('Our Seminary', 'about_seminary'),
             (page.title, None)
-        ]
+        ],
+        'banner': banner,
     }
     
     if request.headers.get('HX-Request'):
@@ -172,13 +200,22 @@ def rules_regulations(request):
     """Rules and regulations with categorized content"""
     page = get_object_or_404(Page, slug='rules-regulations', is_published=True)
     
+    try:
+        banner = Banner.objects.get(page='rules-regulations', is_active=True)
+    except Banner.DoesNotExist:
+        try:
+            banner = Banner.objects.get(page='default-banner', is_active=True)
+        except Banner.DoesNotExist:
+            banner = None
+            
     context = {
         'page': page,
         'breadcrumbs': [
             ('Home', 'home'),
             ('Our Seminary', 'about_seminary'),
             (page.title, None)
-        ]
+        ],
+        'banner': banner,
     }
     
     if request.headers.get('HX-Request'):
@@ -194,6 +231,14 @@ def committees(request):
     if committee_type_slug:
         committees_qs = committees_qs.filter(committee_type__slug=committee_type_slug)
     
+    try:
+        banner = Banner.objects.get(page='committees', is_active=True)
+    except Banner.DoesNotExist:
+        try:
+            banner = Banner.objects.get(page='default-banner', is_active=True)
+        except Banner.DoesNotExist:
+            banner = None
+            
     context = {
         'committees': committees_qs,
         'committee_types': CommitteeType.objects.all(),
@@ -203,7 +248,8 @@ def committees(request):
             ('Home', 'home'),
             ('Our Seminary', 'about_seminary'),
             ('Committees', None)
-        ]
+        ],
+        'banner': banner,
     }
     
     if request.headers.get('HX-Request'):
@@ -213,38 +259,88 @@ def committees(request):
 
 def site_map(request):
     """Site map page"""
-    return render(request, 'seminary/site_map.html')
+    
+    context = {
+        'pages': Page.objects.filter(is_published=True),
+        'news': News.objects.filter(is_published=True),
+        'events': Event.objects.filter(is_published=True),
+        'publications': Publication.objects.filter(is_published=True),
+        'faculty': Faculty.objects.filter(is_active=True),
+        'galleries': Gallery.objects.filter(is_published=True),
+    }
+    return render(request, 'seminary/site_map.html', context)
 
 # History & Heritage Views
 def history_heritage(request):
     """History and heritage overview"""
+    page = get_object_or_404(Page, slug='history-heritage', is_published=True)
+    try:
+        banner = Banner.objects.get(page='history-heritage', is_active=True)
+    except Banner.DoesNotExist:
+        try:
+            banner = Banner.objects.get(page='default-banner', is_active=True)
+        except Banner.DoesNotExist:
+            banner = None
+
     context = {
+        'page': page,
+        'banner': banner,
         'page_title': 'History & Heritage',
         'church_history': Page.objects.filter(slug='church-history', is_published=True).first(),
         'bangladesh_history': Page.objects.filter(slug='bangladesh-history', is_published=True).first(),
         'local_church_history': Page.objects.filter(slug='local-church-history', is_published=True).first(),
     }
-    return render(request, 'seminary/history_heritage.html', context)
+    return render(request, 'seminary/page_detail.html', context)
 
 def church_history(request):
     """Brief history of the Church"""
     page = get_object_or_404(Page, slug='church-history', is_published=True)
-    return render(request, 'seminary/page_detail.html', {'page': page})
+    try:
+        banner = Banner.objects.get(page='church-history', is_active=True)
+    except Banner.DoesNotExist:
+        try:
+            banner = Banner.objects.get(page='default-banner', is_active=True)
+        except Banner.DoesNotExist:
+            banner = None
+    return render(request, 'seminary/page_detail.html', {'page': page, 'banner': banner})
 
 def bangladesh_history(request):
     """History of Bangladesh"""
     page = get_object_or_404(Page, slug='bangladesh-history', is_published=True)
-    return render(request, 'seminary/page_detail.html', {'page': page})
+    try:
+        banner = Banner.objects.get(page='bangladesh-history', is_active=True)
+    except Banner.DoesNotExist:
+        try:
+            banner = Banner.objects.get(page='default-banner', is_active=True)
+        except Banner.DoesNotExist:
+            banner = None
+    return render(request, 'seminary/page_detail.html', {'page': page, 'banner': banner})
 
 def local_church_history(request):
     """Local Church history"""
     page = get_object_or_404(Page, slug='local-church-history', is_published=True)
-    return render(request, 'seminary/page_detail.html', {'page': page})
+    try:
+        banner = Banner.objects.get(page='local-church-history', is_active=True)
+    except Banner.DoesNotExist:
+        try:
+            banner = Banner.objects.get(page='default-banner', is_active=True)
+        except Banner.DoesNotExist:
+            banner = None
+    return render(request, 'seminary/page_detail.html', {'page': page, 'banner': banner})
 
 # HSIT Views
 def hsit_about(request):
     """HSIT About page"""
+    try:
+        banner = Banner.objects.get(page='hsit-about', is_active=True)
+    except Banner.DoesNotExist:
+        try:
+            banner = Banner.objects.get(page='default-banner', is_active=True)
+        except Banner.DoesNotExist:
+            banner = None
+            
     context = {
+        'banner': banner,
         'page_title': 'About HSIT',
         'director_message': Page.objects.filter(slug='director-message', is_published=True).first(),
         'philosophy_dept': Page.objects.filter(slug='philosophy-department', is_published=True).first(),
@@ -341,51 +437,7 @@ def director_message(request):
     
     return render(request, 'seminary/leadership_message.html', context)
 
-def spiritual_directors_desk(request):
-    """Spiritual director's message with enhanced content"""
-    try:
-        leadership_message = LeadershipMessage.objects.get(
-            message_type='spiritual_director', 
-            is_published=True
-        )
-    except LeadershipMessage.DoesNotExist:
-        # Fallback to old Page model for backward compatibility
-        try:
-            page = Page.objects.get(slug='spiritual-directors-desk', is_published=True)
-        except Page.DoesNotExist:
-            page = Page(
-                title="Spiritual Director's Desk",
-                slug="spiritual-directors-desk",
-                content="""
-                <div class="prose max-w-none">
-                    <h2>Spiritual Director's Desk</h2>
-                    <p>Reflections from the Spiritual Director...</p>
-                </div>
-                """,
-                is_published=True
-            )
-        
-        context = {
-            'page': page,
-            'breadcrumbs': [
-                ('Home', 'home'),
-                ('Spiritual Food', 'spiritual_food'),
-                ("Spiritual Director's Desk", None)
-            ],
-            'use_old_template': True
-        }
-        return render(request, 'seminary/page_detail.html', context)
-    
-    context = {
-        'leadership_message': leadership_message,
-        'breadcrumbs': [
-            ('Home', 'home'),
-            ('Spiritual Food', 'spiritual_food'),
-            (leadership_message.title, None)
-        ]
-    }
-    
-    return render(request, 'seminary/leadership_message.html', context)
+
 
 
 def philosophy_department(request):
@@ -419,6 +471,14 @@ def philosophy_department(request):
             is_published=True
         )
     
+    try:
+        banner = Banner.objects.get(page='philosophy-department', is_active=True)
+    except Banner.DoesNotExist:
+        try:
+            banner = Banner.objects.get(page='default-banner', is_active=True)
+        except Banner.DoesNotExist:
+            banner = None
+            
     # Get faculty members from Philosophy department
     try:
         philosophy_dept = Department.objects.get(slug='philosophy')
@@ -442,7 +502,8 @@ def philosophy_department(request):
             ('Home', 'home'),
             ('About HSIT', 'hsit_about'),
             ('Department of Philosophy', None)
-        ]
+        ],
+        'banner': banner,
     }
     return render(request, 'seminary/department_detail.html', context)
 
@@ -477,7 +538,15 @@ def theology_department(request):
             """,
             is_published=True
         )
-    
+        
+    try:
+        banner = Banner.objects.get(page='theology-department', is_active=True)
+    except Banner.DoesNotExist:
+        try:
+            banner = Banner.objects.get(page='default-banner', is_active=True)
+        except Banner.DoesNotExist:
+            banner = None
+            
     # Get faculty members from Theology department
     try:
         theology_dept = Department.objects.get(slug='theology')
@@ -501,7 +570,8 @@ def theology_department(request):
             ('Home', 'home'),
             ('About HSIT', 'hsit_about'),
             ('Department of Theology', None)
-        ]
+        ],
+        'banner': banner,
     }
     return render(request, 'seminary/department_detail.html', context)
 
@@ -643,8 +713,7 @@ def library(request):
 
 def student_list(request):
     """Student list page"""
-    page = get_object_or_404(Page, slug='student-list', is_published=True)
-    return render(request, 'seminary/page_detail.html', {'page': page})
+    return render(request, 'seminary/student_list.html')
 
 def enrollment_requirements(request):
     """Enrollment requirements page"""
@@ -688,10 +757,19 @@ def news_list(request):
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
     
+    try:
+        banner = Banner.objects.get(page='news', is_active=True)
+    except Banner.DoesNotExist:
+        try:
+            banner = Banner.objects.get(page='default-banner', is_active=True)
+        except Banner.DoesNotExist:
+            banner = None
+            
     context = {
         'page_obj': page_obj,
         'search_query': search_query,
         'featured_news': News.objects.filter(is_published=True, is_featured=True).order_by('-created_at')[:3],
+        'banner': banner,
     }
     
     if request.htmx:
@@ -719,13 +797,22 @@ def news_detail(request, slug):
 def events_list(request):
     """Events listing page"""
     now = timezone.now()
-    events = Event.objects.filter(is_published=True).order_by('start_date')
+    try:
+        banner = Banner.objects.get(page='events', is_active=True)
+    except Banner.DoesNotExist:
+        try:
+            banner = Banner.objects.get(page='default-banner', is_active=True)
+        except Banner.DoesNotExist:
+            banner = None
+    
+    events = Event.objects.filter(is_published=True)
     
     context = {
         'events': events,
         'upcoming_events': events.filter(start_date__gte=now)[:6],
         'past_events': events.filter(start_date__lt=now).order_by('-start_date')[:6],
         'featured_events': Event.objects.filter(is_published=True, is_featured=True, start_date__gte=now).order_by('start_date')[:3],
+        'banner': banner,
     }
     return render(request, 'seminary/events.html', context)
 
@@ -755,6 +842,14 @@ def publications(request):
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
     
+    try:
+        banner = Banner.objects.get(page='publications', is_active=True)
+    except Banner.DoesNotExist:
+        try:
+            banner = Banner.objects.get(page='default-banner', is_active=True)
+        except Banner.DoesNotExist:
+            banner = None
+
     context = {
         'page_obj': page_obj,
         'publication_types': Publication.PUBLICATION_TYPES,
@@ -762,6 +857,7 @@ def publications(request):
         'ankur_publications': Publication.objects.filter(is_published=True, publication_type='ankur').order_by('-publication_date')[:3],
         'diptto_publications': Publication.objects.filter(is_published=True, publication_type='diptto_sakhyo').order_by('-publication_date')[:3],
         'prodipon_publications': Publication.objects.filter(is_published=True, publication_type='prodipon').order_by('-publication_date')[:3],
+        'banner': banner,
     }
     
     if request.htmx:
@@ -855,12 +951,21 @@ def prodipon_publications(request):
 def gallery_list(request):
     """Gallery listing page"""
     gallery_type = request.GET.get('type', 'photo')
-    galleries = Gallery.objects.filter(is_published=True, gallery_type=gallery_type).order_by('-created_at')
+    try:
+        banner = Banner.objects.get(page='gallery', is_active=True)
+    except Banner.DoesNotExist:
+        try:
+            banner = Banner.objects.get(page='default-banner', is_active=True)
+        except Banner.DoesNotExist:
+            banner = None
+    
+    galleries = Gallery.objects.filter(is_published=True).order_by('-created_at')
     
     context = {
         'galleries': galleries,
         'gallery_types': Gallery.GALLERY_TYPES,
         'selected_type': gallery_type,
+        'banner': banner,
     }
     
     if request.htmx:
@@ -900,69 +1005,6 @@ def video_gallery(request):
         'page_title': 'Video Gallery',
     }
     return render(request, 'seminary/gallery_type.html', context)
-
-# Spiritual Food Views
-def spiritual_food(request):
-    """Spiritual food section"""
-    context = {
-        'page_title': 'Spiritual Food',
-        'prayer_services': Page.objects.filter(slug='prayer-services', is_published=True).first(),
-        'homilies': Page.objects.filter(slug='homilies', is_published=True).first(),
-        'spiritual_directors_desk': Page.objects.filter(slug='spiritual-directors-desk', is_published=True).first(),
-    }
-    return render(request, 'seminary/spiritual_food.html', context)
-
-def prayer_services(request):
-    """Prayer services page"""
-    try:
-        page = Page.objects.get(slug='prayer-services', is_published=True)
-    except Page.DoesNotExist:
-        page = Page(
-            title="Prayer Services",
-            slug="prayer-services",
-            content="""
-            <div class="prose max-w-none">
-                <h2>Prayer Services</h2>
-                <p>Details about prayer services at HSMS...</p>
-            </div>
-            """,
-            is_published=True
-        )
-    return render(request, 'seminary/page_detail.html', {
-        'page': page,
-        'breadcrumbs': [
-            ('Home', 'home'),
-            ('Spiritual Food', 'spiritual_food'),
-            ('Prayer Services', None)
-        ]
-    })
-
-def homilies(request):
-    """Homilies page"""
-    try:
-        page = Page.objects.get(slug='homilies', is_published=True)
-    except Page.DoesNotExist:
-        page = Page(
-            title="Homilies",
-            slug="homilies",
-            content="""
-            <div class="prose max-w-none">
-                <h2>Homilies</h2>
-                <p>Read homilies from HSMS priests...</p>
-            </div>
-            """,
-            is_published=True
-        )
-    return render(request, 'seminary/page_detail.html', {
-        'page': page,
-        'breadcrumbs': [
-            ('Home', 'home'),
-            ('Spiritual Food', 'spiritual_food'),
-            ('Homilies', None)
-        ]
-    })
-
-
 
 # Generic Views
 def page_detail(request, slug):
@@ -1016,6 +1058,14 @@ def page_detail(request, slug):
 # Contact & Communication Views
 def contact(request):
     """Contact page"""
+    try:
+        banner = Banner.objects.get(page='contact', is_active=True)
+    except Banner.DoesNotExist:
+        try:
+            banner = Banner.objects.get(page='default-banner', is_active=True)
+        except Banner.DoesNotExist:
+            banner = None
+
     if request.method == 'POST':
         form = ContactForm(request.POST)
         if form.is_valid():
@@ -1028,7 +1078,7 @@ def contact(request):
                 messages.error(request, 'Sorry, there was an error sending your message. Please try again.')
         else:
             if request.htmx:
-                return render(request, 'seminary/partials/contact_form.html', {'form': form})
+                return render(request, 'seminary/partials/contact_form.html', {'form': form, 'banner': banner})
             messages.error(request, 'Please correct the errors below.')
     else:
         form = ContactForm()
@@ -1036,6 +1086,7 @@ def contact(request):
     context = {
         'form': form,
         'site_settings': SiteSettings.objects.first(),
+        'banner': banner,
     }
     
     if request.htmx:
@@ -1251,7 +1302,7 @@ def api_upcoming_events(request):
     
     return JsonResponse({'events': data})
 
-# History & Heritage Section Views
+
 def history_heritage(request):
     """Main History & Heritage page"""
     try:
@@ -1287,151 +1338,28 @@ def history_heritage(request):
             is_published=True
         )
     
+    try:
+        banner = Banner.objects.get(page='history-heritage', is_active=True)
+    except Banner.DoesNotExist:
+        try:
+            banner = Banner.objects.get(page='default-banner', is_active=True)
+        except Banner.DoesNotExist:
+            banner = None
+            
     return render(request, 'seminary/page_detail.html', {
         'page': page,
         'breadcrumbs': [
             ('Home', 'home'),
             ('History & Heritage', None)
-        ]
+        ],
+        'banner': banner,
     })
 
-def church_history(request):
-    """Brief History of the Church"""
-    try:
-        page = Page.objects.get(slug='church-history', is_published=True)
-    except Page.DoesNotExist:
-        page = Page(
-            title="Brief History of the Church",
-            slug="church-history",
-            content="""
-            <div class="prose max-w-none">
-                <h2>The Catholic Church: A 2000-Year Journey</h2>
-                
-                <h3>Apostolic Era (33-100 AD)</h3>
-                <p>The Catholic Church traces its origins to Jesus Christ and the Apostles. After Christ's death and resurrection, the Apostles spread the Gospel throughout the Roman Empire, establishing Christian communities.</p>
-                
-                <h3>Early Church Period (100-313 AD)</h3>
-                <p>Despite persecution under various Roman emperors, Christianity continued to grow. The Church developed its organizational structure, with bishops leading local communities and the Bishop of Rome emerging as a central authority.</p>
-                
-                <h3>Constantine and Legalization (313-476 AD)</h3>
-                <p>Emperor Constantine's Edict of Milan in 313 AD legalized Christianity, leading to rapid expansion. The Council of Nicaea (325 AD) addressed key theological questions and established the Nicene Creed.</p>
-                
-                <h3>Medieval Period (476-1453 AD)</h3>
-                <p>The Church became a dominant force in European society, establishing universities, hospitals, and monasteries. This period saw the Great Schism between East and West, the Crusades, and the rise of scholastic theology.</p>
-                
-                <h3>Reformation and Counter-Reformation (1517-1648)</h3>
-                <p>The Protestant Reformation challenged Church authority, leading to the Council of Trent and Catholic Counter-Reformation, which clarified Catholic doctrine and reformed practices.</p>
-                
-                <h3>Modern Era (1648-Present)</h3>
-                <p>The Church has navigated challenges including the Enlightenment, secularization, and two world wars. Vatican II (1962-1965) brought significant liturgical and pastoral reforms, opening the Church to dialogue with the modern world.</p>
-            </div>
-            """,
-            is_published=True
-        )
-    
-    return render(request, 'seminary/page_detail.html', {
-        'page': page,
-        'breadcrumbs': [
-            ('Home', 'home'),
-            ('History & Heritage', 'history_heritage'),
-            ('Brief History of the Church', None)
-        ]
-    })
 
-def bangladesh_history(request):
-    """History of Bangladesh"""
-    try:
-        page = Page.objects.get(slug='bangladesh-history', is_published=True)
-    except Page.DoesNotExist:
-        page = Page(
-            title="History of Bangladesh",
-            slug="bangladesh-history",
-            content="""
-            <div class="prose max-w-none">
-                <h2>Bangladesh: Land of Rivers and Rich Heritage</h2>
-                
-                <h3>Ancient Period</h3>
-                <p>The region now known as Bangladesh has been inhabited for over 20,000 years. Ancient kingdoms like Gangaridai and Samatata flourished here, with Buddhism and Hinduism shaping early culture.</p>
-                
-                <h3>Medieval Period</h3>
-                <p>The arrival of Islam in the 12th century brought significant changes. The Bengal Sultanate (1352-1576) was a major independent kingdom, fostering trade, literature, and architecture.</p>
-                
-                <h3>Mughal Rule (1576-1757)</h3>
-                <p>Under the Mughal Empire, Bengal became one of the richest provinces. The region was known for its textile industry, particularly muslin, which was exported worldwide.</p>
-                
-                <h3>British Colonial Period (1757-1947)</h3>
-                <p>The British East India Company's victory at the Battle of Plassey in 1757 began colonial rule. The 1905 Partition of Bengal and the 1943 famine were significant events during this period.</p>
-                
-                <h3>Pakistan Period (1947-1971)</h3>
-                <p>Following the partition of India, East Bengal became East Pakistan. Growing economic and cultural disparities with West Pakistan led to the Language Movement of 1952 and eventually the Liberation War.</p>
-                
-                <h3>Independence (1971)</h3>
-                <p>After a nine-month Liberation War, Bangladesh gained independence on December 16, 1971, under the leadership of Sheikh Mujibur Rahman.</p>
-                
-                <h3>Modern Bangladesh (1971-Present)</h3>
-                <p>Bangladesh has made significant progress in economic development, education, and social indicators while preserving its rich cultural heritage and traditions.</p>
-            </div>
-            """,
-            is_published=True
-        )
-    
-    return render(request, 'seminary/page_detail.html', {
-        'page': page,
-        'breadcrumbs': [
-            ('Home', 'home'),
-            ('History & Heritage', 'history_heritage'),
-            ('History of Bangladesh', None)
-        ]
-    })
 
-def local_church_history(request):
-    """Local Church History"""
-    try:
-        page = Page.objects.get(slug='local-church-history', is_published=True)
-    except Page.DoesNotExist:
-        page = Page(
-            title="Local Church History",
-            slug="local-church-history",
-            content="""
-            <div class="prose max-w-none">
-                <h2>The Catholic Church in Bangladesh</h2>
-                
-                <h3>Early Christianity in Bengal</h3>
-                <p>Christianity first arrived in Bengal through Portuguese traders and missionaries in the 16th century. The first Catholic mission was established in Chittagong in 1599.</p>
-                
-                <h3>Portuguese Period (1599-1700)</h3>
-                <p>Portuguese missionaries, primarily Augustinians and later Jesuits, established the first Christian communities. They built churches in major trading centers and converted local populations.</p>
-                
-                <h3>Challenges and Persecutions</h3>
-                <p>The Church faced various challenges including persecution under Mughal rulers, natural disasters, and conflicts with local authorities. Many early Christians suffered for their faith.</p>
-                
-                <h3>British Colonial Era</h3>
-                <p>Under British rule, the Church gained more stability. Foreign missionary societies, including the Holy Cross Congregation, began work in East Bengal in the 1850s.</p>
-                
-                <h3>Establishment of Hierarchy</h3>
-                <p>The Apostolic Prefecture of East Bengal was established in 1886, later becoming the Diocese of Dacca in 1927. The first indigenous bishop was ordained in 1967.</p>
-                
-                <h3>Post-Independence Growth</h3>
-                <p>After Bangladesh's independence in 1971, the Church has grown significantly. Today, there are 8 dioceses serving over 350,000 Catholics in Bangladesh.</p>
-                
-                <h3>Holy Spirit Major Seminary</h3>
-                <p>Our seminary was established to train local clergy and has been instrumental in developing indigenous church leadership. It represents the commitment to forming priests who understand and serve the Bangladeshi context.</p>
-                
-                <h3>Current Mission</h3>
-                <p>The Catholic Church in Bangladesh today focuses on education, healthcare, social development, and interfaith dialogue while maintaining its spiritual mission.</p>
-            </div>
-            """,
-            is_published=True
-        )
-    
-    return render(request, 'seminary/page_detail.html', {
-        'page': page,
-        'breadcrumbs': [
-            ('Home', 'home'),
-            ('History & Heritage', 'history_heritage'),
-            ('Local Church History', None)
-        ]
-    })
+
+
+
 
 
 def terms_of_service(request):

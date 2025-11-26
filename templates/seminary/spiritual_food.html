@@ -5,6 +5,17 @@
 
 {% block content %}
 <!-- Page Header -->
+{% if banner %}
+<section class="relative bg-cover bg-center text-white py-32" style="background-image: url('{{ banner.image.url }}');">
+    <div class="absolute inset-0 bg-black opacity-60"></div>
+    <div class="container mx-auto px-4 text-center relative">
+        <h1 class="text-5xl font-bold font-serif mb-4 animate-fade-in-up">{{ banner.title|default:"Spiritual Food" }}</h1>
+        {% if banner.subtitle %}
+            <p class="text-xl max-w-3xl mx-auto animate-fade-in-up animation-delay-300">{{ banner.subtitle }}</p>
+        {% endif %}
+    </div>
+</section>
+{% else %}
 <section class="bg-gradient-primary text-white py-20">
     <div class="container mx-auto px-4">
         <div class="max-w-4xl mx-auto text-center">
@@ -13,6 +24,7 @@
         </div>
     </div>
 </section>
+{% endif %}
 
 <!-- Spiritual Resources -->
 <section class="py-16 bg-white">

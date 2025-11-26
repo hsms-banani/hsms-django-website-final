@@ -1,0 +1,1359 @@
+<!-- templates/library/enhanced_dashboard.html -->
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Library Dashboard{% endblock %}
+
+{% block extrastyle %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+<style>
+    * { box-sizing: border-box; }
+    
+    body { background: #f5f7fa; }
+    
+    .dashboard-container {
+        padding: 20px;
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+    
+    /* Header */
+    .dashboard-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .dashboard-header h1 {
+        margin: 0 0 10px 0;
+        font-size: 28px;
+    }
+    
+    .dashboard-header p {
+        margin: 0;
+        opacity: 0.9;
+    }
+    
+    /* Alert Bar */
+    .alert-bar {
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        font-size: 14px;
+        animation: slideIn 0.3s ease;
+    }
+    
+    .alert-danger { background: #fee; border-left: 4px solid #dc3545; color: #721c24; }
+    .alert-warning { background: #fff3cd; border-left: 4px solid #ffc107; color: #856404; }
+    .alert-success { background: #d4edda; border-left: 4px solid #28a745; color: #155724; }
+    .alert-info { background: #d1ecf1; border-left: 4px solid #17a2b8; color: #0c5460; }
+    
+    @keyframes slideIn {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: all 0.3s;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--accent-color, #667eea);
+    }
+    
+    .stat-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .stat-value {
+        font-size: 32px;
+        font-weight: bold;
+        color: #2d3748;
+        margin: 0;
+    }
+    
+    .stat-label {
+        font-size: 14px;
+        color: #718096;
+        margin: 5px 0 0 0;
+    }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+        background: var(--icon-bg, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+    }
+    
+    .stat-subtext {
+        font-size: 12px;
+        color: #a0aec0;
+        margin-top: 8px;
+    }
+    
+    /* Quick Actions */
+    .quick-actions {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        margin-bottom: 30px;
+    }
+    
+    .action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        color: white;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    
+    .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .btn-success { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); color: #2d3748; }
+    .btn-warning { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: #2d3748; }
+    .btn-danger { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); }
+    .btn-info { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    
+    /* Tabs */
+    .tab-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+    
+    .tab-nav {
+        display: flex;
+        background: #f7fafc;
+        border-bottom: 2px solid #e2e8f0;
+        overflow-x: auto;
+    }
+    
+    .tab-nav button {
+        padding: 15px 25px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        color: #718096;
+        transition: all 0.2s;
+        white-space: nowrap;
+        position: relative;
+    }
+    
+    .tab-nav button:hover {
+        background: #edf2f7;
+        color: #4a5568;
+    }
+    
+    .tab-nav button.active {
+        color: #667eea;
+    }
+    
+    .tab-nav button.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #667eea;
+    }
+    
+    .tab-content {
+        padding: 20px;
+        display: none;
+    }
+    
+    .tab-content.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    /* Search Box */
+    .search-box {
+        position: relative;
+        margin-bottom: 20px;
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 12px 40px 12px 40px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    
+    .search-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #a0aec0;
+    }
+    
+    /* Table */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+    
+    .data-table thead {
+        background: #f7fafc;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    
+    .data-table th {
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        color: #4a5568;
+    }
+    
+    .data-table td {
+        padding: 12px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .data-table tbody tr {
+        transition: background 0.2s;
+    }
+    
+    .data-table tbody tr:hover {
+        background: #f7fafc;
+    }
+    
+    /* Badge */
+    .badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    
+    .badge-success { background: #d4edda; color: #155724; }
+    .badge-danger { background: #f8d7da; color: #721c24; }
+    .badge-warning { background: #fff3cd; color: #856404; }
+    .badge-info { background: #d1ecf1; color: #0c5460; }
+    
+    /* Action Buttons */
+    .action-btn {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-right: 5px;
+    }
+    
+    .action-btn:hover {
+        transform: scale(1.05);
+    }
+    
+    .action-renew { background: #4299e1; color: white; }
+    .action-return { background: #48bb78; color: white; }
+    .action-reminder { background: #ed8936; color: white; }
+    .action-paid { background: #9f7aea; color: white; }
+    
+    /* Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal.active {
+        display: flex;
+        animation: fadeIn 0.2s ease;
+    }
+    
+    .modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        max-width: 600px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: slideUp 0.3s ease;
+    }
+    
+    @keyframes slideUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .modal-header h2 {
+        margin: 0;
+        color: #2d3748;
+    }
+    
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #a0aec0;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+    }
+    
+    .modal-close:hover {
+        color: #4a5568;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #4a5568;
+        font-size: 14px;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .selected-item {
+        background: #edf2f7;
+        padding: 12px;
+        border-radius: 6px;
+        margin-top: 10px;
+        display: none;
+    }
+    
+    .selected-item.active {
+        display: block;
+    }
+    
+    .search-results {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        margin-top: 5px;
+        display: none;
+    }
+    
+    .search-results.active {
+        display: block;
+    }
+    
+    .search-result-item {
+        padding: 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #e2e8f0;
+        transition: background 0.2s;
+    }
+    
+    .search-result-item:hover {
+        background: #f7fafc;
+    }
+    
+    .search-result-item:last-child {
+        border-bottom: none;
+    }
+    
+    /* Loading */
+    .loading {
+        text-align: center;
+        padding: 20px;
+        color: #a0aec0;
+    }
+    
+    .spinner {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Notification */
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        z-index: 10001;
+        display: none;
+        animation: slideInRight 0.3s ease;
+    }
+    
+    .notification.active {
+        display: block;
+    }
+    
+    @keyframes slideInRight {
+        from { transform: translateX(400px); }
+        to { transform: translateX(0); }
+    }
+    
+    .notification.success { border-left: 4px solid #48bb78; }
+    .notification.error { border-left: 4px solid #f56565; }
+    .notification.warning { border-left: 4px solid #ed8936; }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #a0aec0;
+    }
+    
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 15px;
+        opacity: 0.5;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Header -->
+    <div class="dashboard-header">
+        <h1><i class="fas fa-tachometer-alt"></i> Library Management Dashboard</h1>
+        <p>Welcome back, {{ user.get_full_name|default:user.username }} | {{ today|date:"l, F d, Y" }}</p>
+    </div>
+    
+    <!-- Alerts -->
+    {% if overdue_count > 0 %}
+    <div class="alert-bar alert-danger">
+        <i class="fas fa-exclamation-circle" style="font-size: 20px;"></i>
+        <div>
+            <strong>{{ overdue_count }} Overdue Book{{ overdue_count|pluralize }}</strong> require immediate attention.
+            <a href="#" onclick="switchTab('overdue'); return false;" style="color: inherit; text-decoration: underline; margin-left: 10px;">View Now</a>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if today_due_count > 0 %}
+    <div class="alert-bar alert-warning">
+        <i class="fas fa-clock" style="font-size: 20px;"></i>
+        <div>
+            <strong>{{ today_due_count }} Book{{ today_due_count|pluralize }}</strong> due today.
+            <a href="#" onclick="switchTab('today'); return false;" style="color: inherit; text-decoration: underline; margin-left: 10px;">View Details</a>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Statistics Grid -->
+    <div class="stats-grid">
+        <div class="stat-card" style="--accent-color: #667eea; --icon-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="stat-content">
+                <div>
+                    <p class="stat-value">{{ total_publications }}</p>
+                    <p class="stat-label">Total Publications</p>
+                    <p class="stat-subtext">{{ available_books }} available</p>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card" style="--accent-color: #f093fb; --icon-bg: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <div class="stat-content">
+                <div>
+                    <p class="stat-value">{{ borrowed_count }}</p>
+                    <p class="stat-label">Currently Borrowed</p>
+                    {% if overdue_count > 0 %}
+                    <p class="stat-subtext" style="color: #f56565;">{{ overdue_count }} overdue</p>
+                    {% endif %}
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-book-reader"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card" style="--accent-color: #4facfe; --icon-bg: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <div class="stat-content">
+                <div>
+                    <p class="stat-value">{{ total_users }}</p>
+                    <p class="stat-label">Library Members</p>
+                    <p class="stat-subtext">{{ active_borrowers }} active</p>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card" style="--accent-color: #fa709a; --icon-bg: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+            <div class="stat-content">
+                <div>
+                    <p class="stat-value">৳{{ total_fines|floatformat:0 }}</p>
+                    <p class="stat-label">Total Fines</p>
+                    <p class="stat-subtext" style="color: {% if unpaid_fines > 0 %}#f56565{% else %}#48bb78{% endif %};">
+                        ৳{{ unpaid_fines|floatformat:0 }} unpaid
+                    </p>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-coins"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card" style="--accent-color: #84fab0; --icon-bg: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">
+            <div class="stat-content">
+                <div>
+                    <p class="stat-value">{{ today_borrow_count }}</p>
+                    <p class="stat-label">Today's Borrows</p>
+                    <p class="stat-subtext">{{ today_return_count }} returns</p>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card" style="--accent-color: #a18cd1; --icon-bg: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);">
+            <div class="stat-content">
+                <div>
+                    <p class="stat-value">{{ due_soon.count }}</p>
+                    <p class="stat-label">Due This Week</p>
+                    <p class="stat-subtext">Next 7 days</p>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h3 style="margin: 0 0 15px 0;"><i class="fas fa-bolt"></i> Quick Actions</h3>
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="openBorrowModal()">
+                <i class="fas fa-plus"></i> Record New Borrow
+            </button>
+            <a href="{% url 'admin:library_book_add' %}" class="btn btn-success">
+                <i class="fas fa-book"></i> Add New Book
+            </a>
+            <a href="{% url 'admin:library_libraryuser_add' %}" class="btn btn-info">
+                <i class="fas fa-user-plus"></i> Add New Member
+            </a>
+            <button class="btn btn-warning" onclick="exportActiveBorrows()">
+                <i class="fas fa-download"></i> Export Report
+            </button>
+        </div>
+    </div>
+    
+    <!-- Main Content Tabs -->
+    <div class="tab-container">
+        <div class="tab-nav">
+            <button class="active" onclick="switchTab('active')">
+                <i class="fas fa-list"></i> Active Borrows ({{ borrowed_count }})
+            </button>
+            <button onclick="switchTab('today')">
+                <i class="fas fa-calendar-day"></i> Today's Activity
+            </button>
+            <button onclick="switchTab('overdue')">
+                <i class="fas fa-exclamation-triangle"></i> Overdue ({{ overdue_count }})
+            </button>
+            <button onclick="switchTab('due-soon')">
+                <i class="fas fa-clock"></i> Due Soon ({{ due_soon.count }})
+            </button>
+            <button onclick="switchTab('analytics')">
+                <i class="fas fa-chart-line"></i> Analytics
+            </button>
+        </div>
+        
+        <!-- Active Borrows Tab -->
+        <div class="tab-content active" id="tab-active">
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" 
+                       class="search-input" 
+                       placeholder="Search by book title, user name, email..."
+                       hx-get="{% url 'library:get_active_borrows_table' %}"
+                       hx-trigger="keyup changed delay:500ms"
+                       hx-target="#active-borrows-table"
+                       name="q">
+            </div>
+            
+            <div id="active-borrows-table" hx-get="{% url 'library:get_active_borrows_table' %}" hx-trigger="load">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Today's Activity Tab -->
+        <div class="tab-content" id="tab-today">
+            <h4><i class="fas fa-arrow-down"></i> Today's Borrows ({{ today_borrow_count }})</h4>
+            {% if today_borrows %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Book</th>
+                        <th>Borrower</th>
+                        <th>Time</th>
+                        <th>Due Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in today_borrows %}
+                    <tr>
+                        <td>
+                            <strong>{{ record.publication.title }}</strong><br>
+                            <small>{{ record.publication.accession_number }}</small>
+                        </td>
+                        <td>
+                            {{ record.borrower.get_full_name }}<br>
+                            <small>{{ record.borrower.email }}</small>
+                        </td>
+                        <td>{{ record.borrow_date|time:"g:i A" }}</td>
+                        <td>{{ record.due_date|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>No books borrowed today yet</p>
+            </div>
+            {% endif %}
+            
+            <h4 style="margin-top: 30px;"><i class="fas fa-arrow-up"></i> Today's Returns ({{ today_return_count }})</h4>
+            {% if today_returns %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Book</th>
+                        <th>Borrower</th>
+                        <th>Time</th>
+                        <th>Fine</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in today_returns %}
+                    <tr>
+                        <td>
+                            <strong>{{ record.publication.title }}</strong><br>
+                            <small>{{ record.publication.accession_number }}</small>
+                        </td>
+                        <td>
+                            {{ record.borrower.get_full_name }}<br>
+                            <small>{{ record.borrower.email }}</small>
+                        </td>
+                        <td>{{ record.return_date|time:"g:i A" }}</td>
+                        <td>
+                            {% if record.fine_amount > 0 %}
+                            ৳{{ record.fine_amount }}
+                            {% if record.fine_paid %}
+                            <span class="badge badge-success">Paid</span>
+                            {% else %}
+                            <span class="badge badge-danger">Unpaid</span>
+                            {% endif %}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>No books returned today yet</p>
+            </div>
+            {% endif %}
+            
+            <h4 style="margin-top: 30px;"><i class="fas fa-exclamation"></i> Due Today ({{ today_due_count }})</h4>
+            {% if today_due %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Book</th>
+                        <th>Borrower</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in today_due %}
+                    <tr>
+                        <td>
+                            <strong>{{ record.publication.title }}</strong><br>
+                            <small>{{ record.publication.accession_number }}</small>
+                        </td>
+                        <td>
+                            {{ record.borrower.get_full_name }}<br>
+                            <small>{{ record.borrower.email }}</small>
+                        </td>
+                        <td>
+                            <button class="action-btn action-reminder" onclick="sendReminder({{ record.id }})">
+                                <i class="fas fa-envelope"></i> Remind
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-check-circle"></i>
+                <p>No books due today</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Overdue Tab -->
+        <div class="tab-content" id="tab-overdue">
+            {% if recent_overdue %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Book</th>
+                        <th>Borrower</th>
+                        <th>Due Date</th>
+                        <th>Days Overdue</th>
+                        <th>Fine</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in recent_overdue %}
+                    <tr>
+                        <td>
+                            <strong>{{ record.publication.title }}</strong><br>
+                            <small>{{ record.publication.accession_number }}</small>
+                        </td>
+                        <td>
+                            {{ record.borrower.get_full_name }}<br>
+                            <small>{{ record.borrower.email }}</small>
+                        </td>
+                        <td>{{ record.due_date|date:"M d, Y" }}</td>
+                        <td>
+                            <span class="badge badge-danger">
+                                {{ record.days_overdue }} day{{ record.days_overdue|pluralize }}
+                            </span>
+                        </td>
+                        <td>
+                            ৳{{ record.fine_amount|floatformat:2 }}
+                            {% if record.fine_paid %}
+                            <span class="badge badge-success">Paid</span>
+                            {% else %}
+                            <span class="badge badge-danger">Unpaid</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="action-btn action-return" onclick="returnBook({{ record.id }})">
+                                <i class="fas fa-undo"></i> Return
+                            </button>
+                            {% if not record.fine_paid %}
+                            <button class="action-btn action-paid" onclick="markPaid({{ record.id }})">
+                                <i class="fas fa-check"></i> Mark Paid
+                            </button>
+                            {% endif %}
+                            <button class="action-btn action-reminder" onclick="sendReminder({{ record.id }})">
+                                <i class="fas fa-envelope"></i> Remind
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-check-circle"></i>
+                <p>No overdue books! Great job!</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Due Soon Tab -->
+        <div class="tab-content" id="tab-due-soon">
+            {% if due_soon %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Book</th>
+                        <th>Borrower</th>
+                        <th>Due Date</th>
+                        <th>Days Left</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in due_soon %}
+                    <tr>
+                        <td>
+                            <strong>{{ record.publication.title }}</strong><br>
+                            <small>{{ record.publication.accession_number }}</small>
+                        </td>
+                        <td>
+                            {{ record.borrower.get_full_name }}<br>
+                            <small>{{ record.borrower.email }}</small>
+                        </td>
+                        <td>{{ record.due_date|date:"M d, Y" }}</td>
+                        <td>
+                            <span class="badge badge-warning">
+                                {{ record.days_until_due }} day{{ record.days_until_due|pluralize }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if record.can_renew %}
+                            <button class="action-btn action-renew" onclick="renewBook({{ record.id }})">
+                                <i class="fas fa-sync"></i> Renew
+                            </button>
+                            {% endif %}
+                            <button class="action-btn action-reminder" onclick="sendReminder({{ record.id }})">
+                                <i class="fas fa-envelope"></i> Remind
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-calendar-check"></i>
+                <p>No books due in the next week</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Analytics Tab -->
+        <div class="tab-content" id="tab-analytics">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <h4><i class="fas fa-fire"></i> Most Popular Books</h4>
+                    {% if popular_books %}
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Book</th>
+                                <th>Times Borrowed</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for book in popular_books %}
+                            <tr>
+                                <td>
+                                    <strong>{{ book.title|truncatechars:50 }}</strong><br>
+                                    <small>{{ book.authors_list|truncatechars:40 }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge badge-info">{{ book.times_borrowed }}×</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <h4><i class="fas fa-trophy"></i> Top Borrowers</h4>
+                    {% if top_borrowers %}
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Member</th>
+                                <th>Recent Borrows</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for borrower in top_borrowers %}
+                            <tr>
+                                <td>
+                                    <strong>{{ borrower.get_full_name }}</strong><br>
+                                    <small>{{ borrower.email }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge badge-info">{{ borrower.recent_borrows }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if low_stock %}
+            <div style="margin-top: 30px;">
+                <h4><i class="fas fa-exclamation-triangle"></i> Low Stock Alert</h4>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Book</th>
+                            <th>Available</th>
+                            <th>Total</th>
+                            <th>Times Borrowed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for book in low_stock %}
+                        <tr>
+                            <td>
+                                <strong>{{ book.title }}</strong>
+                            </td>
+                            <td>
+                                <span class="badge badge-danger">{{ book.copies_available }}</span>
+                            </td>
+                            <td>{{ book.total_copies }}</td>
+                            <td>{{ book.times_borrowed }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Manual Borrow Modal -->
+<div id="borrowModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-plus-circle"></i> Record New Borrow</h2>
+            <button class="modal-close" onclick="closeBorrowModal()">&times;</button>
+        </div>
+        
+        <form id="borrowForm" onsubmit="submitBorrow(event)">
+            <div class="form-group">
+                <label class="form-label">Search Book *</label>
+                <input type="text" 
+                       class="form-control" 
+                       id="bookSearch"
+                       placeholder="Search by title, accession number, ISBN..."
+                       oninput="searchBooks(this.value)"
+                       required>
+                <div id="bookResults" class="search-results"></div>
+                <div id="selectedBook" class="selected-item"></div>
+                <input type="hidden" id="bookId" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Search User *</label>
+                <input type="text" 
+                       class="form-control" 
+                       id="userSearch"
+                       placeholder="Search by name, email, username..."
+                       oninput="searchUsers(this.value)"
+                       required>
+                <div id="userResults" class="search-results"></div>
+                <div id="selectedUser" class="selected-item"></div>
+                <input type="hidden" id="userId" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Due Date *</label>
+                <input type="date" 
+                       class="form-control" 
+                       id="dueDate"
+                       min="{{ today|date:'Y-m-d' }}"
+                       value="{{ today|date:'Y-m-d' }}"
+                       required>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 30px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                    <i class="fas fa-check"></i> Confirm Borrow
+                </button>
+                <button type="button" class="btn" style="flex: 1; background: #e2e8f0; color: #4a5568;" onclick="closeBorrowModal()">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Notification -->
+<div id="notification" class="notification">
+    <div id="notificationMessage"></div>
+</div>
+
+<script>
+// Tab Switching
+function switchTab(tabName) {
+    document.querySelectorAll('.tab-nav button').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    
+    event.target.classList.add('active');
+    document.getElementById('tab-' + tabName).classList.add('active');
+}
+
+// Notification
+function showNotification(message, type = 'success') {
+    const notification = document.getElementById('notification');
+    const messageEl = document.getElementById('notificationMessage');
+    
+    messageEl.textContent = message;
+    notification.className = 'notification active ' + type;
+    
+    setTimeout(() => {
+        notification.classList.remove('active');
+    }, 4000);
+}
+
+// Manual Borrow Modal
+function openBorrowModal() {
+    document.getElementById('borrowModal').classList.add('active');
+    // Set default due date
+    const today = new Date();
+    const dueDate = new Date(today.setDate(today.getDate() + 14));
+    document.getElementById('dueDate').value = dueDate.toISOString().split('T')[0];
+}
+
+function closeBorrowModal() {
+    document.getElementById('borrowModal').classList.remove('active');
+    document.getElementById('borrowForm').reset();
+    document.getElementById('bookResults').classList.remove('active');
+    document.getElementById('userResults').classList.remove('active');
+    document.getElementById('selectedBook').classList.remove('active');
+    document.getElementById('selectedUser').classList.remove('active');
+}
+
+// Search Books
+let bookSearchTimeout;
+function searchBooks(query) {
+    clearTimeout(bookSearchTimeout);
+    
+    if (query.length < 2) {
+        document.getElementById('bookResults').classList.remove('active');
+        return;
+    }
+    
+    bookSearchTimeout = setTimeout(() => {
+        fetch(`/library/dashboard/api/search-books/?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('bookResults');
+                
+                if (data.books.length === 0) {
+                    resultsDiv.innerHTML = '<div style="padding: 12px; color: #a0aec0;">No books found</div>';
+                } else {
+                    resultsDiv.innerHTML = data.books.map(book => `
+                        <div class="search-result-item" onclick="selectBook(${book.id}, '${book.title.replace(/'/g, "\\'")}', '${book.accession_number}', ${book.available})">
+                            <strong>${book.title}</strong><br>
+                            <small>${book.authors} | ${book.accession_number} | Available: ${book.available}/${book.total}</small>
+                        </div>
+                    `).join('');
+                }
+                
+                resultsDiv.classList.add('active');
+            });
+    }, 300);
+}
+
+function selectBook(id, title, accessionNumber, available) {
+    document.getElementById('bookId').value = id;
+    document.getElementById('bookSearch').value = title;
+    document.getElementById('bookResults').classList.remove('active');
+    
+    document.getElementById('selectedBook').innerHTML = `
+        <strong>Selected Book:</strong><br>
+        ${title}<br>
+        <small>Accession: ${accessionNumber} | Available: ${available}</small>
+    `;
+    document.getElementById('selectedBook').classList.add('active');
+}
+
+// Search Users
+let userSearchTimeout;
+function searchUsers(query) {
+    clearTimeout(userSearchTimeout);
+    
+    if (query.length < 2) {
+        document.getElementById('userResults').classList.remove('active');
+        return;
+    }
+    
+    userSearchTimeout = setTimeout(() => {
+        fetch(`/library/dashboard/api/search-users/?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('userResults');
+                
+                if (data.users.length === 0) {
+                    resultsDiv.innerHTML = '<div style="padding: 12px; color: #a0aec0;">No users found</div>';
+                } else {
+                    resultsDiv.innerHTML = data.users.map(user => `
+                        <div class="search-result-item" onclick="selectUser(${user.id}, '${user.full_name.replace(/'/g, "\\'")}', '${user.email}', ${user.active_borrows})">
+                            <strong>${user.full_name}</strong><br>
+                            <small>${user.email} | Active Borrows: ${user.active_borrows}</small>
+                        </div>
+                    `).join('');
+                }
+                
+                resultsDiv.classList.add('active');
+            });
+    }, 300);
+}
+
+function selectUser(id, fullName, email, activeBorrows) {
+    document.getElementById('userId').value = id;
+    document.getElementById('userSearch').value = fullName;
+    document.getElementById('userResults').classList.remove('active');
+    
+    document.getElementById('selectedUser').innerHTML = `
+        <strong>Selected User:</strong><br>
+        ${fullName}<br>
+        <small>${email} | Active Borrows: ${activeBorrows}</small>
+    `;
+    document.getElementById('selectedUser').classList.add('active');
+}
+
+// Submit Borrow
+function submitBorrow(event) {
+    event.preventDefault();
+    
+    const formData = new FormData();
+    formData.append('book_id', document.getElementById('bookId').value);
+    formData.append('user_id', document.getElementById('userId').value);
+    formData.append('due_date', document.getElementById('dueDate').value);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    
+    fetch('/library/dashboard/api/manual-borrow/', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            closeBorrowModal();
+            // Refresh active borrows table
+            htmx.trigger('#active-borrows-table', 'refresh');
+            // Reload page to update stats
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification(data.error, 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('An error occurred. Please try again.', 'error');
+    });
+}
+
+// Quick Actions
+function renewBook(recordId) {
+    if (!confirm('Renew this book?')) return;
+    
+    fetch(`/library/dashboard/api/renew/${recordId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            htmx.trigger('#active-borrows-table', 'refresh');
+        } else {
+            showNotification(data.error, 'error');
+        }
+    });
+}
+
+function returnBook(recordId) {
+    if (!confirm('Mark this book as returned?')) return;
+    
+    fetch(`/library/dashboard/api/return/${recordId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification(data.error, 'error');
+        }
+    });
+}
+
+function sendReminder(recordId) {
+    fetch(`/library/dashboard/api/reminder/${recordId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+        } else {
+            showNotification(data.error, 'error');
+        }
+    });
+}
+
+function markPaid(recordId) {
+    if (!confirm('Mark fine as paid?')) return;
+    
+    fetch(`/library/dashboard/api/mark-paid/${recordId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification(data.error, 'error');
+        }
+    });
+}
+
+function exportActiveBorrows() {
+    window.location.href = '/library/dashboard/api/export-borrows/';
+}
+
+// Close modal on outside click
+document.getElementById('borrowModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeBorrowModal();
+    }
+});
+</script>
+{% endblock %}

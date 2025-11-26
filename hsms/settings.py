@@ -52,7 +52,9 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     'seminary',
     'library',
+    'students',
     'spiritual_food',
+    'utils',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

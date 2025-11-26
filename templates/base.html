@@ -419,7 +419,7 @@
         },
         "sameAs": [
             "https://www.facebook.com/your-facebook-page",
-            "https://www.youtube.com/your-youtube-channel"
+            "https://www.youtube.com/@Holy-Spirit-Major-Seminary"
         ]
         }
         </script>
@@ -567,6 +567,7 @@
                             <a href="{% url 'philosophy_department' %}">Department of Philosophy</a>
                             <a href="{% url 'theology_department' %}">Department of Theology</a>
                             <a href="{% url 'faculty_list' %}">Faculty</a>
+                            <a href="{% url 'student_list' %}">Students</a>
                             <a href="{% url 'academic_calendar' %}">Academic Calendar</a>
                         </div>
                     </li>
@@ -582,13 +583,14 @@
                     
                     <!-- Spiritual Food Dropdown -->
                     <li class="relative dropdown" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
-                        <a href="{% url 'spiritual_food' %}" class="nav-link flex items-center">
+                        <a href="{% url 'spiritual_food:home' %}" class="nav-link flex items-center">
                             Spiritual Food <i class="fas fa-chevron-down ml-1 text-xs transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                         </a>
                         <div class="dropdown-menu absolute left-0">
-                            <a href="{% url 'prayer_services' %}">Prayer Services</a>
-                            <a href="{% url 'homilies' %}">Homilies</a>
-                            <a href="{% url 'spiritual_directors_desk' %}">Spiritual Director's Desk</a>
+                            <a href="{% url 'spiritual_food:prayer_services' %}">Prayer Services</a>
+                            <a href="{% url 'spiritual_food:homily_list' %}">Homilies</a>
+                            <a href="{% url 'spiritual_food:spiritual_directors_desk' %}">Spiritual Director's Desk</a>
+                            <a href="{% url 'spiritual_food:liturgical_calendar' %}">Liturgical Calendar</a>
                         </div>
                     </li>
                     
@@ -651,6 +653,7 @@
                                 <a href="{% url 'philosophy_department' %}" class="block px-4 py-2 text-sm hover:bg-gray-700 rounded transition-colors text-gray-300">Department of Philosophy</a>
                                 <a href="{% url 'theology_department' %}" class="block px-4 py-2 text-sm hover:bg-gray-700 rounded transition-colors text-gray-300">Department of Theology</a>
                                 <a href="{% url 'faculty_list' %}" class="block px-4 py-2 text-sm hover:bg-gray-700 rounded transition-colors text-gray-300">Faculty</a>
+                                <a href="{% url 'student_list' %}" class="block px-4 py-2 text-sm hover:bg-gray-700 rounded transition-colors text-gray-300">Students</a>
                                 <a href="{% url 'academic_calendar' %}" class="block px-4 py-2 text-sm hover:bg-gray-700 rounded transition-colors text-gray-300">Academic Calendar</a>
                             </div>
                         </div>
@@ -668,9 +671,10 @@
                                 <i class="fas fa-chevron-down transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                             </button>
                             <div x-show="open" class="ml-4 space-y-1 overflow-hidden">
-                                <a href="{% url 'prayer_services' %}" class="block px-4 py-2 text-sm hover:bg-gray-700 rounded transition-colors text-gray-300">Prayer Services</a>
-                                <a href="{% url 'homilies' %}" class="block px-4 py-2 text-sm hover:bg-gray-700 rounded transition-colors text-gray-300">Homilies</a>
-                                <a href="{% url 'spiritual_directors_desk' %}" class="block px-4 py-2 text-sm hover:bg-gray-700 rounded transition-colors text-gray-300">Spiritual Director's Desk</a>
+                                <a href="{% url 'spiritual_food:prayer_services' %}" class="block px-4 py-2 text-sm hover:bg-gray-700 rounded transition-colors text-gray-300">Prayer Services</a>
+                                <a href="{% url 'spiritual_food:homily_list' %}" class="block px-4 py-2 text-sm hover:bg-gray-700 rounded transition-colors text-gray-300">Homilies</a>
+                                <a href="{% url 'spiritual_food:spiritual_directors_desk' %}" class="block px-4 py-2 text-sm hover:bg-gray-700 rounded transition-colors text-gray-300">Spiritual Director's Desk</a>
+                                <a href="{% url 'spiritual_food:liturgical_calendar' %}" class="block px-4 py-2 text-sm hover:bg-gray-700 rounded transition-colors text-gray-300">Liturgical Calendar</a>
                             </div>
                         </div>
                         
@@ -758,7 +762,7 @@
                         <a href="#" class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
                             <i class="fab fa-facebook-f"></i>
                         </a>
-                        <a href="#" class="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center hover:bg-red-700 transition-colors">
+                        <a href="https://www.youtube.com/@Holy-Spirit-Major-Seminary" class="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center hover:bg-red-700 transition-colors">
                             <i class="fab fa-youtube"></i>
                         </a>
                         <a href="#" class="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center hover:bg-pink-700 transition-colors">

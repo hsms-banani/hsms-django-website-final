@@ -22,4 +22,8 @@ urlpatterns = [
     # Prayer Requests
     path('prayer-request/', views.PrayerRequestCreateView.as_view(), name='prayer_request'),
     path('prayer-request/success/', views.prayer_request_success, name='prayer_request_success'),
+    
+    # Liturgical Calendar
+    path('liturgical-calendar/', views.liturgical_calendar, name='liturgical_calendar'),
+    path('spiritual-directors-desk/', views.spiritual_directors_desk, name='spiritual_directors_desk'),
 ]

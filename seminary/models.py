@@ -28,6 +28,43 @@ class SiteSettings(models.Model):
     def __str__(self):
         return self.site_name
 
+
+class Banner(models.Model):
+    PAGE_CHOICES = [
+        ('home', 'Home'),
+        ('publications', 'Publications'),
+        ('news', 'News'),
+        ('events', 'Events'),
+        ('gallery', 'Gallery'),
+        ('contact', 'Contact'),
+        ('about', 'About'),
+        ('spiritual-food', 'Spiritual Food'),
+        ('seminary-history', 'Seminary History'),
+        ('formation-program', 'Formation Program'),
+        ('rules-regulations', 'Rules & Regulations'),
+        ('committees', 'Committees'),
+        ('philosophy-department', 'Philosophy Department'),
+        ('church-history', 'Church History'),
+        ('local-church-history', 'Local Church History'),
+        ('bangladesh-history', 'Bangladesh History'),
+        ('history-heritage', 'History & Heritage'),
+        ('prayer-services', 'Prayer Services'),
+        ('homilies', 'Homilies'),
+        ('hsit-about', 'HSIT About'),
+        ('theology-department', 'Theology Department'),
+        ('default-banner', 'Default Banner'),
+    ]
+    page = models.CharField(max_length=50, choices=PAGE_CHOICES, unique=True, help_text="Select the page where this banner will be displayed.")
+    image = models.ImageField(upload_to='banners/', help_text="Upload a banner image. Recommended size: 1920x400 pixels.")
+    title = models.CharField(max_length=200, blank=True, help_text="Optional: A title to display on the banner.")
+    subtitle = models.CharField(max_length=300, blank=True, help_text="Optional: A subtitle to display on the banner.")
+    is_active = models.BooleanField(default=True, help_text="Enable or disable this banner.")
+
+    def __str__(self):
+        return self.get_page_display()
+
+
+
 class Department(models.Model):
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(unique=True)

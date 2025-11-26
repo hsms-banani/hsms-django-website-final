@@ -4,6 +4,21 @@
 {% block title %}About HSIT - Holy Spirit Major Seminary{% endblock %}
 
 {% block content %}
+{% if banner %}
+<section class="relative bg-cover bg-center text-white py-32" style="background-image: url('{{ banner.image.url }}');">
+    <div class="absolute inset-0 bg-black opacity-60"></div>
+    <div class="container mx-auto px-4 relative">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-5xl font-bold font-serif mb-4 animate-fade-in-up">{{ banner.title|default:"About HSIT" }}</h1>
+            {% if banner.subtitle %}
+            <p class="text-xl opacity-90 animate-fade-in-up" style="animation-delay: 0.2s;">
+                {{ banner.subtitle }}
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% else %}
 <!-- Page Header -->
 <section class="bg-gradient-primary text-white py-20">
     <div class="container mx-auto">
@@ -24,6 +39,7 @@
         </div>
     </div>
 </section>
+{% endif %}
 
 <!-- Director's Message -->
 {% if director_message %}

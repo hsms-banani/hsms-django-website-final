@@ -1,0 +1,65 @@
+
+{% extends "admin/base_site.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <h1>{{ title }}</h1>
+
+    {% if messages %}
+    <ul class="messagelist">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <div style="display: flex; gap: 2rem;">
+        <div style="flex: 1;">
+            <h2>Instructions</h2>
+            <p>Please upload a CSV file with the following columns. The order of columns is important.</p>
+            
+            <h4>CSV Header Row:</h4>
+            <p><code>{{ csv_instructions.headers|join:", " }}</code></p>
+            
+            <h4>Required Columns:</h4>
+            <ul>
+                {% for col in csv_instructions.required %}
+                <li><strong>{{ col }}</strong></li>
+                {% endfor %}
+            </ul>
+
+            <h4>Column Details:</h4>
+            <ul>
+                <li><strong>student_type</strong>: {{ csv_instructions.student_type }}</li>
+                <li><strong>diocese</strong>: {{ csv_instructions.conditional_required.diocesan }}</li>
+                <li><strong>congregation</strong>: {{ csv_instructions.conditional_required.congregation }}</li>
+                <li><strong>status</strong>: {{ csv_instructions.status }}</li>
+            </ul>
+
+            <h4>Optional Columns:</h4>
+            <ul>
+                {% for col in csv_instructions.optional %}
+                <li><strong>{{ col }}</strong></li>
+                {% endfor %}
+            </ul>
+
+            <p><a href="{% url 'admin:download_student_csv_template' %}" class="button">Download CSV Template</a></p>
+        </div>
+
+        <div style="flex: 1;">
+            <form action="" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <fieldset class="module aligned">
+                    <div class="form-row">
+                        {{ form.csv_file.label_tag }} {{ form.csv_file }}
+                    </div>
+                </fieldset>
+                <div class="submit-row">
+                    <input type="submit" value="Import CSV" class="default">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

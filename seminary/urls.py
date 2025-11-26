@@ -52,12 +52,6 @@ urlpatterns = [
     path('publications/diptto-sakhyo/', views.diptto_sakhyo_publications, name='diptto_sakhyo_publications'),
     path('publications/prodipon/', views.prodipon_publications, name='prodipon_publications'),
 
-    # Spiritual Food Section
-    path('spiritual-food/', views.spiritual_food, name='spiritual_food'),
-    path('spiritual-food/prayer-services/', views.prayer_services, name='prayer_services'),
-    path('spiritual-food/homilies/', views.homilies, name='homilies'),
-    path('spiritual-food/spiritual-directors-desk/', views.spiritual_directors_desk, name='spiritual_directors_desk'),
-    
     # News & Events (without registration)
     path('news/', views.news_list, name='news_list'),
     path('news/<slug:slug>/', views.news_detail, name='news_detail'),
@@ -86,8 +80,6 @@ urlpatterns = [
     # API endpoint for HTMX filtering
     path('api/administration/filter/', views.administration_filter, name='administration_filter'),
     # Utility Pages
-    path('sitemap/', views.site_map, name='site_map'),
-
     path('terms-of-service/', views.terms_of_service, name='terms_of_service'),
     path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
     

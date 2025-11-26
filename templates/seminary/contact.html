@@ -5,6 +5,17 @@
 
 {% block content %}
 <!-- Page Header -->
+{% if banner %}
+<section class="relative bg-cover bg-center text-white py-32" style="background-image: url('{{ banner.image.url }}');">
+    <div class="absolute inset-0 bg-black opacity-60"></div>
+    <div class="container mx-auto px-4 text-center relative">
+        <h1 class="text-5xl font-bold font-serif mb-4 animate-fade-in-up">{{ banner.title|default:"Contact Us" }}</h1>
+        {% if banner.subtitle %}
+            <p class="text-xl max-w-3xl mx-auto animate-fade-in-up animation-delay-300">{{ banner.subtitle }}</p>
+        {% endif %}
+    </div>
+</section>
+{% else %}
 <section class="bg-gradient-primary text-white py-20">
     <div class="container mx-auto px-4">
         <div class="max-w-4xl mx-auto text-center">
@@ -13,6 +24,7 @@
         </div>
     </div>
 </section>
+{% endif %}
 
 <!-- Contact Information & Form -->
 <section class="py-16 bg-white">
@@ -49,7 +61,7 @@
                 
                 <!-- Map -->
                 <div class="h-64 bg-gray-200 rounded-lg">
-                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3651.847!2d90.40487!3d23.793611!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjPCsDQ3JzM3LjAiTiA5MMKwMjQnMTcuNSJF!5e0!3m2!1sen!2sbd!4v1639396800000!5m2!1sen!2sbd" 
+                    <iframe src="https://maps.google.com/maps?q=Banani%20Catholic%20Church,%20Dhaka,%20Bangladesh&t=&z=17&ie=UTF8&iwloc=&output=embed" 
                             width="100%" 
                             height="100%" 
                             style="border:0;" 

@@ -12,7 +12,7 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from .models import (
     Announcement, PrayerService, Homily, 
-    HomilyCategory, PrayerRequest, DonationInfo, PrayerRequestSettings
+    HomilyCategory, PrayerRequest, DonationInfo, PrayerRequestSettings, LiturgicalCalendar
 )
 from .forms import PrayerRequestForm
 
@@ -37,10 +37,18 @@ def send_prayer_request_email(prayer_request, recipient_email):
 
 
 
+from seminary.models import Banner
 def spiritual_food_home(request):
     """
     Home page displaying active announcements and featured content
     """
+    try:
+        banner = Banner.objects.get(page='spiritual-food', is_active=True)
+    except Banner.DoesNotExist:
+        try:
+            banner = Banner.objects.get(page='default-banner', is_active=True)
+        except Banner.DoesNotExist:
+            banner = None
     # Get active announcements that haven't expired
     now = timezone.now()
     announcements = Announcement.objects.filter(
@@ -79,6 +87,7 @@ def spiritual_food_home(request):
         'featured_homilies': featured_homilies,
         'prayer_services': prayer_services[:5],
         'recent_homilies': recent_homilies,
+        'banner': banner,
     }
     
     return render(request, 'spiritual_food/home.html', context)
@@ -105,6 +114,14 @@ def prayer_services(request):
     """
     Display all prayer services organized by day
     """
+    try:
+        banner = Banner.objects.get(page='prayer-services', is_active=True)
+    except Banner.DoesNotExist:
+        try:
+            banner = Banner.objects.get(page='default-banner', is_active=True)
+        except Banner.DoesNotExist:
+            banner = None
+            
     # Get filter parameters
     service_type = request.GET.get('type', None)
     day = request.GET.get('day', None)
@@ -143,6 +160,7 @@ def prayer_services(request):
         'days': days,
         'selected_type': service_type,
         'selected_day': day,
+        'banner': banner,
     }
     
     return render(request, 'spiritual_food/prayer_services.html', context)
@@ -195,6 +213,15 @@ class HomilyListView(ListView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        
+        try:
+            banner = Banner.objects.get(page='homilies', is_active=True)
+        except Banner.DoesNotExist:
+            try:
+                banner = Banner.objects.get(page='default-banner', is_active=True)
+            except Banner.DoesNotExist:
+                banner = None
+        context['banner'] = banner
         
         # Add filter options
         context['categories'] = HomilyCategory.objects.all().order_by('order', 'name')
@@ -436,3 +463,69 @@ def search_all(request):
     }
     
     return render(request, 'spiritual_food/search_results.html', context)
+
+
+from seminary.models import LeadershipMessage, Page
+from collections import defaultdict
+
+def liturgical_calendar(request):
+    """
+    Display the liturgical calendar, grouped by month.
+    """
+    events = LiturgicalCalendar.objects.all().order_by('date')
+    
+    events_by_month = defaultdict(list)
+    for event in events:
+        events_by_month[event.date.strftime('%B %Y')].append(event)
+        
+    context = {
+        'events_by_month': dict(events_by_month),
+    }
+    
+    return render(request, 'spiritual_food/liturgical_calendar.html', context)
+
+def spiritual_directors_desk(request):
+    """Spiritual director's message with enhanced content"""
+    try:
+        leadership_message = LeadershipMessage.objects.get(
+            message_type='spiritual_director', 
+            is_published=True
+        )
+    except LeadershipMessage.DoesNotExist:
+        # Fallback to old Page model for backward compatibility
+        try:
+            page = Page.objects.get(slug='spiritual-directors-desk', is_published=True)
+        except Page.DoesNotExist:
+            page = Page(
+                title="Spiritual Director's Desk",
+                slug="spiritual-directors-desk",
+                content="""
+                <div class="prose max-w-none">
+                    <h2>Spiritual Director's Desk</h2>
+                    <p>Reflections from the Spiritual Director...</p>
+                </div>
+                """,
+                is_published=True
+            )
+        
+        context = {
+            'page': page,
+            'breadcrumbs': [
+                ('Home', 'home'),
+                ('Spiritual Food', 'spiritual_food:home'),
+                ("Spiritual Director's Desk", None)
+            ],
+            'use_old_template': True
+        }
+        return render(request, 'seminary/page_detail.html', context)
+    
+    context = {
+        'leadership_message': leadership_message,
+        'breadcrumbs': [
+            ('Home', 'home'),
+            ('Spiritual Food', 'spiritual_food:home'),
+            (leadership_message.title, None)
+        ]
+    }
+    
+    return render(request, 'seminary/leadership_message.html', context)

@@ -1,9 +1,7 @@
+# library/utils.py
 import logging
 
 logger = logging.getLogger(__name__)
-
-# library/utils.py
-# Utility functions for Bangla/Unicode text handling
 
 import re
 import unicodedata

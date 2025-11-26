@@ -1083,8 +1083,9 @@ def dashboard_renew_book(request, record_id):
         except ValueError as e:
             messages.error(request, str(e))
         
-        response = render(request, 'library/partials/_borrowed_books_table.html', {'borrowed_records': BorrowRecord.objects.filter(status__in=['active', 'overdue'])} )
-        response['HX-Trigger'] = 'close-modal'
+        # Create a response that triggers a full page refresh
+        response = HttpResponse()
+        response['HX-Refresh'] = 'true'
         return response
 
     return render(request, 'library/dashboard_renew_book_confirm.html', {'record': record})
@@ -1095,9 +1096,12 @@ def dashboard_return_book(request, record_id):
     if request.method == 'POST':
         record.return_book()
         messages.success(request, f'Publication "{record.publication.title}" returned by {record.borrower.get_full_name()}.')
-        response = render(request, 'library/partials/_borrowed_books_table.html', {'borrowed_records': BorrowRecord.objects.filter(status__in=['active', 'overdue'])} )
-        response['HX-Trigger'] = 'close-modal'
+        
+        # Create a response that triggers a full page refresh
+        response = HttpResponse()
+        response['HX-Refresh'] = 'true'
         return response
+
     return render(request, 'library/dashboard_return_book_confirm.html', {'record': record})
 
 @staff_member_required
@@ -1107,9 +1111,12 @@ def dashboard_mark_as_paid(request, record_id):
         record.fine_paid = True
         record.save()
         messages.success(request, f'Fine for "{record.publication.title}" marked as paid for {record.borrower.get_full_name()}.')
-        response = render(request, 'library/partials/_overdue_books_table.html', {'overdue_records': BorrowRecord.objects.filter(status='overdue')} )
-        response['HX-Trigger'] = 'close-modal'
+        
+        # Create a response that triggers a full page refresh
+        response = HttpResponse()
+        response['HX-Refresh'] = 'true'
         return response
+
     return render(request, 'library/dashboard_mark_as_paid_confirm.html', {'record': record})
 
 @staff_member_required

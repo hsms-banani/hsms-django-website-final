@@ -182,6 +182,33 @@
 
     {% else %}
     <!-- Standard Page Layout -->
+    {% if banner %}
+    <section class="relative bg-cover bg-center text-white py-32" style="background-image: url('{{ banner.image.url }}');">
+        <div class="absolute inset-0 bg-black opacity-60"></div>
+        <div class="container mx-auto px-4 relative">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-5xl font-bold font-serif mb-4 animate-fade-in-up">{{ banner.title|default:page.title }}</h1>
+                {% if banner.subtitle %}
+                <p class="text-xl opacity-90 animate-fade-in-up" style="animation-delay: 0.2s;">
+                    {{ banner.subtitle }}
+                </p>
+                {% endif %}
+                {% if breadcrumbs %}
+                <nav class="text-lg opacity-90 animate-fade-in-up" style="animation-delay: 0.2s;">
+                    {% for breadcrumb_title, breadcrumb_url in breadcrumbs %}
+                        {% if breadcrumb_url %}
+                            <a href="{% url breadcrumb_url %}" class="hover:text-blue-200 transition-colors">{{ breadcrumb_title }}</a>
+                        {% else %}
+                            <span>{{ breadcrumb_title }}</span>
+                        {% endif %}
+                        {% if not forloop.last %}<span class="mx-3">/</span>{% endif %}
+                    {% endfor %}
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+    {% else %}
     <section class="bg-gradient-primary text-white py-20 page-hero">
         <div class="container mx-auto px-4">
             <div class="max-w-4xl mx-auto text-center">
@@ -201,6 +228,7 @@
             </div>
         </div>
     </section>
+    {% endif %}
 
     <section class="py-16 bg-white page-content-area">
         <div class="container mx-auto px-4">

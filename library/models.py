@@ -480,7 +480,9 @@ class BorrowRecord(models.Model):
         
     def save(self, *args, **kwargs):
         """Override save to run validation"""
-        self.full_clean()
+        skip_validation = kwargs.pop('skip_validation', False)
+        if not skip_validation:
+            self.full_clean()
         
         # Auto-update overdue status and calculate fines
         if self.status == 'active' and timezone.now().date() > self.due_date:
@@ -551,7 +553,7 @@ class BorrowRecord(models.Model):
         if self.publication.copies_available > 0:
             self.publication.status = 'available'
         self.publication.save()
-        self.save()
+        self.save(skip_validation=True)
         logger.info(f"Returned publication: {self.publication.title}, copies available after: {self.publication.copies_available}, status after: {self.publication.status}")
 
     def undo_return(self):
@@ -559,6 +561,9 @@ class BorrowRecord(models.Model):
         logger.info(f"Undoing return for publication: {self.publication.title}, copies available before: {self.publication.copies_available}, status before: {self.publication.status}")
         if self.status != 'returned':
             raise ValueError("This publication has not been returned yet.")
+
+        if self.publication.copies_available < 1:
+            raise ValueError("Cannot undo return, no copies available to be made unavailable.")
 
         self.return_date = None
         if self.due_date < timezone.now().date():
@@ -570,7 +575,7 @@ class BorrowRecord(models.Model):
         if self.publication.copies_available == 0:
             self.publication.status = 'checked_out'
         self.publication.save()
-        self.save()
+        self.save(skip_validation=True)
         logger.info(f"Undone return for publication: {self.publication.title}, copies available after: {self.publication.copies_available}, status after: {self.publication.status}")
     
     def __str__(self):

@@ -7,7 +7,7 @@
         </button>
     </div>
     <p class="text-gray-600 mb-6">Are you sure you want to mark the fine for "<strong>{{ record.publication.title }}</strong>" as paid for <strong>{{ record.borrower.get_full_name }}</strong>?</p>
-    <form hx-post="{% url 'library:dashboard_mark_as_paid' record.id %}" hx-target="#tab-content" hx-swap="innerHTML">
+    <form hx-post="{% url 'library:dashboard_mark_as_paid' record.id %}">
         {% csrf_token %}
         <div class="flex justify-end">
             <button type="button" onclick="document.getElementById('modal-container').classList.add('hidden')" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 mr-4">Cancel</button>
