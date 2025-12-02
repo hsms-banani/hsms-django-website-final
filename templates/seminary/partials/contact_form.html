@@ -1,58 +1,65 @@
 <!-- templates/seminary/partials/contact_form.html -->
 <form hx-post="{% url 'contact' %}" hx-target="#contact-form" class="space-y-6">
     {% csrf_token %}
-    
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-            <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+            <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">Full
+                Name</label>
             {{ form.name }}
             {% if form.name.errors %}
-                <p class="mt-1 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+            <p class="mt-1 text-sm text-red-600">{{ form.name.errors.0 }}</p>
             {% endif %}
         </div>
-        
+
         <div>
-            <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+            <label for="{{ form.email.id_for_label }}"
+                class="block text-sm font-medium text-gray-700 mb-2">Email</label>
             {{ form.email }}
             {% if form.email.errors %}
-                <p class="mt-1 text-sm text-red-600">{{ form.email.errors.0 }}</p>
+            <p class="mt-1 text-sm text-red-600">{{ form.email.errors.0 }}</p>
             {% endif %}
         </div>
     </div>
-    
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-            <label for="{{ form.phone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">Phone (Optional)</label>
+            <label for="{{ form.phone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">Phone
+                (Optional)</label>
             {{ form.phone }}
             {% if form.phone.errors %}
-                <p class="mt-1 text-sm text-red-600">{{ form.phone.errors.0 }}</p>
+            <p class="mt-1 text-sm text-red-600">{{ form.phone.errors.0 }}</p>
             {% endif %}
         </div>
-        
+
         <div>
-            <label for="{{ form.subject.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+            <label for="{{ form.subject.id_for_label }}"
+                class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
             {{ form.subject }}
             {% if form.subject.errors %}
-                <p class="mt-1 text-sm text-red-600">{{ form.subject.errors.0 }}</p>
+            <p class="mt-1 text-sm text-red-600">{{ form.subject.errors.0 }}</p>
             {% endif %}
         </div>
     </div>
-    
+
     <div>
-        <label for="{{ form.message.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+        <label for="{{ form.message.id_for_label }}"
+            class="block text-sm font-medium text-gray-700 mb-2">Message</label>
         {{ form.message }}
         {% if form.message.errors %}
-            <p class="mt-1 text-sm text-red-600">{{ form.message.errors.0 }}</p>
+        <p class="mt-1 text-sm text-red-600">{{ form.message.errors.0 }}</p>
         {% endif %}
     </div>
-    
+
     <div>
-        <button type="submit" class="w-full bg-gradient-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-gradient-secondary transition-all duration-300 hover:scale-105 flex items-center justify-center">
-            <span class="htmx-indicator">
+        <button type="submit"
+            class="w-full bg-gradient-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-gradient-secondary transition-all duration-300 hover:scale-105 flex items-center justify-center"
+            hx-indicator="#contact-loading">
+            <span id="contact-loading" class="htmx-indicator">
                 <i class="fas fa-spinner fa-spin mr-2"></i> Sending...
             </span>
             <span class="htmx-no-indicator">
-                Send Message
+                <i class="fas fa-paper-plane mr-2"></i> Send Message
             </span>
         </button>
     </div>

@@ -2,6 +2,9 @@
 from django import forms
 from django.core.mail import send_mail
 from django.conf import settings
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ContactForm(forms.Form):
     name = forms.CharField(
@@ -57,9 +60,12 @@ class ContactForm(forms.Form):
                 subject,
                 message,
                 settings.DEFAULT_FROM_EMAIL,
-                ['info@hsms.edu.bd'],  # Seminary email
+                ['hsmsmajorseminary@gmail.com'],  # Seminary email
                 fail_silently=False,
             )
+            logger.info(f"Contact form email sent successfully from {self.cleaned_data['email']}")
             return True
         except Exception as e:
+            logger.error(f"Failed to send contact form email: {str(e)}")
+            print(f"Email Error: {str(e)}")  # Also print to console for debugging
             return False

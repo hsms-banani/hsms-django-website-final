@@ -291,23 +291,16 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Email configuration
-# EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
-# EMAIL_HOST = config('EMAIL_HOST', default='localhost')
-# EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-# EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-# EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-# EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-# DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='info@hsms.edu.bd')
-
-# Sign up at: https://www.brevo.com/
+# Email configuration - Gmail SMTP
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp-relay.brevo.com'
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('BREVO_USER')  # Your Brevo username from environment variable
-EMAIL_HOST_PASSWORD = os.getenv('BREVO_API_KEY')  # Your Brevo API key from environment variable
-DEFAULT_FROM_EMAIL = 'library@yourdomain.com'  # Replace with your verified sender email
+EMAIL_HOST_USER = os.getenv('GMAIL_USER', 'hsmsmajorseminary@gmail.com')
+EMAIL_HOST_PASSWORD = os.getenv('GMAIL_APP_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.getenv('GMAIL_USER', 'hsmsmajorseminary@gmail.com')
+SERVER_EMAIL = os.getenv('GMAIL_USER', 'hsmsmajorseminary@gmail.com')
+
 
 
 # Security settings for production

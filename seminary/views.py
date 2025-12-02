@@ -1027,7 +1027,7 @@ def page_detail(request, slug):
     # Spiritual Food pages
     spiritual_slugs = ['prayer-services', 'homilies', 'spiritual-directors-desk']
     if slug in spiritual_slugs:
-        breadcrumbs.append(('Spiritual Food', 'spiritual_food'))
+        breadcrumbs.append(('Spiritual Food', 'spiritual_food:home'))
     
     breadcrumbs.append((page.title, None))
     
