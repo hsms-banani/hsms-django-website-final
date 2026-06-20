@@ -4,7 +4,7 @@
 
 {% block title %}{{ event.title }} - Holy Spirit Major Seminary{% endblock %}
 
-{% block meta_description %}{{ event.description|smart_preview:30 }}{% endblock %}
+{% block meta_description %}{{ event.description|striptags|truncatewords:30 }}{% endblock %}
 
 {% block extra_css %}
 <style>
