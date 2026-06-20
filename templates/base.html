@@ -81,6 +81,27 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
+
+        /* Logo Shine Effect */
+        @keyframes logoShine {
+            0% { left: -150%; }
+            20% { left: 150%; }
+            100% { left: 150%; } /* Pause before next sweep */
+        }
+
+        .logo-shine-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-25deg);
+            animation: logoShine 4s infinite ease-in-out;
+            z-index: 10;
+            pointer-events: none; /* Let clicks pass through to the image/link if any */
+        }
         
         .animate-fade-in-up { 
             animation: fadeInUp 0.6s ease-out; 
@@ -469,7 +490,7 @@
                 <!-- Logo and Seminary Name -->
                 <div class="flex items-center space-x-4">
                     <!-- Logo -->
-                    <div class="flex-shrink-0">
+                    <div class="flex-shrink-0 relative overflow-hidden rounded-full logo-shine-container">
                         <img loading="lazy" src="{% static 'img/logo.png' %}" 
                             alt="Holy Spirit Major Seminary Logo" 
                             class="w-12 h-12 md:w-16 md:h-16 object-contain">
