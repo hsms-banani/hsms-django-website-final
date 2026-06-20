@@ -46,7 +46,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Cinzel:wght@500;600;700&display=swap" rel="stylesheet">
     
     <!-- Print-specific Stylesheet -->
     <link rel="stylesheet" href="{% static 'css/print.css' %}" media="print">
@@ -69,6 +69,16 @@
         
         .font-serif { 
             font-family: 'Playfair Display', serif; 
+        }
+
+        .premium-logo-text {
+            font-family: 'Cinzel', serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            letter-spacing: 0.02em;
         }
         
         /* Custom animations */
@@ -498,7 +508,7 @@
 
                     <!-- Name and Tagline -->
                     <div>
-                        <h1 class="text-lg md:text-2xl font-bold text-gray-800 font-serif">
+                        <h1 class="text-lg md:text-2xl font-bold premium-logo-text leading-tight">
                             Holy Spirit Major Seminary
                         </h1>
                         <p class="text-xs md:text-sm text-gray-600 italic">
