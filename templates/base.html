@@ -237,8 +237,9 @@
 
         /* Footer styles - Force consistency */
         .main-footer {
-            background-color: #111827 !important;
+            background: linear-gradient(135deg, #1e3a8a 0%, #172554 100%) !important;
             color: white !important;
+            border-top: 4px solid #667eea;
         }
 
         .main-footer h3,
@@ -804,8 +805,8 @@
                 </div>
             </div>
 
-            <div class="border-t border-gray-700 mt-8 pt-8 text-center">
-                <p class="text-gray-400">
+            <div class="border-t border-white border-opacity-10 mt-8 pt-8 text-center">
+                <p class="text-blue-200">
                     &copy; <span id="currentYear">2025</span> Holy Spirit Major Seminary. All rights reserved. | 
                     <a href="{% url 'privacy_policy' %}" class="hover:text-white transition-colors">Privacy Policy</a> | 
                     <a href="{% url 'terms_of_service' %}" class="hover:text-white transition-colors">Terms of Service</a> | 
