@@ -463,7 +463,7 @@
     </div>
 
     <!-- Main Header - Fixed styling -->
-    <header class="main-header sticky top-0 z-50">
+    <header class="main-header sticky top-0 z-50" x-data="{ mobileMenuOpen: false }" @click.outside="mobileMenuOpen = false">
         <div class="container mx-auto px-4">
             <div class="flex items-center justify-between py-4">
                 <!-- Logo and Seminary Name -->
@@ -513,20 +513,19 @@
                 </div>
 
                 <!-- Mobile Menu Button -->
-                <button class="md:hidden" 
-                        x-data 
-                        @click="$dispatch('toggle-mobile-menu')"
-                        @click.stop>
-                    <i class="fas fa-bars text-2xl text-gray-700"></i>
+                <button class="md:hidden relative w-10 h-10 focus:outline-none" 
+                        @click="mobileMenuOpen = !mobileMenuOpen">
+                    <div class="block w-6 absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                        <span aria-hidden="true" class="block absolute h-[3px] rounded-full w-6 bg-gray-700 transform transition duration-300 ease-in-out" :class="{'rotate-45': mobileMenuOpen, '-translate-y-2': !mobileMenuOpen }"></span>
+                        <span aria-hidden="true" class="block absolute h-[3px] rounded-full w-6 bg-gray-700 transform transition duration-300 ease-in-out" :class="{'opacity-0': mobileMenuOpen }"></span>
+                        <span aria-hidden="true" class="block absolute h-[3px] rounded-full w-6 bg-gray-700 transform transition duration-300 ease-in-out" :class="{'-rotate-45': mobileMenuOpen, 'translate-y-2': !mobileMenuOpen }"></span>
+                    </div>
                 </button>
             </div>
         </div>
 
         <!-- Navigation Menu - Centered -->
-        <nav class="main-nav" 
-             x-data="{ mobileMenuOpen: false }" 
-             @toggle-mobile-menu.window="mobileMenuOpen = !mobileMenuOpen"
-             @click.outside="mobileMenuOpen = false">
+        <nav class="main-nav">
             <div class="container mx-auto px-4">
                 <!-- Desktop Menu - CENTERED -->
                 <ul class="hidden md:flex space-x-1 justify-center items-center">
