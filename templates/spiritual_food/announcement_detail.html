@@ -46,7 +46,7 @@
                 <!-- Full Content based on type -->
                 {% if announcement.content_type == 'text' and announcement.text_content %}
                 <!-- Text Content -->
-                <div class="prose prose-lg max-w-none">
+                <div class="prose prose-lg max-w-none whitespace-pre-line">
                     <div class="text-gray-700 leading-relaxed rich-content">
                         {{ announcement.text_content|safe }}
                     </div>
