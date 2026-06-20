@@ -210,36 +210,38 @@
     .stagger-animation:nth-child(5) { animation-delay: 0.25s; }
     .stagger-animation:nth-child(6) { animation-delay: 0.3s; }
     
-    /* Fluent Pivot (Filter tabs) */
+    /* Fluent Pivot (Filter tabs) - Premium Segmented Pill Style */
     .fluent-pivot {
-        display: flex;
+        display: inline-flex;
         flex-wrap: wrap;
-        gap: 0.5rem;
-        border-bottom: 1px solid #e1dfdd;
-        padding-bottom: 1px;
+        gap: 0.25rem;
+        background: #f1f5f9;
+        padding: 0.375rem;
+        border-radius: 9999px;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
     }
     
     .pivot-item {
-        color: #605e5c;
-        font-size: 1rem;
-        font-weight: 400;
-        padding: 0.5rem 0.5rem;
-        margin: 0 0.5rem;
-        border-bottom: 2px solid transparent;
-        transition: color 0.1s ease;
-        position: relative;
-        bottom: -1px;
+        color: #475569;
+        font-size: 0.95rem;
+        font-weight: 500;
+        padding: 0.5rem 1.25rem;
+        border-radius: 9999px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
     }
     
     .pivot-item:hover {
-        color: #201f1e;
+        color: #1e293b;
+        background: rgba(255, 255, 255, 0.6);
         text-decoration: none;
     }
 
     .pivot-item.active {
-        color: #201f1e;
+        color: #0f172a;
+        background: #ffffff;
         font-weight: 600;
-        border-bottom: 2px solid #0078D4;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
     }
 </style>
 {% endblock %}
@@ -262,7 +264,7 @@
 
 <!-- Filter Section -->
 <section class="bg-white sticky top-0 z-40 shadow-sm border-b border-gray-200">
-    <div class="container mx-auto px-4 max-w-7xl py-2">
+    <div class="container mx-auto px-4 max-w-7xl py-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <nav class="fluent-pivot" aria-label="Department filter">
             <a href="{% url 'faculty_list' %}" 
                class="pivot-item {% if not selected_dept %}active{% endif %}">
@@ -277,7 +279,7 @@
         </nav>
         
         <!-- Results info -->
-        <div class="mt-3 text-sm text-gray-500 ml-2">
+        <div class="text-sm text-slate-500 font-medium px-2">
             {% if selected_dept %}
                 {% for dept in departments %}
                     {% if dept.slug == selected_dept %}
