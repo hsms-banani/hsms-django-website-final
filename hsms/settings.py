@@ -233,7 +233,7 @@ TINYMCE_DEFAULT_CONFIG = {
         visualchars fullscreen autolink charmap anchor pagebreak
     ''',
     'toolbar': '''
-        undo redo | formatselect | bold italic underline strikethrough | 
+        undo redo | formatselect fontfamily fontsize | bold italic underline strikethrough | 
         forecolor backcolor | alignleft aligncenter alignright alignjustify | 
         bullist numlist outdent indent | removeformat | link image media table | 
         code fullscreen preview
