@@ -6,6 +6,65 @@
 
 {% block extra_css %}
 <style>
+    /* Fluent Design Variables & Base */
+    :root {
+        --fluent-bg-light: #faf9f8;
+        --fluent-card-bg: rgba(255, 255, 255, 0.75);
+        --fluent-card-border: rgba(255, 255, 255, 0.8);
+        --fluent-acrylic-blur: blur(40px);
+        --fluent-shadow-rest: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+        --fluent-shadow-hover: 0 8px 16px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+        --fluent-radius-card: 16px;
+        --fluent-radius-badge: 4px;
+        --fluent-radius-pill: 9999px;
+        --fluent-font: "Segoe UI Variable", "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        --fluent-primary: #0f6cbd;
+    }
+
+    body {
+        font-family: var(--fluent-font) !important;
+    }
+
+    /* Fluent Card */
+    .fluent-card {
+        background: var(--fluent-card-bg);
+        backdrop-filter: var(--fluent-acrylic-blur);
+        -webkit-backdrop-filter: var(--fluent-acrylic-blur);
+        border: 1px solid var(--fluent-card-border);
+        border-radius: var(--fluent-radius-card);
+        box-shadow: var(--fluent-shadow-rest);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .fluent-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--fluent-shadow-hover);
+        background: rgba(255, 255, 255, 0.95);
+    }
+
+    /* Fluent Tag */
+    .fluent-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.2rem 0.6rem;
+        border-radius: var(--fluent-radius-pill);
+        font-size: 0.7rem;
+        font-weight: 600;
+        background: #f3f2f1;
+        color: #3b3a39;
+        border: 1px solid #e1dfdd;
+    }
+
+    /* Fluent Section Title */
+    .fluent-section-title {
+        font-family: var(--fluent-font);
+        font-weight: 700;
+        color: #242424;
+        letter-spacing: -0.02em;
+    }
+
     /* Slider styles */
     .hero-slider {
         position: relative;
@@ -368,36 +427,36 @@
     {% endif %}
 
     <!-- Welcome Section -->
-    <section class="py-16 bg-white">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold font-serif text-gray-800 mb-4">Welcome to Our Seminary</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Holy Spirit Major Seminary is committed to forming future priests through comprehensive education in Philosophy and Theology, fostering spiritual growth and service to the Church and society.</p>
+    <section class="py-20 bg-[#faf9f8]">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl fluent-section-title mb-4">Welcome to Our Seminary</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">Holy Spirit Major Seminary is committed to forming future priests through comprehensive education in Philosophy and Theology, fostering spiritual growth and service to the Church and society.</p>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="text-center group hover-lift">
-                    <div class="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-graduation-cap text-white text-2xl"></i>
+                <div class="fluent-card p-8 text-center group cursor-pointer">
+                    <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300 shadow-sm">
+                        <i class="fas fa-graduation-cap text-2xl"></i>
                     </div>
-                    <h3 class="text-2xl font-semibold mb-4">Academic Excellence</h3>
-                    <p class="text-gray-600">Comprehensive programs in Philosophy and Theology designed to provide deep understanding and practical application.</p>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-800">Academic Excellence</h3>
+                    <p class="text-gray-600 leading-relaxed text-sm">Comprehensive programs in Philosophy and Theology designed to provide deep understanding and practical application.</p>
                 </div>
                 
-                <div class="text-center group hover-lift">
-                    <div class="w-20 h-20 bg-gradient-secondary rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-praying-hands text-white text-2xl"></i>
+                <div class="fluent-card p-8 text-center group cursor-pointer">
+                    <div class="w-16 h-16 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300 shadow-sm">
+                        <i class="fas fa-praying-hands text-2xl"></i>
                     </div>
-                    <h3 class="text-2xl font-semibold mb-4">Spiritual Formation</h3>
-                    <p class="text-gray-600">Nurturing spiritual growth through prayer, contemplation, and service to prepare faithful servants of God.</p>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-800">Spiritual Formation</h3>
+                    <p class="text-gray-600 leading-relaxed text-sm">Nurturing spiritual growth through prayer, contemplation, and service to prepare faithful servants of God.</p>
                 </div>
                 
-                <div class="text-center group hover-lift">
-                    <div class="w-20 h-20 bg-gradient-tertiary rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-hands-helping text-white text-2xl"></i>
+                <div class="fluent-card p-8 text-center group cursor-pointer">
+                    <div class="w-16 h-16 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-green-600 group-hover:text-white transition-colors duration-300 shadow-sm">
+                        <i class="fas fa-hands-helping text-2xl"></i>
                     </div>
-                    <h3 class="text-2xl font-semibold mb-4">Community Service</h3>
-                    <p class="text-gray-600">Engaging with local communities to serve those in need and spread the message of love and compassion.</p>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-800">Community Service</h3>
+                    <p class="text-gray-600 leading-relaxed text-sm">Engaging with local communities to serve those in need and spread the message of love and compassion.</p>
                 </div>
             </div>
         </div>
@@ -405,33 +464,35 @@
 
     <!-- Featured News -->
     {% if featured_news %}
-    <section class="py-16 bg-gray-100">
-        <div class="container mx-auto px-4">
-            <div class="flex justify-between items-center mb-12">
-                <h2 class="text-4xl font-bold font-serif text-gray-800">Latest News</h2>
-                <a href="{% url 'news_list' %}" class="text-blue-600 hover:text-blue-800 font-semibold flex items-center">
+    <section class="py-20 bg-white">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <div class="flex justify-between items-end mb-12">
+                <h2 class="text-4xl md:text-5xl fluent-section-title">Latest News</h2>
+                <a href="{% url 'news_list' %}" class="text-[var(--fluent-primary)] hover:underline font-semibold flex items-center text-sm">
                     View All News <i class="fas fa-arrow-right ml-2"></i>
                 </a>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {% for news in featured_news %}
-                <article class="bg-white rounded-lg shadow-md overflow-hidden hover-lift">
-                    {% if news.featured_image %}
-                    <img loading="lazy" src="{{ news.featured_image.url }}" alt="{{ news.title }}" class="w-full h-48 object-cover">
-                    {% else %}
-                    <div class="w-full h-48 bg-gradient-primary flex items-center justify-center">
-                        <i class="fas fa-newspaper text-white text-4xl"></i>
+                <article class="fluent-card flex flex-col h-full group">
+                    <div class="relative overflow-hidden h-48">
+                        {% if news.featured_image %}
+                        <img loading="lazy" src="{{ news.featured_image.url }}" alt="{{ news.title }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                        {% else %}
+                        <div class="w-full h-full bg-blue-50 flex items-center justify-center transition-transform duration-500 group-hover:scale-105">
+                            <i class="fas fa-newspaper text-blue-300 text-5xl"></i>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% endif %}
-                    <div class="p-6">
-                        <h3 class="text-xl font-semibold mb-3 line-clamp-2">
-                            <a href="{{ news.get_absolute_url }}" class="hover:text-blue-600 transition-colors">{{ news.title }}</a>
+                    <div class="p-6 flex flex-col flex-grow bg-white bg-opacity-80">
+                        <h3 class="text-xl font-semibold mb-3 text-gray-800 line-clamp-2 leading-tight group-hover:text-[var(--fluent-primary)] transition-colors">
+                            <a href="{{ news.get_absolute_url }}">{{ news.title }}</a>
                         </h3>
-                        <p class="text-gray-600 mb-4 line-clamp-3">{{ news.excerpt }}</p>
-                        <div class="flex justify-between items-center text-sm text-gray-500">
-                            <span>{{ news.created_at|date:"M d, Y" }}</span>
-                            <a href="{{ news.get_absolute_url }}" class="text-blue-600 hover:text-blue-800 font-medium">Read More</a>
+                        <p class="text-gray-600 mb-6 line-clamp-3 text-sm flex-grow">{{ news.excerpt }}</p>
+                        <div class="flex justify-between items-center text-xs text-gray-500 mt-auto pt-4 border-t border-gray-100">
+                            <span class="flex items-center"><i class="far fa-calendar-alt mr-2"></i>{{ news.created_at|date:"M d, Y" }}</span>
+                            <a href="{{ news.get_absolute_url }}" class="text-[var(--fluent-primary)] font-semibold hover:underline">Read More</a>
                         </div>
                     </div>
                 </article>
@@ -443,36 +504,44 @@
 
     <!-- Upcoming Events -->
     {% if upcoming_events %}
-    <section class="py-16 bg-white">
-        <div class="container mx-auto px-4">
-            <div class="flex justify-between items-center mb-12">
-                <h2 class="text-4xl font-bold font-serif text-gray-800">Upcoming Events</h2>
-                <a href="{% url 'events_list' %}" class="text-blue-600 hover:text-blue-800 font-semibold flex items-center">
+    <section class="py-20 bg-[#faf9f8]">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <div class="flex justify-between items-end mb-12">
+                <h2 class="text-4xl md:text-5xl fluent-section-title">Upcoming Events</h2>
+                <a href="{% url 'events_list' %}" class="text-[var(--fluent-primary)] hover:underline font-semibold flex items-center text-sm">
                     View All Events <i class="fas fa-arrow-right ml-2"></i>
                 </a>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {% for event in upcoming_events %}
-                <div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover-lift">
-                    <div class="bg-gradient-primary text-white p-4 text-center">
-                        <div class="text-3xl font-bold">{{ event.start_date|date:"d" }}</div>
-                        <div class="text-sm">{{ event.start_date|date:"M Y" }}</div>
+                <div class="fluent-card flex flex-row group hover:-translate-y-1">
+                    <!-- Left Accent/Date Block -->
+                    <div class="w-24 bg-white border-r border-gray-100 flex flex-col items-center justify-center py-6 relative flex-shrink-0">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-[var(--fluent-primary)]"></div>
+                        <span class="text-3xl font-bold text-gray-800 leading-none mb-1">{{ event.start_date|date:"d" }}</span>
+                        <span class="text-xs uppercase font-semibold text-gray-500 tracking-wider">{{ event.start_date|date:"M" }}</span>
                     </div>
-                    <div class="p-6">
-                        <h3 class="text-xl font-semibold mb-3">
-                            <a href="{{ event.get_absolute_url }}" class="hover:text-blue-600 transition-colors">{{ event.title }}</a>
+                    
+                    <!-- Content -->
+                    <div class="p-5 flex flex-col flex-grow bg-white bg-opacity-60">
+                        <h3 class="text-lg font-semibold mb-2 text-gray-800 line-clamp-2 group-hover:text-[var(--fluent-primary)] transition-colors">
+                            <a href="{{ event.get_absolute_url }}">{{ event.title }}</a>
                         </h3>
-                        <p class="text-gray-600 mb-4 line-clamp-3">{{ event.description|smart_preview:25 }}</p>
-                        {% if event.location %}
-                        <p class="text-sm text-gray-500 mb-2">
-                            <i class="fas fa-map-marker-alt mr-1"></i> {{ event.location }}
-                        </p>
-                        {% endif %}
-                        <p class="text-sm text-gray-500 mb-4">
-                            <i class="fas fa-clock mr-1"></i> {{ event.start_date|date:"g:i A" }}
-                        </p>
-                        <a href="{{ event.get_absolute_url }}" class="text-blue-600 hover:text-blue-800 font-medium">Learn More</a>
+                        <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ event.description|smart_preview:25 }}</p>
+                        
+                        <div class="mt-auto space-y-2">
+                            {% if event.location %}
+                            <div class="flex items-center text-xs text-gray-500">
+                                <i class="fas fa-map-marker-alt w-4 text-center mr-2 text-[var(--fluent-primary)]"></i>
+                                <span class="truncate">{{ event.location }}</span>
+                            </div>
+                            {% endif %}
+                            <div class="flex items-center text-xs text-gray-500">
+                                <i class="far fa-clock w-4 text-center mr-2 text-[var(--fluent-primary)]"></i>
+                                <span>{{ event.start_date|date:"g:i A" }}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
@@ -483,29 +552,31 @@
 
     <!-- Faculty Highlights -->
     {% if faculty_highlights %}
-    <section class="py-16 bg-gray-100">
-        <div class="container mx-auto px-4">
-            <div class="flex justify-between items-center mb-12">
-                <h2 class="text-4xl font-bold font-serif text-gray-800">Our Faculty</h2>
-                <a href="{% url 'faculty_list' %}" class="text-blue-600 hover:text-blue-800 font-semibold flex items-center">
+    <section class="py-20 bg-white">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <div class="flex justify-between items-end mb-12">
+                <h2 class="text-4xl md:text-5xl fluent-section-title">Our Faculty</h2>
+                <a href="{% url 'faculty_list' %}" class="text-[var(--fluent-primary)] hover:underline font-semibold flex items-center text-sm">
                     View All Faculty <i class="fas fa-arrow-right ml-2"></i>
                 </a>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
                 {% for faculty in faculty_highlights %}
-                <div class="bg-white rounded-lg shadow-md overflow-hidden hover-lift text-center">
-                    {% if faculty.photo %}
-                    <img loading="lazy" src="{{ faculty.photo.url }}" alt="{{ faculty.name }}" class="w-full h-48 object-contain">
-                    {% else %}
-                    <div class="w-full h-48 bg-gradient-primary flex items-center justify-center">
-                        <i class="fas fa-user text-white text-4xl"></i>
+                <div class="fluent-card p-6 text-center group flex flex-col items-center">
+                    <div class="w-32 h-32 rounded-full p-1 border-2 border-gray-100 mb-5 relative group-hover:border-[var(--fluent-primary)] transition-colors duration-300 bg-white shadow-sm z-10">
+                        {% if faculty.photo %}
+                        <img loading="lazy" src="{{ faculty.photo.url }}" alt="{{ faculty.name }}" class="w-full h-full rounded-full object-cover">
+                        {% else %}
+                        <div class="w-full h-full rounded-full bg-blue-50 flex items-center justify-center">
+                            <i class="fas fa-user text-blue-300 text-4xl"></i>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% endif %}
-                    <div class="p-6">
-                        <h3 class="text-xl font-semibold mb-2">{{ faculty.name }}</h3>
-                        <p class="text-gray-600 mb-2">{{ faculty.title }}</p>
-                        <p class="text-sm text-gray-500">{{ faculty.get_department_display }}</p>
+                    <div class="bg-white bg-opacity-80 -mt-10 pt-10 pb-2 px-2 w-full rounded-xl flex-grow flex flex-col items-center">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-1 group-hover:text-[var(--fluent-primary)] transition-colors">{{ faculty.name }}</h3>
+                        <p class="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-3">{{ faculty.title }}</p>
+                        <span class="fluent-tag">{{ faculty.get_department_display }}</span>
                     </div>
                 </div>
                 {% endfor %}
@@ -516,33 +587,38 @@
 
     <!-- Recent Publications -->
     {% if recent_publications %}
-    <section class="py-16 bg-white">
-        <div class="container mx-auto px-4">
-            <div class="flex justify-between items-center mb-12">
-                <h2 class="text-4xl font-bold font-serif text-gray-800">Recent Publications</h2>
-                <a href="{% url 'publications' %}" class="text-blue-600 hover:text-blue-800 font-semibold flex items-center">
+    <section class="py-20 bg-[#faf9f8]">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <div class="flex justify-between items-end mb-12">
+                <h2 class="text-4xl md:text-5xl fluent-section-title">Recent Publications</h2>
+                <a href="{% url 'publications' %}" class="text-[var(--fluent-primary)] hover:underline font-semibold flex items-center text-sm">
                     View All Publications <i class="fas fa-arrow-right ml-2"></i>
                 </a>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {% for publication in recent_publications %}
-                <div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover-lift">
-                    {% if publication.cover_image %}
-                    <img loading="lazy" src="{{ publication.cover_image.url }}" alt="{{ publication.title }}" class="w-full h-48 object-cover">
-                    {% else %}
-                    <div class="w-full h-48 bg-gradient-primary flex items-center justify-center">
-                        <i class="fas fa-book text-white text-4xl"></i>
+                <div class="fluent-card flex flex-col h-full group hover:-translate-y-1">
+                    <div class="relative overflow-hidden h-48 bg-white flex items-center justify-center p-4 border-b border-gray-100">
+                        {% if publication.cover_image %}
+                        <img loading="lazy" src="{{ publication.cover_image.url }}" alt="{{ publication.title }}" class="h-full object-contain transition-transform duration-500 group-hover:scale-105">
+                        {% else %}
+                        <i class="fas fa-book text-gray-200 text-6xl transition-transform duration-500 group-hover:scale-105 group-hover:text-blue-100"></i>
+                        {% endif %}
                     </div>
-                    {% endif %}
-                    <div class="p-6">
-                        <div class="text-sm text-blue-600 mb-2">{{ publication.get_publication_type_display }}</div>
-                        <h3 class="text-xl font-semibold mb-3">
-                            <a href="{{ publication.get_absolute_url }}" class="hover:text-blue-600 transition-colors">{{ publication.title }}</a>
+                    <div class="p-6 flex flex-col flex-grow bg-white bg-opacity-60">
+                        <div class="mb-3">
+                            <span class="fluent-tag">{{ publication.get_publication_type_display }}</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2 text-gray-800 line-clamp-2 leading-tight group-hover:text-[var(--fluent-primary)] transition-colors">
+                            <a href="{{ publication.get_absolute_url }}">{{ publication.title }}</a>
                         </h3>
-                        <p class="text-gray-600 mb-2">By {{ publication.author }}</p>
-                        <p class="text-sm text-gray-500 mb-4">{{ publication.publication_date|date:"M Y" }}</p>
-                        <a href="{{ publication.get_absolute_url }}" class="text-blue-600 hover:text-blue-800 font-medium">Read More</a>
+                        <p class="text-sm text-gray-600 mb-6 flex-grow">By <span class="font-medium text-gray-700">{{ publication.author }}</span></p>
+                        
+                        <div class="flex justify-between items-center text-xs text-gray-500 mt-auto pt-4 border-t border-gray-100">
+                            <span class="flex items-center"><i class="far fa-calendar mr-2"></i>{{ publication.publication_date|date:"M Y" }}</span>
+                            <a href="{{ publication.get_absolute_url }}" class="text-[var(--fluent-primary)] font-semibold hover:underline">Read More</a>
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
