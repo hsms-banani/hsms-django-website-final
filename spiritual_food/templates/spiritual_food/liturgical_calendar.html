@@ -11,7 +11,7 @@
         background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         position: relative;
     }
-    
+
     .liturgical-bg::before {
         content: '';
         position: absolute;
@@ -19,37 +19,92 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background-image: 
+        background-image:
             radial-gradient(circle at 20% 30%, rgba(102, 126, 234, 0.03) 0%, transparent 50%),
             radial-gradient(circle at 80% 70%, rgba(118, 75, 162, 0.03) 0%, transparent 50%);
         pointer-events: none;
     }
 
     /* Authentic Liturgical Colors */
-    .border-green { border-color: #2d7a3e; }
-    .bg-green { background: linear-gradient(135deg, #2d7a3e 0%, #1e5128 100%); }
-    .text-green { color: #2d7a3e; }
-    .bg-green-light { background-color: #e8f5e9; }
+    .border-green {
+        border-color: #2d7a3e;
+    }
 
-    .border-white { border-color: #e8e8e8; }
-    .bg-white-liturgical { background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); }
-    .text-white-liturgical { color: #6c757d; }
-    .bg-white-light { background-color: #fefefe; }
+    .bg-green {
+        background: linear-gradient(135deg, #2d7a3e 0%, #1e5128 100%);
+    }
 
-    .border-red { border-color: #c41e3a; }
-    .bg-red { background: linear-gradient(135deg, #c41e3a 0%, #8e1628 100%); }
-    .text-red { color: #c41e3a; }
-    .bg-red-light { background-color: #ffebee; }
+    .text-green {
+        color: #2d7a3e;
+    }
 
-    .border-violet { border-color: #5c2e91; }
-    .bg-violet { background: linear-gradient(135deg, #5c2e91 0%, #3d1e61 100%); }
-    .text-violet { color: #5c2e91; }
-    .bg-violet-light { background-color: #f3e5f5; }
+    .bg-green-light {
+        background-color: #e8f5e9;
+    }
 
-    .border-rose { border-color: #d4669c; }
-    .bg-rose { background: linear-gradient(135deg, #d4669c 0%, #b84576 100%); }
-    .text-rose { color: #d4669c; }
-    .bg-rose-light { background-color: #fce4ec; }
+    .border-white {
+        border-color: #e8e8e8;
+    }
+
+    .bg-white-liturgical {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+
+    .text-white-liturgical {
+        color: #4a5568;
+    }
+
+    .bg-white-light {
+        background-color: #f1f5f9;
+    }
+
+    .border-red {
+        border-color: #c41e3a;
+    }
+
+    .bg-red {
+        background: linear-gradient(135deg, #c41e3a 0%, #8e1628 100%);
+    }
+
+    .text-red {
+        color: #c41e3a;
+    }
+
+    .bg-red-light {
+        background-color: #ffebee;
+    }
+
+    .border-violet {
+        border-color: #5c2e91;
+    }
+
+    .bg-violet {
+        background: linear-gradient(135deg, #5c2e91 0%, #3d1e61 100%);
+    }
+
+    .text-violet {
+        color: #5c2e91;
+    }
+
+    .bg-violet-light {
+        background-color: #f3e5f5;
+    }
+
+    .border-rose {
+        border-color: #d4669c;
+    }
+
+    .bg-rose {
+        background: linear-gradient(135deg, #d4669c 0%, #b84576 100%);
+    }
+
+    .text-rose {
+        color: #d4669c;
+    }
+
+    .bg-rose-light {
+        background-color: #fce4ec;
+    }
 
     /* Enhanced Card Design */
     .liturgical-card {
@@ -57,10 +112,13 @@
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         background: white;
         border-radius: 12px;
-        overflow: hidden;
+        overflow: visible;
+        /* Changed from hidden to visible for today badge */
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        position: relative;
+        /* Added for better positioning context */
     }
-    
+
     .liturgical-card:hover {
         transform: translateY(-8px);
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
@@ -89,6 +147,7 @@
         letter-spacing: 1px;
         margin-top: 0.25rem;
         font-weight: 600;
+        color: #4a5568;
     }
 
     /* Season Badge */
@@ -103,57 +162,98 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
-    /* Rank Display */
+    /* Rank Display - FIXED: Changed from white to dark text on light background */
     .rank-badge {
         display: inline-block;
-        padding: 0.5rem 1.25rem;
+        padding: 0.6rem 1.25rem;
         border-radius: 25px;
         font-size: 0.75rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        color: white;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        border: 2px solid;
     }
 
-    /* Holy Day Badge */
+    /* Rank color variants - dark text on light backgrounds */
+    .rank-badge.bg-green {
+        background: #e8f5e9;
+        color: #1b5e20;
+        border-color: #2d7a3e;
+    }
+
+    .rank-badge.bg-red {
+        background: #ffebee;
+        color: #b71c1c;
+        border-color: #c41e3a;
+    }
+
+    .rank-badge.bg-violet {
+        background: #f3e5f5;
+        color: #4a148c;
+        border-color: #5c2e91;
+    }
+
+    .rank-badge.bg-rose {
+        background: #fce4ec;
+        color: #880e4f;
+        border-color: #d4669c;
+    }
+
+    .rank-badge.bg-white-liturgical {
+        background: #f1f5f9;
+        color: #1e293b;
+        border-color: #94a3b8;
+    }
+
+    /* Holy Day Badge - FIXED: Changed to dark text on light background */
     .holy-day-badge {
-        background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
-        color: white;
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        color: #991b1b;
         font-size: 0.7rem;
         font-weight: 700;
-        padding: 0.4rem 1rem;
+        padding: 0.5rem 1rem;
         border-radius: 20px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         display: inline-flex;
         align-items: center;
         gap: 0.4rem;
-        box-shadow: 0 4px 6px rgba(220, 38, 38, 0.3);
+        box-shadow: 0 4px 6px rgba(220, 38, 38, 0.2);
+        border: 2px solid #dc2626;
     }
 
-    /* Current Day Highlight */
+    /* Current Day Highlight - FIXED: Better positioning and dark text */
     .current-day-glow {
         box-shadow: 0 0 30px rgba(251, 191, 36, 0.6), 0 8px 16px rgba(0, 0, 0, 0.1);
-        border: 2px solid #fbbf24;
+        border: 3px solid #fbbf24;
         position: relative;
+        margin-top: 2rem;
+        /* Added space at top to prevent cutoff */
     }
 
     .current-day-glow::before {
-        content: '📅 Today';
+        content: '📅 Today\'s Celebration';
         position: absolute;
-        top: -12px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-        color: white;
-        padding: 0.25rem 1rem;
+        top: -1.5rem;
+        /* Adjusted positioning */
+        left: 1rem;
+        /* Changed from center to left alignment */
+        transform: none;
+        /* Removed transform to prevent alignment issues */
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #92400e;
+        /* Dark brown text instead of white */
+        padding: 0.4rem 1.2rem;
         border-radius: 12px;
-        font-size: 0.7rem;
+        font-size: 0.75rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 1px;
-        box-shadow: 0 4px 6px rgba(251, 191, 36, 0.4);
+        box-shadow: 0 4px 8px rgba(251, 191, 36, 0.3);
+        border: 2px solid #fbbf24;
+        white-space: nowrap;
+        /* Prevent text wrapping */
     }
 
     /* Reading Labels */
@@ -219,7 +319,7 @@
         width: 24px;
         height: 24px;
         border-radius: 50%;
-        background: rgba(255, 255, 255, 0.2);
+        background: rgba(99, 102, 241, 0.1);
     }
 
     /* Saints section */
@@ -231,24 +331,170 @@
         border-left: 3px solid #6366f1;
     }
 
-    @media (max-width: 768px) {
-        .page-title {
-            font-size: 2rem;
+    /* ========== RESPONSIVE DESIGN ========== */
+
+    /* Mobile devices (< 640px) */
+    @media (max-width: 639px) {
+        .page-header {
+            padding: 2rem 1rem;
+            margin-bottom: 2rem;
         }
-        
+
+        .page-title {
+            font-size: 1.75rem;
+            line-height: 1.2;
+        }
+
+        .liturgical-card {
+            margin-top: 2.5rem;
+            /* Extra space for today badge */
+            margin-bottom: 1.5rem;
+        }
+
+        .current-day-glow {
+            margin-top: 3rem;
+            /* Extra space on mobile */
+        }
+
+        .current-day-glow::before {
+            font-size: 0.65rem;
+            padding: 0.3rem 0.8rem;
+            top: -1.75rem;
+            left: 0.5rem;
+        }
+
+        .date-block {
+            min-width: 70px;
+            padding: 0.75rem;
+        }
+
+        .date-number {
+            font-size: 1.75rem;
+        }
+
+        .date-day {
+            font-size: 0.65rem;
+        }
+
+        .month-header {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .season-badge {
+            font-size: 0.75rem;
+            padding: 0.4rem 0.75rem;
+            gap: 0.3rem;
+        }
+
+        .rank-badge {
+            font-size: 0.65rem;
+            padding: 0.5rem 1rem;
+        }
+
+        .holy-day-badge {
+            font-size: 0.65rem;
+            padding: 0.4rem 0.75rem;
+        }
+
+        .reading-label {
+            font-size: 0.75rem;
+            min-width: 100px;
+        }
+
+        .reading-text {
+            font-size: 0.75rem;
+        }
+
+        /* Stack layout on mobile */
+        .liturgical-card .grid {
+            gap: 1rem;
+        }
+    }
+
+    /* Tablets (640px - 1023px) */
+    @media (min-width: 640px) and (max-width: 1023px) {
+        .page-title {
+            font-size: 2.5rem;
+        }
+
+        .liturgical-card {
+            margin-top: 2rem;
+        }
+
+        .current-day-glow::before {
+            font-size: 0.7rem;
+            padding: 0.35rem 1rem;
+        }
+
         .date-number {
             font-size: 2rem;
         }
-        
+
+        .month-header {
+            font-size: 2rem;
+        }
+
+        .season-badge {
+            font-size: 0.8rem;
+        }
+
+        .rank-badge {
+            font-size: 0.7rem;
+        }
+    }
+
+    /* Laptops and larger (> 1024px) */
+    @media (min-width: 1024px) {
+        .container {
+            max-width: 1200px;
+        }
+
+        .liturgical-card:hover {
+            transform: translateY(-10px);
+        }
+
         .current-day-glow::before {
-            font-size: 0.6rem;
-            padding: 0.2rem 0.6rem;
+            font-size: 0.8rem;
+            padding: 0.5rem 1.5rem;
+        }
+    }
+
+    /* Extra large screens (> 1440px) */
+    @media (min-width: 1440px) {
+        .container {
+            max-width: 1400px;
+        }
+
+        .page-title {
+            font-size: 4rem;
+        }
+
+        .month-header {
+            font-size: 3rem;
+        }
+    }
+
+    /* Print styles */
+    @media print {
+        .liturgical-card:hover {
+            transform: none;
+        }
+
+        .current-day-glow {
+            border: 2px solid #fbbf24;
+            box-shadow: none;
+        }
+
+        .page-header {
+            box-shadow: none;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
+<!-- Gemini CLI test comment: If you can see this in your browser's 'View Source', the file is being updated correctly. -->
 <div class="liturgical-bg min-h-screen py-8">
     <div class="container mx-auto px-4">
         <!-- Page Header -->
@@ -259,7 +505,8 @@
                 </div>
                 <h1 class="page-title">{% trans "Liturgical Calendar" %}</h1>
                 <p class="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                    {% trans "Journey through the sacred seasons of the Church's year, celebrating the mysteries of our faith and honoring the saints who have gone before us." %}
+                    {% trans "Journey through the sacred seasons of the Church's year, celebrating the mysteries of our
+                    faith and honoring the saints who have gone before us." %}
                 </p>
             </div>
         </div>
@@ -268,19 +515,20 @@
         {% for month, events in events_by_month.items %}
         <div class="mb-16 animate-fade-in-up">
             <h2 class="month-header text-3xl md:text-4xl font-bold mb-10">{{ month }}</h2>
-            
+
             <div class="space-y-6">
                 {% for event in events %}
                 {% now "Y-m-d" as today_date %}
-                <div class="liturgical-card border-{{ event.color }}
-                    {% if event.date|date:"Y-m-d" == today_date %} current-day-glow{% endif %}">
-                    
+                {% with event_date=event.date|date:"Y-m-d" %}
+                <div
+                    class="liturgical-card {% if event.color == 'white' %}border-gray-200{% else %}border-{{ event.color }}{% endif %}{% if event_date == today_date %} current-day-glow{% endif %}">
+
                     <div class="p-6">
                         <div class="grid grid-cols-12 gap-6 items-start">
                             <!-- Date Block -->
                             <div class="col-span-12 md:col-span-2">
                                 <div class="date-block">
-                                    <div class="date-number text-{{ event.color }}">
+                                    <div class="date-number {% if event.color == 'white' %}text-white-liturgical{% else %}text-{{ event.color }}{% endif %}">
                                         {{ event.date|date:"d" }}
                                     </div>
                                     <div class="date-day text-gray-600">
@@ -298,9 +546,9 @@
                                     <h3 class="text-2xl font-bold text-gray-800 font-serif mb-2">
                                         {{ event.name }}
                                     </h3>
-                                    
+
                                     <div class="flex flex-wrap gap-2 mb-3">
-                                        <span class="season-badge bg-{{ event.color }}-light text-{{ event.color }}">
+                                        <span class="season-badge {% if event.color == 'white' %}bg-white-light text-white-liturgical{% else %}bg-{{ event.color }}-light text-{{ event.color }}{% endif %}">
                                             <i class="fas fa-calendar-alt"></i>
                                             {{ event.get_season_display }}
                                         </span>
@@ -350,7 +598,7 @@
                                             <strong class="text-gray-700 text-sm">Commemorating:</strong>
                                             <span class="text-gray-600 text-sm ml-2">
                                                 {% for saint in event.saints.all %}
-                                                    {{ saint.name }}{% if not forloop.last %}, {% endif %}
+                                                {{ saint.name }}{% if not forloop.last %}, {% endif %}
                                                 {% endfor %}
                                             </span>
                                         </div>
@@ -361,11 +609,11 @@
 
                             <!-- Rank & Status -->
                             <div class="col-span-12 md:col-span-3 flex flex-col gap-3 md:items-end">
-                                <span class="rank-badge bg-{{ event.color }}">
+                                <span class="rank-badge {% if event.color == 'white' %}bg-white-liturgical{% else %}bg-{{ event.color }}{% endif %}">
                                     <i class="fas fa-star mr-1"></i>
                                     {{ event.get_rank_display }}
                                 </span>
-                                
+
                                 {% if event.is_holy_day_of_obligation %}
                                 <span class="holy-day-badge">
                                     <i class="fas fa-exclamation-circle"></i>
@@ -376,6 +624,7 @@
                         </div>
                     </div>
                 </div>
+                {% endwith %}
                 {% endfor %}
             </div>
         </div>

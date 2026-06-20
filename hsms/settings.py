@@ -200,10 +200,10 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Asia/Dhaka'
-USE_I18N = False
+USE_I18N = True
 USE_TZ = True
 
-USE_L10N = False
+USE_L10N = True
 
 
 # Supported languages

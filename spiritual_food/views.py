@@ -470,9 +470,9 @@ from collections import defaultdict
 
 def liturgical_calendar(request):
     """
-    Display the liturgical calendar, grouped by month.
+    Display the liturgical calendar, grouped by month, starting from today.
     """
-    events = LiturgicalCalendar.objects.all().order_by('date')
+    events = LiturgicalCalendar.objects.filter(date__gte=timezone.now().date()).order_by('date')
     
     events_by_month = defaultdict(list)
     for event in events:

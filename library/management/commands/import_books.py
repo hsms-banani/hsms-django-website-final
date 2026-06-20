@@ -73,8 +73,8 @@ class Command(BaseCommand):
                     counter += 1
 
                 author = Author.objects.create(
-                    first_name=first_name,
-                    last_name=last_name,
+                    first_name=first_name_normalized,
+                    last_name=last_name_normalized,
                     slug=slug
                 )
                 self.stdout.write(self.style.SUCCESS(f'  Created author: {author.full_name}'))
@@ -101,7 +101,7 @@ class Command(BaseCommand):
                 counter += 1
 
             category = Category.objects.create(
-                name=category_name,
+                name=category_name_normalized,
                 slug=slug
             )
             self.stdout.write(self.style.SUCCESS(f'  Created category: {category.name}'))
@@ -126,7 +126,7 @@ class Command(BaseCommand):
                 counter += 1
 
             publisher = Publisher.objects.create(
-                name=publisher_name,
+                name=publisher_name_normalized,
                 slug=slug
             )
             self.stdout.write(self.style.SUCCESS(f'  Created publisher: {publisher.name}'))
