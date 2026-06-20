@@ -6,615 +6,418 @@
 
 {% block extra_css %}
 <style>
-    /* Liturgical Background - Spiritual atmosphere */
-    .liturgical-bg {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        position: relative;
+    /* Microsoft Fluent Design System 2 Concept */
+    :root {
+        --fluent-bg-light: #faf9f8;
+        --fluent-card-bg: rgba(255, 255, 255, 0.75);
+        --fluent-card-border: rgba(255, 255, 255, 0.8);
+        --fluent-acrylic-blur: blur(40px);
+        --fluent-shadow-rest: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+        --fluent-shadow-hover: 0 8px 16px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+        --fluent-radius-card: 12px;
+        --fluent-radius-badge: 4px;
+        --fluent-radius-pill: 9999px;
+        --fluent-font: "Segoe UI Variable", "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        
+        /* Microsoft Liturgical Accent Colors */
+        --accent-green: #107c41;
+        --accent-green-bg: #e6f2eb;
+        --accent-red: #d13438;
+        --accent-red-bg: #fdf3f4;
+        --accent-violet: #5c2d91;
+        --accent-violet-bg: #f3eef7;
+        --accent-rose: #c239b3;
+        --accent-rose-bg: #fcf1f9;
+        --accent-white: #505050;
+        --accent-white-bg: #f3f2f1;
+        --fluent-primary: #0f6cbd;
     }
 
-    .liturgical-bg::before {
+    body {
+        font-family: var(--fluent-font) !important;
+    }
+
+    /* Mica-like background */
+    .liturgical-bg {
+        background-color: var(--fluent-bg-light);
+        background-image: 
+            radial-gradient(at 10% 10%, rgba(200, 220, 240, 0.3) 0%, transparent 50%),
+            radial-gradient(at 90% 90%, rgba(230, 210, 240, 0.3) 0%, transparent 50%),
+            radial-gradient(at 50% 50%, rgba(240, 240, 240, 0.5) 0%, transparent 50%);
+        background-attachment: fixed;
+        min-height: 100vh;
+    }
+
+    /* Page Header Acrylic */
+    .page-header {
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: var(--fluent-acrylic-blur);
+        -webkit-backdrop-filter: var(--fluent-acrylic-blur);
+        border: 1px solid var(--fluent-card-border);
+        padding: 3.5rem 2rem;
+        border-radius: 16px;
+        box-shadow: var(--fluent-shadow-rest);
+        margin-bottom: 3.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .page-header::before {
         content: '';
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-image:
-            radial-gradient(circle at 20% 30%, rgba(102, 126, 234, 0.03) 0%, transparent 50%),
-            radial-gradient(circle at 80% 70%, rgba(118, 75, 162, 0.03) 0%, transparent 50%);
-        pointer-events: none;
+        top: 0; left: 0; right: 0; height: 4px;
+        background: linear-gradient(90deg, var(--fluent-primary), #479ef5);
     }
 
-    /* Authentic Liturgical Colors */
-    .border-green {
-        border-color: #2d7a3e;
-    }
-
-    .bg-green {
-        background: linear-gradient(135deg, #2d7a3e 0%, #1e5128 100%);
-    }
-
-    .text-green {
-        color: #2d7a3e;
-    }
-
-    .bg-green-light {
-        background-color: #e8f5e9;
-    }
-
-    .border-white {
-        border-color: #e8e8e8;
-    }
-
-    .bg-white-liturgical {
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    }
-
-    .text-white-liturgical {
-        color: #4a5568;
-    }
-
-    .bg-white-light {
-        background-color: #f1f5f9;
-    }
-
-    .border-red {
-        border-color: #c41e3a;
-    }
-
-    .bg-red {
-        background: linear-gradient(135deg, #c41e3a 0%, #8e1628 100%);
-    }
-
-    .text-red {
-        color: #c41e3a;
-    }
-
-    .bg-red-light {
-        background-color: #ffebee;
-    }
-
-    .border-violet {
-        border-color: #5c2e91;
-    }
-
-    .bg-violet {
-        background: linear-gradient(135deg, #5c2e91 0%, #3d1e61 100%);
-    }
-
-    .text-violet {
-        color: #5c2e91;
-    }
-
-    .bg-violet-light {
-        background-color: #f3e5f5;
-    }
-
-    .border-rose {
-        border-color: #d4669c;
-    }
-
-    .bg-rose {
-        background: linear-gradient(135deg, #d4669c 0%, #b84576 100%);
-    }
-
-    .text-rose {
-        color: #d4669c;
-    }
-
-    .bg-rose-light {
-        background-color: #fce4ec;
-    }
-
-    /* Enhanced Card Design */
-    .liturgical-card {
-        border-left-width: 6px;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        background: white;
-        border-radius: 12px;
-        overflow: visible;
-        /* Changed from hidden to visible for today badge */
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        position: relative;
-        /* Added for better positioning context */
-    }
-
-    .liturgical-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
-    }
-
-    /* Date Display - Calendar Style */
-    .date-block {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-radius: 10px;
-        padding: 1rem;
-        text-align: center;
-        border: 2px solid #dee2e6;
-        min-width: 80px;
-    }
-
-    .date-number {
-        font-size: 2.5rem;
-        font-weight: 800;
-        line-height: 1;
-        font-family: 'Playfair Display', serif;
-    }
-
-    .date-day {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-top: 0.25rem;
-        font-weight: 600;
-        color: #4a5568;
-    }
-
-    /* Season Badge */
-    .season-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-size: 0.875rem;
-        font-weight: 600;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Rank Display - FIXED: Changed from white to dark text on light background */
-    .rank-badge {
-        display: inline-block;
-        padding: 0.6rem 1.25rem;
-        border-radius: 25px;
-        font-size: 0.75rem;
+    .page-title {
+        font-family: var(--fluent-font);
         font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
-        border: 2px solid;
-    }
-
-    /* Rank color variants - dark text on light backgrounds */
-    .rank-badge.bg-green {
-        background: #e8f5e9;
-        color: #1b5e20;
-        border-color: #2d7a3e;
-    }
-
-    .rank-badge.bg-red {
-        background: #ffebee;
-        color: #b71c1c;
-        border-color: #c41e3a;
-    }
-
-    .rank-badge.bg-violet {
-        background: #f3e5f5;
-        color: #4a148c;
-        border-color: #5c2e91;
-    }
-
-    .rank-badge.bg-rose {
-        background: #fce4ec;
-        color: #880e4f;
-        border-color: #d4669c;
-    }
-
-    .rank-badge.bg-white-liturgical {
-        background: #f1f5f9;
-        color: #1e293b;
-        border-color: #94a3b8;
-    }
-
-    /* Holy Day Badge - FIXED: Changed to dark text on light background */
-    .holy-day-badge {
-        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-        color: #991b1b;
-        font-size: 0.7rem;
-        font-weight: 700;
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        box-shadow: 0 4px 6px rgba(220, 38, 38, 0.2);
-        border: 2px solid #dc2626;
-    }
-
-    /* Current Day Highlight - FIXED: Better positioning and dark text */
-    .current-day-glow {
-        box-shadow: 0 0 30px rgba(251, 191, 36, 0.6), 0 8px 16px rgba(0, 0, 0, 0.1);
-        border: 3px solid #fbbf24;
-        position: relative;
-        margin-top: 2rem;
-        /* Added space at top to prevent cutoff */
-    }
-
-    .current-day-glow::before {
-        content: '📅 Today\'s Celebration';
-        position: absolute;
-        top: -1.5rem;
-        /* Adjusted positioning */
-        left: 1rem;
-        /* Changed from center to left alignment */
-        transform: none;
-        /* Removed transform to prevent alignment issues */
-        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-        color: #92400e;
-        /* Dark brown text instead of white */
-        padding: 0.4rem 1.2rem;
-        border-radius: 12px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        box-shadow: 0 4px 8px rgba(251, 191, 36, 0.3);
-        border: 2px solid #fbbf24;
-        white-space: nowrap;
-        /* Prevent text wrapping */
-    }
-
-    /* Reading Labels */
-    .reading-label {
-        color: #6366f1;
-        font-weight: 600;
-        font-size: 0.875rem;
-    }
-
-    .reading-text {
-        color: #4b5563;
-        margin-left: 0.5rem;
+        color: #242424;
+        font-size: 3rem;
+        letter-spacing: -0.02em;
+        margin-bottom: 0.75rem;
     }
 
     /* Month Header */
     .month-header {
-        font-family: 'Playfair Display', serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        position: relative;
-        padding-bottom: 1rem;
+        font-family: var(--fluent-font);
+        font-weight: 600;
+        color: #242424;
+        font-size: 1.75rem;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .month-header::before {
+        content: '';
+        display: block;
+        width: 4px;
+        height: 1.5rem;
+        background: var(--fluent-primary);
+        border-radius: 4px;
     }
 
-    .month-header::after {
+    /* Fluent Card */
+    .liturgical-card {
+        background: var(--fluent-card-bg);
+        backdrop-filter: var(--fluent-acrylic-blur);
+        -webkit-backdrop-filter: var(--fluent-acrylic-blur);
+        border: 1px solid var(--fluent-card-border);
+        border-radius: var(--fluent-radius-card);
+        box-shadow: var(--fluent-shadow-rest);
+        transition: all 0.2s ease-in-out;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .liturgical-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--fluent-shadow-hover);
+        background: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Accent color bar (Fluent left-border style) */
+    .liturgical-card::after {
         content: '';
         position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 80px;
-        height: 4px;
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        border-radius: 2px;
+        top: 0; left: 0; bottom: 0;
+        width: 6px;
+        z-index: 10;
+        transition: width 0.2s ease;
+    }
+    
+    .liturgical-card:hover::after {
+        width: 8px;
     }
 
-    /* Page Header */
-    .page-header {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 249, 250, 0.9) 100%);
-        backdrop-filter: blur(10px);
-        padding: 3rem 2rem;
-        border-radius: 20px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-        margin-bottom: 3rem;
+    .card-color-green::after { background-color: var(--accent-green); }
+    .card-color-red::after { background-color: var(--accent-red); }
+    .card-color-violet::after { background-color: var(--accent-violet); }
+    .card-color-rose::after { background-color: var(--accent-rose); }
+    .card-color-white::after { background-color: #d1d1d1; }
+
+    /* Date Block Fluent */
+    .date-block {
+        text-align: center;
+        padding: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        border-right: 1px solid rgba(0,0,0,0.05);
     }
 
-    .page-title {
-        font-family: 'Playfair Display', serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        font-size: 3.5rem;
-        font-weight: 800;
-        margin-bottom: 1rem;
+    .date-number {
+        font-size: 2.75rem;
+        font-weight: 600;
+        line-height: 1;
+        color: #242424;
+        letter-spacing: -0.02em;
     }
 
-    /* Icon styling */
-    .icon-circle {
+    .date-day {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-top: 0.25rem;
+        font-weight: 600;
+        color: #605e5c;
+    }
+    
+    .date-month {
+        font-size: 0.75rem;
+        color: #8a8886;
+        font-weight: 400;
+        margin-top: 0.1rem;
+    }
+
+    /* Event Title */
+    .event-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #242424;
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+    }
+
+    /* Badges Fluent Style */
+    .fluent-badge {
         display: inline-flex;
         align-items: center;
-        justify-content: center;
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        background: rgba(99, 102, 241, 0.1);
+        gap: 0.375rem;
+        padding: 0.25rem 0.6rem;
+        border-radius: var(--fluent-radius-badge);
+        font-size: 0.75rem;
+        font-weight: 600;
+        border: 1px solid transparent;
+        white-space: nowrap;
     }
 
-    /* Saints section */
-    .saints-section {
-        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-        padding: 0.75rem 1rem;
-        border-radius: 8px;
+    /* Status Colors */
+    .badge-green { background: var(--accent-green-bg); color: var(--accent-green); }
+    .badge-red { background: var(--accent-red-bg); color: var(--accent-red); }
+    .badge-violet { background: var(--accent-violet-bg); color: var(--accent-violet); }
+    .badge-rose { background: var(--accent-rose-bg); color: var(--accent-rose); }
+    .badge-white { background: var(--accent-white-bg); color: var(--accent-white); }
+    
+    .badge-neutral { background: #f3f2f1; color: #3b3a39; border: 1px solid #e1dfdd; }
+    .badge-alert { background: #fff4ce; color: #9d5d00; border-radius: var(--fluent-radius-pill); }
+
+    /* Readings styling */
+    .reading-grid {
+        display: grid;
+        grid-template-columns: minmax(auto, 110px) 1fr;
+        gap: 0.25rem 1rem;
         margin-top: 1rem;
-        border-left: 3px solid #6366f1;
+        font-size: 0.85rem;
+    }
+    
+    .reading-label {
+        color: #605e5c;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .reading-label i {
+        color: var(--fluent-primary);
+        font-size: 0.9rem;
+        width: 14px;
+        text-align: center;
+    }
+    
+    .reading-text {
+        color: #242424;
     }
 
-    /* ========== RESPONSIVE DESIGN ========== */
+    /* Saints Section */
+    .saints-section {
+        background: #fdfdfd;
+        border: 1px solid #f3f2f1;
+        padding: 0.75rem 1rem;
+        border-radius: var(--fluent-radius-badge);
+        margin-top: 1.25rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
 
-    /* Mobile devices (< 640px) */
-    @media (max-width: 639px) {
+    /* Today Highlight Fluent */
+    .current-day-glow {
+        box-shadow: 0 0 0 1.5px var(--fluent-primary), var(--fluent-shadow-rest);
+        background: #ffffff;
+    }
+
+    .today-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: var(--fluent-primary);
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: var(--fluent-radius-pill);
+        font-size: 0.7rem;
+        font-weight: 600;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        box-shadow: 0 2px 4px rgba(15, 108, 189, 0.3);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
         .page-header {
-            padding: 2rem 1rem;
-            margin-bottom: 2rem;
+            padding: 2rem 1.5rem;
+            border-radius: 12px;
         }
-
         .page-title {
-            font-size: 1.75rem;
-            line-height: 1.2;
+            font-size: 2rem;
         }
-
-        .liturgical-card {
-            margin-top: 2.5rem;
-            /* Extra space for today badge */
-            margin-bottom: 1.5rem;
-        }
-
-        .current-day-glow {
-            margin-top: 3rem;
-            /* Extra space on mobile */
-        }
-
-        .current-day-glow::before {
-            font-size: 0.65rem;
-            padding: 0.3rem 0.8rem;
-            top: -1.75rem;
-            left: 0.5rem;
-        }
-
         .date-block {
-            min-width: 70px;
-            padding: 0.75rem;
-        }
-
-        .date-number {
-            font-size: 1.75rem;
-        }
-
-        .date-day {
-            font-size: 0.65rem;
-        }
-
-        .month-header {
-            font-size: 1.5rem;
+            border-right: none;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            flex-direction: row;
+            justify-content: flex-start;
+            gap: 1rem;
+            padding: 0.5rem 0 1rem 0;
             margin-bottom: 1rem;
         }
-
-        .season-badge {
-            font-size: 0.75rem;
-            padding: 0.4rem 0.75rem;
-            gap: 0.3rem;
+        .date-number { font-size: 2rem; }
+        .date-day { margin-top: 0; }
+        .date-month { margin-top: 0; font-size: 0.8rem; }
+        .today-badge {
+            top: 0.75rem;
+            right: 0.75rem;
         }
-
-        .rank-badge {
-            font-size: 0.65rem;
-            padding: 0.5rem 1rem;
+        .reading-grid {
+            grid-template-columns: 1fr;
+            gap: 0.25rem;
         }
-
-        .holy-day-badge {
-            font-size: 0.65rem;
-            padding: 0.4rem 0.75rem;
-        }
-
-        .reading-label {
-            font-size: 0.75rem;
-            min-width: 100px;
-        }
-
         .reading-text {
-            font-size: 0.75rem;
-        }
-
-        /* Stack layout on mobile */
-        .liturgical-card .grid {
-            gap: 1rem;
-        }
-    }
-
-    /* Tablets (640px - 1023px) */
-    @media (min-width: 640px) and (max-width: 1023px) {
-        .page-title {
-            font-size: 2.5rem;
-        }
-
-        .liturgical-card {
-            margin-top: 2rem;
-        }
-
-        .current-day-glow::before {
-            font-size: 0.7rem;
-            padding: 0.35rem 1rem;
-        }
-
-        .date-number {
-            font-size: 2rem;
-        }
-
-        .month-header {
-            font-size: 2rem;
-        }
-
-        .season-badge {
-            font-size: 0.8rem;
-        }
-
-        .rank-badge {
-            font-size: 0.7rem;
-        }
-    }
-
-    /* Laptops and larger (> 1024px) */
-    @media (min-width: 1024px) {
-        .container {
-            max-width: 1200px;
-        }
-
-        .liturgical-card:hover {
-            transform: translateY(-10px);
-        }
-
-        .current-day-glow::before {
-            font-size: 0.8rem;
-            padding: 0.5rem 1.5rem;
-        }
-    }
-
-    /* Extra large screens (> 1440px) */
-    @media (min-width: 1440px) {
-        .container {
-            max-width: 1400px;
-        }
-
-        .page-title {
-            font-size: 4rem;
-        }
-
-        .month-header {
-            font-size: 3rem;
-        }
-    }
-
-    /* Print styles */
-    @media print {
-        .liturgical-card:hover {
-            transform: none;
-        }
-
-        .current-day-glow {
-            border: 2px solid #fbbf24;
-            box-shadow: none;
-        }
-
-        .page-header {
-            box-shadow: none;
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Gemini CLI test comment: If you can see this in your browser's 'View Source', the file is being updated correctly. -->
-<div class="liturgical-bg min-h-screen py-8">
-    <div class="container mx-auto px-4">
+<div class="liturgical-bg py-10">
+    <div class="container mx-auto px-4 max-w-6xl">
         <!-- Page Header -->
         <div class="page-header animate-fade-in-up">
-            <div class="text-center">
-                <div class="mb-4">
-                    <i class="fas fa-cross text-5xl" style="color: #667eea;"></i>
+            <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
+                <div class="flex-shrink-0 bg-blue-50 text-blue-600 p-4 rounded-xl">
+                    <i class="fas fa-cross text-4xl"></i>
                 </div>
-                <h1 class="page-title">{% trans "Liturgical Calendar" %}</h1>
-                <p class="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                    {% blocktrans %}Journey through the sacred seasons of the Church's year, celebrating the mysteries of our faith and honoring the saints who have gone before us.{% endblocktrans %}
-                </p>
+                <div class="text-center md:text-left">
+                    <h1 class="page-title">{% trans "Liturgical Calendar" %}</h1>
+                    <p class="text-lg text-gray-600 max-w-3xl leading-relaxed">
+                        {% blocktrans %}Journey through the sacred seasons of the Church's year, celebrating the mysteries of our faith and honoring the saints who have gone before us.{% endblocktrans %}
+                    </p>
+                </div>
             </div>
         </div>
 
         <!-- Calendar Content -->
         {% for month, events in events_by_month.items %}
-        <div class="mb-16 animate-fade-in-up">
-            <h2 class="month-header text-3xl md:text-4xl font-bold mb-10">{{ month }}</h2>
+        <div class="mb-12 animate-fade-in-up">
+            <h2 class="month-header">{{ month }}</h2>
 
-            <div class="space-y-6">
+            <div class="space-y-4">
                 {% for event in events %}
                 {% now "Y-m-d" as today_date %}
                 {% with event_date=event.date|date:"Y-m-d" %}
-                <div
-                    class="liturgical-card {% if event.color == 'white' %}border-gray-200{% else %}border-{{ event.color }}{% endif %}{% if event_date == today_date %} current-day-glow{% endif %}">
+                <div class="liturgical-card card-color-{{ event.color }} {% if event_date == today_date %}current-day-glow{% endif %}">
+                    
+                    {% if event_date == today_date %}
+                    <div class="today-badge">
+                        <i class="fas fa-calendar-day"></i> Today
+                    </div>
+                    {% endif %}
 
-                    <div class="p-6">
-                        <div class="grid grid-cols-12 gap-6 items-start">
+                    <div class="p-5 pl-8">
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-0 md:gap-6 items-stretch">
                             <!-- Date Block -->
-                            <div class="col-span-12 md:col-span-2">
+                            <div class="md:col-span-2 flex flex-col justify-center">
                                 <div class="date-block">
-                                    <div class="date-number {% if event.color == 'white' %}text-white-liturgical{% else %}text-{{ event.color }}{% endif %}">
-                                        {{ event.date|date:"d" }}
-                                    </div>
-                                    <div class="date-day text-gray-600">
-                                        {{ event.date|date:"l" }}
-                                    </div>
-                                    <div class="mt-2 text-xs text-gray-500 font-semibold">
-                                        {{ event.date|date:"F" }}
+                                    <div class="flex md:flex-col items-baseline md:items-center gap-2 md:gap-0">
+                                        <span class="date-number text-gray-800">{{ event.date|date:"d" }}</span>
+                                        <div class="flex flex-col items-start md:items-center">
+                                            <span class="date-day">{{ event.date|date:"l" }}</span>
+                                            <span class="date-month">{{ event.date|date:"F" }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Event Details -->
-                            <div class="col-span-12 md:col-span-7">
-                                <div class="mb-3">
-                                    <h3 class="text-2xl font-bold text-gray-800 font-serif mb-2">
+                            <div class="md:col-span-7 py-2">
+                                <div class="mb-4">
+                                    <h3 class="event-title">
                                         {{ event.name }}
                                     </h3>
 
-                                    <div class="flex flex-wrap gap-2 mb-3">
-                                        <span class="season-badge {% if event.color == 'white' %}bg-white-light text-white-liturgical{% else %}bg-{{ event.color }}-light text-{{ event.color }}{% endif %}">
-                                            <i class="fas fa-calendar-alt"></i>
+                                    <div class="flex flex-wrap gap-2 mt-2">
+                                        <span class="fluent-badge badge-neutral">
+                                            <i class="fas fa-calendar-alt text-gray-500"></i>
                                             {{ event.get_season_display }}
                                         </span>
-                                        <span class="season-badge bg-gray-100 text-gray-700">
-                                            <i class="fas fa-redo-alt"></i>
+                                        <span class="fluent-badge badge-neutral">
+                                            <i class="fas fa-redo-alt text-gray-500"></i>
                                             Cycle {{ event.get_cycle_display }}
                                         </span>
                                     </div>
                                 </div>
 
                                 <!-- Readings -->
-                                <div class="space-y-2 text-sm">
-                                    <div class="flex items-start">
-                                        <span class="reading-label min-w-[140px]">
-                                            <i class="fas fa-book-open mr-2"></i>1st Reading:
-                                        </span>
-                                        <span class="reading-text">{{ event.first_reading }}</span>
-                                    </div>
-                                    <div class="flex items-start">
-                                        <span class="reading-label min-w-[140px]">
-                                            <i class="fas fa-music mr-2"></i>Psalm:
-                                        </span>
-                                        <span class="reading-text">{{ event.responsorial_psalm }}</span>
-                                    </div>
+                                <div class="reading-grid">
+                                    <div class="reading-label"><i class="fas fa-book-open"></i>1st Reading:</div>
+                                    <div class="reading-text">{{ event.first_reading }}</div>
+                                    
+                                    <div class="reading-label"><i class="fas fa-music"></i>Psalm:</div>
+                                    <div class="reading-text">{{ event.responsorial_psalm }}</div>
+                                    
                                     {% if event.second_reading %}
-                                    <div class="flex items-start">
-                                        <span class="reading-label min-w-[140px]">
-                                            <i class="fas fa-book-open mr-2"></i>2nd Reading:
-                                        </span>
-                                        <span class="reading-text">{{ event.second_reading }}</span>
-                                    </div>
+                                    <div class="reading-label"><i class="fas fa-book-open"></i>2nd Reading:</div>
+                                    <div class="reading-text">{{ event.second_reading }}</div>
                                     {% endif %}
-                                    <div class="flex items-start">
-                                        <span class="reading-label min-w-[140px]">
-                                            <i class="fas fa-bible mr-2"></i>Gospel:
-                                        </span>
-                                        <span class="reading-text font-semibold">{{ event.gospel }}</span>
-                                    </div>
+                                    
+                                    <div class="reading-label"><i class="fas fa-bible"></i>Gospel:</div>
+                                    <div class="reading-text font-semibold">{{ event.gospel }}</div>
                                 </div>
 
                                 <!-- Saints -->
                                 {% if event.saints.all %}
                                 <div class="saints-section">
-                                    <div class="flex items-start gap-2">
-                                        <i class="fas fa-user-circle text-indigo-600 mt-1"></i>
-                                        <div>
-                                            <strong class="text-gray-700 text-sm">Commemorating:</strong>
-                                            <span class="text-gray-600 text-sm ml-2">
-                                                {% for saint in event.saints.all %}
-                                                {{ saint.name }}{% if not forloop.last %}, {% endif %}
-                                                {% endfor %}
-                                            </span>
-                                        </div>
+                                    <i class="fas fa-user-circle text-gray-400 mt-0.5 text-lg"></i>
+                                    <div>
+                                        <strong class="text-gray-700 text-xs uppercase tracking-wider block mb-1">Commemorating</strong>
+                                        <span class="text-gray-800 text-sm font-medium">
+                                            {% for saint in event.saints.all %}
+                                            {{ saint.name }}{% if not forloop.last %}, {% endif %}
+                                            {% endfor %}
+                                        </span>
                                     </div>
                                 </div>
                                 {% endif %}
                             </div>
 
                             <!-- Rank & Status -->
-                            <div class="col-span-12 md:col-span-3 flex flex-col gap-3 md:items-end">
-                                <span class="rank-badge {% if event.color == 'white' %}bg-white-liturgical{% else %}bg-{{ event.color }}{% endif %}">
-                                    <i class="fas fa-star mr-1"></i>
+                            <div class="md:col-span-3 py-2 flex flex-row md:flex-col gap-2 justify-start md:justify-center items-start md:items-end border-t md:border-t-0 md:border-l border-gray-100 pt-4 md:pt-2 md:pl-4 mt-4 md:mt-0">
+                                <span class="fluent-badge badge-{{ event.color }}">
+                                    <i class="fas fa-star text-opacity-70"></i>
                                     {{ event.get_rank_display }}
                                 </span>
 
                                 {% if event.is_holy_day_of_obligation %}
-                                <span class="holy-day-badge">
+                                <span class="fluent-badge badge-alert">
                                     <i class="fas fa-exclamation-circle"></i>
                                     {% trans "Holy Day" %}
                                 </span>
@@ -628,14 +431,14 @@
             </div>
         </div>
         {% empty %}
-        <div class="text-center py-20 animate-fade-in">
-            <div class="inline-block p-8 bg-white rounded-full shadow-lg mb-6">
-                <i class="fas fa-calendar-times text-6xl text-gray-300"></i>
+        <div class="text-center py-24 animate-fade-in">
+            <div class="inline-flex items-center justify-center w-24 h-24 bg-white rounded-full shadow-sm mb-6 border border-gray-100">
+                <i class="fas fa-calendar-times text-4xl text-gray-300"></i>
             </div>
-            <p class="text-2xl text-gray-500 font-serif">
-                {% trans "No liturgical events found for this period." %}
-            </p>
-            <p class="text-gray-400 mt-2">
+            <h3 class="text-xl font-semibold text-gray-700 font-[Segoe UI] mb-2">
+                {% trans "No liturgical events found" %}
+            </h3>
+            <p class="text-gray-500">
                 {% trans "Please check back later or contact the administrator." %}
             </p>
         </div>
