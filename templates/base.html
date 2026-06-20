@@ -129,53 +129,43 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important; 
         }
         
-        /* Navigation styles - Fixed and consistent */
+        /* Navigation styles - Premium Pill Hover */
         .nav-link { 
             position: relative; 
-            transition: all 0.3s ease !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
             display: block;
-            padding: 0.75rem 1rem;
-            color: white !important;
+            padding: 0.5rem 1.25rem;
+            margin: 0 0.25rem;
+            color: rgba(255, 255, 255, 0.9) !important;
             white-space: nowrap;
-        }
-        
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -5px;
-            left: 50%;
-            background: linear-gradient(90deg, #667eea, #764ba2) !important;
-            transition: all 0.3s ease;
-            transform: translateX(-50%);
+            border-radius: 9999px;
+            font-weight: 500;
         }
         
         .nav-link:hover,
-        .nav-link:focus {
-            background-color: rgba(55, 65, 81, 0.8) !important;
+        .nav-link:focus,
+        .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.15) !important;
             color: white !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         
-        .nav-link:hover::after,
-        .nav-link.active::after {
-            width: 100%;
-        }
-        
-        /* Dropdown menu styles - Fixed positioning and styling */
+        /* Dropdown menu styles - Premium Acrylic Blur */
         .dropdown-menu {
-            transform: translateY(-10px) scale(0.95);
+            transform: translateY(10px) scale(0.98);
             opacity: 0;
             visibility: hidden;
-            transition: all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             top: 100%;
-            margin-top: 0;
+            margin-top: 0.5rem;
             z-index: 1000;
-            background: white !important;
-            color: #374151 !important;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
-            border-radius: 0.5rem !important;
-            padding: 0.5rem 0 !important;
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            color: #1e293b !important;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.05), inset 0 0 0 1px rgba(255,255,255,0.5) !important;
+            border-radius: 1rem !important;
+            padding: 0.5rem !important;
             min-width: 16rem;
         }
 
@@ -188,16 +178,24 @@
 
         .dropdown-menu a {
             display: block !important;
-            padding: 0.5rem 1rem !important;
-            color: #374151 !important;
+            padding: 0.6rem 1rem !important;
+            margin-bottom: 2px;
+            color: #475569 !important;
             text-decoration: none !important;
+            border-radius: 0.5rem;
+            font-weight: 500;
             transition: all 0.2s ease !important;
+        }
+
+        .dropdown-menu a:last-child {
+            margin-bottom: 0;
         }
 
         .dropdown-menu a:hover,
         .dropdown-menu a:focus {
-            background-color: #f3f4f6 !important;
-            color: #1f2937 !important;
+            background-color: #eff6ff !important;
+            color: #1d4ed8 !important;
+            transform: translateX(4px);
         }
 
         /* Add bridge to prevent hover break */
@@ -216,22 +214,23 @@
         .mobile-menu-container {
             max-height: 70vh;
             overflow-y: auto;
-            background-color: #374151 !important;
+            background: linear-gradient(135deg, #1e3a8a 0%, #172554 100%) !important;
         }
 
-        /* Header styles - Force consistency */
+        /* Header styles - Premium Refined */
         .top-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-            color: white !important;
+            background-color: #0f172a !important;
+            color: #cbd5e1 !important;
         }
 
         .main-header {
-            background-color: white !important;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+            background-color: rgba(255, 255, 255, 0.98) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05) !important;
         }
 
         .main-nav {
-            background-color: #374151 !important;
+            background: linear-gradient(135deg, #1e3a8a 0%, #172554 100%) !important;
             color: white !important;
         }
 
@@ -490,11 +489,12 @@
                 <!-- Search Bar -->
                 <div class="hidden lg:block">
                     <div class="relative" x-data="{ showResults: false }">
+                        <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none z-10"></i>
                         <input 
                             name="q"
                             type="text" 
                             placeholder="Search..." 
-                            class="w-80 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            class="w-80 pl-10 pr-4 py-2 bg-slate-100 border border-transparent rounded-full focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300"
                             hx-get="{% url 'search' %}"
                             hx-trigger="keyup changed delay:300ms"
                             hx-target="#search-results"
@@ -502,9 +502,11 @@
                             @blur="setTimeout(() => showResults = false, 200)"
                         >
                         <div id="search-results" 
-                             class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-96 overflow-y-auto z-50"
+                             class="absolute top-full left-0 right-0 bg-white/95 backdrop-blur-xl border border-gray-100 rounded-xl shadow-2xl mt-2 max-h-96 overflow-y-auto z-50 overflow-hidden"
                              x-show="showResults"
-                             x-transition
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 transform -translate-y-2"
+                             x-transition:enter-end="opacity-100 transform translate-y-0"
                              style="display: none;">
                         </div>
                     </div>
