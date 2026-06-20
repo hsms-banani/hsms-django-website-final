@@ -3,7 +3,7 @@
     {% for publication in page_obj %}
     <div class="bg-white rounded-lg shadow-md overflow-hidden hover-lift">
         {% if publication.cover_image %}
-        <img src="{{ publication.cover_image.url }}" alt="{{ publication.title }}" class="w-full h-48 object-cover">
+        <img loading="lazy" src="{{ publication.cover_image.url }}" alt="{{ publication.title }}" class="w-full h-48 object-cover">
         {% else %}
         <div class="w-full h-48 bg-gradient-primary flex items-center justify-center">
             <i class="fas fa-book text-white text-4xl"></i>

@@ -290,7 +290,7 @@
                     <!-- Image Section -->
                     <div class="faculty-image-wrapper relative h-80">
                         {% if faculty.photo %}
-                        <img src="{{ faculty.photo.url }}" 
+                        <img loading="lazy" src="{{ faculty.photo.url }}" 
                              alt="{{ faculty.name }}" 
                              class="w-full h-full object-cover">
                         {% else %}

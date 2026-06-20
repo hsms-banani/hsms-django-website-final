@@ -3,6 +3,7 @@ from django.db import models
 from django.utils.text import slugify
 from django.core.validators import URLValidator
 from tinymce.models import HTMLField
+from utils.image_optimizer import optimize_image
 
 class Announcement(models.Model):
     """Model for scrolling announcements"""
@@ -35,6 +36,13 @@ class Announcement(models.Model):
     def __str__(self):
         return self.title
 
+    def save(self, *args, **kwargs):
+        if self.image_file and not getattr(self, '_image_optimized', False):
+            optimized = optimize_image(self.image_file, max_width=1920, max_height=1080)
+            if optimized:
+                self.image_file = optimized
+            self._image_optimized = True
+        super().save(*args, **kwargs)
 
 class PrayerService(models.Model):
     """Model for prayer services schedule"""
@@ -153,6 +161,11 @@ class Homily(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
+        if self.thumbnail and not getattr(self, '_thumbnail_optimized', False):
+            optimized = optimize_image(self.thumbnail, max_width=800, max_height=800)
+            if optimized:
+                self.thumbnail = optimized
+            self._thumbnail_optimized = True
         super().save(*args, **kwargs)
     
     def __str__(self):
@@ -254,6 +267,13 @@ class DonationInfo(models.Model):
     def __str__(self):
         return f"{self.get_payment_method_display()} - {self.account_number}"
 
+    def save(self, *args, **kwargs):
+        if self.qr_code and not getattr(self, '_qr_optimized', False):
+            optimized = optimize_image(self.qr_code, max_width=800, max_height=800)
+            if optimized:
+                self.qr_code = optimized
+            self._qr_optimized = True
+        super().save(*args, **kwargs)
 
 class Saint(models.Model):
     name = models.CharField(max_length=200)

@@ -70,7 +70,7 @@
                     <div class="gallery-card bg-white rounded-xl shadow-lg overflow-hidden hover-lift">
                         <div class="card-image relative h-64">
                             {% if gallery.cover_image %}
-                                <img src="{{ gallery.cover_image.url }}" alt="{{ gallery.title }}" class="w-full h-full object-cover">
+                                <img loading="lazy" src="{{ gallery.cover_image.url }}" alt="{{ gallery.title }}" class="w-full h-full object-cover">
                             {% else %}
                                 <div class="w-full h-full bg-gradient-secondary flex items-center justify-center">
                                     {% if gallery.gallery_type == 'video' %}
@@ -207,7 +207,7 @@
                 <div class="md:flex">
                     <div class="md:w-1/2">
                         {% if featured_gallery.cover_image %}
-                            <img src="{{ featured_gallery.cover_image.url }}" alt="{{ featured_gallery.title }}" 
+                            <img loading="lazy" src="{{ featured_gallery.cover_image.url }}" alt="{{ featured_gallery.title }}" 
                                  class="w-full h-64 md:h-full object-cover">
                         {% else %}
                             <div class="w-full h-64 md:h-full bg-gradient-tertiary flex items-center justify-center">

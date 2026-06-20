@@ -269,7 +269,7 @@
                 <div class="bg-white rounded-lg shadow-md overflow-hidden hover-lift group">
                     <div class="relative h-40 overflow-hidden">
                         {% if related.thumbnail %}
-                        <img src="{{ related.thumbnail.url }}" 
+                        <img loading="lazy" src="{{ related.thumbnail.url }}" 
                              alt="{{ related.title }}" 
                              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
                         {% else %}

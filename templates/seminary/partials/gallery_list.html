@@ -3,7 +3,7 @@
     {% for gallery in galleries %}
     <div class="bg-white rounded-lg shadow-md overflow-hidden hover-lift">
         {% if gallery.cover_image %}
-        <img src="{{ gallery.cover_image.url }}" alt="{{ gallery.title }}" class="w-full h-48 object-cover">
+        <img loading="lazy" src="{{ gallery.cover_image.url }}" alt="{{ gallery.title }}" class="w-full h-48 object-cover">
         {% else %}
         <div class="w-full h-48 bg-gradient-primary flex items-center justify-center">
             {% if gallery.gallery_type == 'video' %}

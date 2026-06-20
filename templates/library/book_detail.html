@@ -28,7 +28,7 @@
                 <div class="flex-shrink-0">
                     <div class="w-48 h-64 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center shadow-md">
                         {% if book.cover_image %}
-                            <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" 
+                            <img loading="lazy" src="{{ book.cover_image.url }}" alt="{{ book.title }}" 
                                  class="w-full h-full object-cover rounded-lg">
                         {% else %}
                             <div class="text-center p-6">
@@ -123,7 +123,7 @@
                         <!-- Book cover or placeholder -->
                         <div class="h-32 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative">
                             {% if related_book.cover_image %}
-                                <img src="{{ related_book.cover_image.url }}" 
+                                <img loading="lazy" src="{{ related_book.cover_image.url }}" 
                                      alt="{{ related_book.title }}" 
                                      class="h-full w-auto object-cover">
                             {% else %}

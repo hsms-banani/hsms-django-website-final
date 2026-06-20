@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.utils.text import slugify
 from django.core.validators import FileExtensionValidator
 from tinymce.models import HTMLField
-
+from utils.image_optimizer import optimize_image
 class SiteSettings(models.Model):
     site_name = models.CharField(max_length=200, default="Holy Spirit Major Seminary")
     site_motto = models.CharField(max_length=200, default="Dedicated for Service")
@@ -28,6 +28,16 @@ class SiteSettings(models.Model):
     def __str__(self):
         return self.site_name
 
+    def save(self, *args, **kwargs):
+        if self.site_logo and not getattr(self, '_site_logo_opt', False):
+            opt = optimize_image(self.site_logo, max_width=800, max_height=800)
+            if opt: self.site_logo = opt
+            self._site_logo_opt = True
+        if self.hsit_logo and not getattr(self, '_hsit_logo_opt', False):
+            opt = optimize_image(self.hsit_logo, max_width=800, max_height=800)
+            if opt: self.hsit_logo = opt
+            self._hsit_logo_opt = True
+        super().save(*args, **kwargs)
 
 class Banner(models.Model):
     PAGE_CHOICES = [
@@ -62,6 +72,13 @@ class Banner(models.Model):
 
     def __str__(self):
         return self.get_page_display()
+
+    def save(self, *args, **kwargs):
+        if self.image and not getattr(self, '_img_opt', False):
+            opt = optimize_image(self.image, max_width=1920, max_height=1080)
+            if opt: self.image = opt
+            self._img_opt = True
+        super().save(*args, **kwargs)
 
 
 
@@ -103,6 +120,13 @@ class Faculty(models.Model):
     def get_absolute_url(self):
         return reverse('faculty_detail', kwargs={'pk': self.pk})
     
+    def save(self, *args, **kwargs):
+        if self.photo and not getattr(self, '_photo_opt', False):
+            opt = optimize_image(self.photo, max_width=800, max_height=800)
+            if opt: self.photo = opt
+            self._photo_opt = True
+        super().save(*args, **kwargs)
+
 
 class SeminaryAdministration(models.Model):
     """Seminary Administration members model"""
@@ -158,6 +182,13 @@ class SeminaryAdministration(models.Model):
     def get_absolute_url(self):
         return reverse('administration_detail', kwargs={'pk': self.pk})
     
+    def save(self, *args, **kwargs):
+        if self.photo and not getattr(self, '_photo_opt', False):
+            opt = optimize_image(self.photo, max_width=800, max_height=800)
+            if opt: self.photo = opt
+            self._photo_opt = True
+        super().save(*args, **kwargs)
+
     @property
     def display_name(self):
         """Get formatted name for display"""
@@ -197,20 +228,10 @@ class Page(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
-        super().save(*args, **kwargs)
-    
-    class Meta:
-        ordering = ['order', 'title']
-    
-    def __str__(self):
-        return self.title
-    
-    def get_absolute_url(self):
-        return reverse('page_detail', kwargs={'slug': self.slug})
-    
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.title)
+        if self.featured_image and not getattr(self, '_feat_img_opt', False):
+            opt = optimize_image(self.featured_image, max_width=1920, max_height=1080)
+            if opt: self.featured_image = opt
+            self._feat_img_opt = True
         super().save(*args, **kwargs)
 
 class News(models.Model):
@@ -242,6 +263,10 @@ class News(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
+        if self.featured_image and not getattr(self, '_feat_img_opt', False):
+            opt = optimize_image(self.featured_image, max_width=1920, max_height=1080)
+            if opt: self.featured_image = opt
+            self._feat_img_opt = True
         super().save(*args, **kwargs)
 
 class Event(models.Model):
@@ -293,6 +318,10 @@ class Event(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
+        if self.featured_image and not getattr(self, '_feat_img_opt', False):
+            opt = optimize_image(self.featured_image, max_width=1920, max_height=1080)
+            if opt: self.featured_image = opt
+            self._feat_img_opt = True
         super().save(*args, **kwargs)
 
 class Publication(models.Model):
@@ -337,6 +366,10 @@ class Publication(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
+        if self.cover_image and not getattr(self, '_cov_img_opt', False):
+            opt = optimize_image(self.cover_image, max_width=800, max_height=800)
+            if opt: self.cover_image = opt
+            self._cov_img_opt = True
         super().save(*args, **kwargs)
 
 class Gallery(models.Model):
@@ -366,6 +399,10 @@ class Gallery(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
+        if self.cover_image and not getattr(self, '_cov_img_opt', False):
+            opt = optimize_image(self.cover_image, max_width=800, max_height=800)
+            if opt: self.cover_image = opt
+            self._cov_img_opt = True
         super().save(*args, **kwargs)
 
 class GalleryItem(models.Model):
@@ -395,6 +432,13 @@ class GalleryItem(models.Model):
     
     def __str__(self):
         return f"{self.gallery.title} - {self.title or 'Item'}"
+
+    def save(self, *args, **kwargs):
+        if self.image and not getattr(self, '_img_opt', False):
+            opt = optimize_image(self.image, max_width=1920, max_height=1080)
+            if opt: self.image = opt
+            self._img_opt = True
+        super().save(*args, **kwargs)
 
 
 
@@ -426,6 +470,17 @@ class Slider(models.Model):
     
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        if self.image and not getattr(self, '_img_opt', False):
+            opt = optimize_image(self.image, max_width=1920, max_height=1080)
+            if opt: self.image = opt
+            self._img_opt = True
+        if self.mobile_image and not getattr(self, '_mob_img_opt', False):
+            opt = optimize_image(self.mobile_image, max_width=800, max_height=1000)
+            if opt: self.mobile_image = opt
+            self._mob_img_opt = True
+        super().save(*args, **kwargs)
 
 class CommitteeMember(models.Model):
     name = models.CharField(max_length=200)
@@ -561,6 +616,17 @@ class LeadershipMessage(models.Model):
             self.title = "Welcome from the Rector"
         elif self.message_type == 'spiritual_director' and not self.title:
             self.title = "Spiritual Director's Message"
+            
+        if self.leader_photo and not getattr(self, '_photo_opt', False):
+            opt = optimize_image(self.leader_photo, max_width=800, max_height=800)
+            if opt: self.leader_photo = opt
+            self._photo_opt = True
+            
+        if self.background_image and not getattr(self, '_bg_img_opt', False):
+            opt = optimize_image(self.background_image, max_width=1920, max_height=1080)
+            if opt: self.background_image = opt
+            self._bg_img_opt = True
+            
         super().save(*args, **kwargs)
 
 class CalendarEvent(models.Model):

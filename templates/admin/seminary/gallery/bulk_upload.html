@@ -402,7 +402,7 @@
                 
                 previewItem.innerHTML = `
                     <button type="button" class="btn-remove" onclick="removeFile(${index})">×</button>
-                    <img src="${e.target.result}" class="preview-image" alt="${file.name}">
+                    <img loading="lazy" src="${e.target.result}" class="preview-image" alt="${file.name}">
                     <div class="preview-info">
                         <div class="preview-filename" title="${file.name}">${file.name}</div>
                         <div class="preview-size">${formatFileSize(file.size)}</div>

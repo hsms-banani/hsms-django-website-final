@@ -3,7 +3,7 @@
     {% for news in page_obj %}
     <article class="bg-white rounded-lg shadow-md overflow-hidden hover-lift">
         {% if news.featured_image %}
-        <img src="{{ news.featured_image.url }}" alt="{{ news.title }}" class="w-full h-48 object-cover">
+        <img loading="lazy" src="{{ news.featured_image.url }}" alt="{{ news.title }}" class="w-full h-48 object-cover">
         {% else %}
         <div class="w-full h-48 bg-gradient-primary flex items-center justify-center">
             <i class="fas fa-newspaper text-white text-4xl"></i>

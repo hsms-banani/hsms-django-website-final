@@ -239,7 +239,7 @@
                     <!-- Rector Photo -->
                     {% if rector_leadership.leader_photo %}
                     <div class="md:w-1/4 text-center">
-                        <img src="{{ rector_leadership.leader_photo.url }}" alt="{{ rector_leadership.leader_name }}" 
+                        <img loading="lazy" src="{{ rector_leadership.leader_photo.url }}" alt="{{ rector_leadership.leader_name }}" 
                              class="rounded-lg shadow-lg w-full h-auto object-cover mb-4">
                         <h4 class="text-lg font-bold text-gray-800">{{ rector_leadership.leader_name }}</h4>
                         <p class="text-gray-600">{{ rector_leadership.leader_title }}</p>

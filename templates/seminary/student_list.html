@@ -104,7 +104,7 @@
                             <template x-for="student in students" :key="student.id">
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <img x-show="student.photo_url" :src="student.photo_url" alt="Student Photo" class="h-10 w-10 rounded-full object-cover">
+                                        <img loading="lazy" x-show="student.photo_url" :src="student.photo_url" alt="Student Photo" class="h-10 w-10 rounded-full object-cover">
                                         <div x-show="!student.photo_url" class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
                                             <i class="fas fa-user"></i>
                                         </div>

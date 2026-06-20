@@ -61,7 +61,7 @@
             <a href="{{ gallery.get_absolute_url }}" class="block bg-white rounded-lg shadow-md overflow-hidden hover-lift group">
                 {% if gallery.cover_image %}
                 <div class="relative h-48">
-                    <img src="{{ gallery.cover_image.url }}" alt="{{ gallery.title }}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
+                    <img loading="lazy" src="{{ gallery.cover_image.url }}" alt="{{ gallery.title }}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
                     <div class="absolute inset-0 bg-black/20"></div>
                 </div>
                 {% else %}

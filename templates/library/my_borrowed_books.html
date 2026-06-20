@@ -68,7 +68,7 @@
                                                             <div class="flex-1">
                                                                 <div class="flex items-start gap-4">
                                                                     {% if record.publication.cover_image %}
-                                                                        <img src="{{ record.publication.cover_image.url }}" alt="{{ record.publication.title }}" class="w-16 h-20 object-cover rounded shadow">
+                                                                        <img loading="lazy" src="{{ record.publication.cover_image.url }}" alt="{{ record.publication.title }}" class="w-16 h-20 object-cover rounded shadow">
                                                                     {% else %}
                                                                         <div class="w-16 h-20 bg-gradient-to-br from-gray-300 to-gray-400 rounded shadow flex items-center justify-center">
                                                                             <i class="fas fa-book text-white text-2xl"></i>

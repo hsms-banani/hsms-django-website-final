@@ -34,7 +34,7 @@
             <!-- Featured Image -->
             {% if news_item.featured_image %}
             <div class="mb-12">
-                <img src="{{ news_item.featured_image.url }}" 
+                <img loading="lazy" src="{{ news_item.featured_image.url }}" 
                      alt="{{ news_item.title }}" 
                      class="w-full h-96 object-cover rounded-lg shadow-lg">
             </div>
@@ -81,7 +81,7 @@
                 {% for news in related_news %}
                 <article class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
                     {% if news.featured_image %}
-                    <img src="{{ news.featured_image.url }}" 
+                    <img loading="lazy" src="{{ news.featured_image.url }}" 
                          alt="{{ news.title }}" 
                          class="w-full h-48 object-cover rounded-t-lg">
                     {% endif %}

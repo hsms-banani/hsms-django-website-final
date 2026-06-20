@@ -17,6 +17,7 @@ import unicodedata
 import re
 from django.contrib.auth.hashers import make_password
 import logging
+from utils.image_optimizer import optimize_image
 
 logger = logging.getLogger(__name__)
 
@@ -331,6 +332,12 @@ class Publication(models.Model):
         
         if self.copies_available > self.total_copies:
             self.copies_available = self.total_copies
+            
+        if self.cover_image and not getattr(self, '_cover_optimized', False):
+            optimized = optimize_image(self.cover_image, max_width=800, max_height=800)
+            if optimized:
+                self.cover_image = optimized
+            self._cover_optimized = True
             
         super().save(*args, **kwargs)
 

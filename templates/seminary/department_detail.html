@@ -361,7 +361,7 @@
                 <a href="{% url 'faculty_detail' member.pk %}" class="block bg-white rounded-lg shadow-lg overflow-hidden hover-lift">
                     <div class="relative">
                         {% if member.photo %}
-                        <img src="{{ member.photo.url }}" alt="{{ member.name }}" 
+                        <img loading="lazy" src="{{ member.photo.url }}" alt="{{ member.name }}" 
                              class="w-full h-64 object-cover">
                         {% else %}
                         <div class="w-full h-64 bg-gradient-tertiary flex items-center justify-center">

@@ -107,7 +107,7 @@
                                 <td class="px-6 py-4">
                                     <div class="flex items-start gap-3">
                                         {% if record.book.cover_image %}
-                                            <img src="{{ record.book.cover_image.url }}" alt="{{ record.book.title }}" class="w-12 h-16 object-cover rounded shadow-sm">
+                                            <img loading="lazy" src="{{ record.book.cover_image.url }}" alt="{{ record.book.title }}" class="w-12 h-16 object-cover rounded shadow-sm">
                                         {% else %}
                                             <div class="w-12 h-16 bg-gradient-to-br from-gray-300 to-gray-400 rounded shadow-sm flex items-center justify-center">
                                                 <i class="fas fa-book text-white"></i>

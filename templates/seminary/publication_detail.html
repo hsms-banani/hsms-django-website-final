@@ -117,7 +117,7 @@
                     <!-- Cover Image -->
                     {% if publication.cover_image %}
                     <div class="mb-8">
-                        <img src="{{ publication.cover_image.url }}" 
+                        <img loading="lazy" src="{{ publication.cover_image.url }}" 
                              alt="{{ publication.title }}" 
                              class="w-full rounded-lg shadow-lg">
                     </div>

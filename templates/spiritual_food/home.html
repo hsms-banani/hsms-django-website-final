@@ -173,7 +173,7 @@
             {% for homily in featured_homilies %}
             <div class="bg-white rounded-xl shadow-lg overflow-hidden hover-lift">
                 {% if homily.thumbnail %}
-                <img src="{{ homily.thumbnail.url }}" 
+                <img loading="lazy" src="{{ homily.thumbnail.url }}" 
                      alt="{{ homily.title }}" 
                      class="w-full h-48 object-cover">
                 {% else %}

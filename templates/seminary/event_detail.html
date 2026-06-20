@@ -43,7 +43,7 @@
             <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
                 {% if event.featured_image %}
                 <div class="aspect-w-16 aspect-h-9">
-                    <img src="{{ event.featured_image.url }}" 
+                    <img loading="lazy" src="{{ event.featured_image.url }}" 
                          alt="{{ event.title }}" 
                          class="w-full h-64 lg:h-80 object-cover">
                 </div>

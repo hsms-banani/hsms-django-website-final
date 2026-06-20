@@ -136,7 +136,7 @@
             <div class="flex-shrink-0">
                 <div class="w-20 h-28 bg-gradient-to-br from-blue-100 to-blue-200 rounded flex items-center justify-center">
                     {% if book.cover_image %}
-                        <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" class="w-full h-full object-cover rounded">
+                        <img loading="lazy" src="{{ book.cover_image.url }}" alt="{{ book.title }}" class="w-full h-full object-cover rounded">
                     {% else %}
                         <i class="fas fa-book text-blue-400 text-xl"></i>
                     {% endif %}

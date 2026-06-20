@@ -75,7 +75,7 @@
                             <div class="bg-white rounded-xl shadow-lg overflow-hidden hover-lift cursor-pointer"
                                  onclick="openLightbox({{ forloop.counter0 }})">
                                 {% if item.image %}
-                                    <img src="{{ item.image.url }}" alt="{{ item.title|default:'Gallery Image' }}" 
+                                    <img loading="lazy" src="{{ item.image.url }}" alt="{{ item.title|default:'Gallery Image' }}" 
                                          class="w-full h-auto object-cover">
                                 {% endif %}
                                 {% if item.title or item.description %}
@@ -126,7 +126,7 @@
                                         Your browser does not support the video tag.
                                     </video>
                                 {% elif item.image %}
-                                    <img src="{{ item.image.url }}" alt="{{ item.title|default:'Video Thumbnail' }}" 
+                                    <img loading="lazy" src="{{ item.image.url }}" alt="{{ item.title|default:'Video Thumbnail' }}" 
                                          class="w-full h-64 object-cover">
                                 {% endif %}
                             </div>
@@ -190,7 +190,7 @@
 
             <!-- Image Container -->
             <div class="w-full h-full flex items-center justify-center relative">
-                <img id="lightboxImage" src="" alt="" class="max-w-full max-h-full object-contain transition-opacity duration-300">
+                <img loading="lazy" id="lightboxImage" src="" alt="" class="max-w-full max-h-full object-contain transition-opacity duration-300">
                 <div id="lightboxSpinner" class="absolute text-white text-3xl">
                     <i class="fas fa-spinner fa-spin"></i>
                 </div>

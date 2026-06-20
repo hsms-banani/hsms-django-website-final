@@ -3,7 +3,7 @@
     {% for faculty in faculty_list %}
     <div class="bg-white rounded-lg shadow-md overflow-hidden hover-lift">
         {% if faculty.photo %}
-        <img src="{{ faculty.photo.url }}" alt="{{ faculty.name }}" class="w-full h-64 object-cover">
+        <img loading="lazy" src="{{ faculty.photo.url }}" alt="{{ faculty.name }}" class="w-full h-64 object-cover">
         {% else %}
         <div class="w-full h-64 bg-gradient-primary flex items-center justify-center">
             <i class="fas fa-user text-white text-4xl"></i>

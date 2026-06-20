@@ -231,7 +231,7 @@
                         <!-- Leader Photo -->
                         <div class="text-center lg:text-left">
                             {% if leadership_message.leader_photo %}
-                            <img src="{{ leadership_message.leader_photo.url }}" 
+                            <img loading="lazy" src="{{ leadership_message.leader_photo.url }}" 
                                  alt="{{ leadership_message.leader_name }}" 
                                  class="leader-photo mx-auto lg:mx-0">
                             {% else %}

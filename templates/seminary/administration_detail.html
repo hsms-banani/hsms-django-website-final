@@ -108,7 +108,7 @@
                 <!-- Profile Photo -->
                 <div class="flex-shrink-0">
                     {% if administrator.photo %}
-                        <img 
+                        <img loading="lazy" 
                             src="{{ administrator.photo.url }}" 
                             alt="{{ administrator.name }}"
                             class="profile-photo w-48 h-48 lg:w-56 lg:h-56 object-cover rounded-2xl"

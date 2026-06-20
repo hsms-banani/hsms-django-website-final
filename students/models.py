@@ -1,7 +1,7 @@
 # students/models.py
 from django.db import models
 from django.core.validators import FileExtensionValidator
-
+from utils.image_optimizer import optimize_image
 class Student(models.Model):
     STUDENT_TYPE_CHOICES = [
         ('diocesan', 'Diocesan'),
@@ -33,3 +33,11 @@ class Student(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        # Prevent recursive saving
+        if self.photo and not getattr(self, '_photo_optimized', False):
+            optimized = optimize_image(self.photo, max_width=800, max_height=800)
+            if optimized:
+                self.photo = optimized
+            self._photo_optimized = True
+        super().save(*args, **kwargs)

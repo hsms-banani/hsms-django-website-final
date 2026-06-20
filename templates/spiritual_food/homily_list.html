@@ -168,7 +168,7 @@
             <div class="bg-white rounded-xl shadow-lg overflow-hidden hover-lift group">
                 <div class="relative">
                     {% if homily.thumbnail %}
-                    <img src="{{ homily.thumbnail.url }}" 
+                    <img loading="lazy" src="{{ homily.thumbnail.url }}" 
                          alt="{{ homily.title }}" 
                          class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
                     {% else %}
@@ -258,7 +258,7 @@
             <div class="bg-white rounded-lg shadow-md overflow-hidden hover-lift border border-gray-200 group">
                 <div class="relative h-40 overflow-hidden">
                     {% if homily.thumbnail %}
-                    <img src="{{ homily.thumbnail.url }}" 
+                    <img loading="lazy" src="{{ homily.thumbnail.url }}" 
                          alt="{{ homily.title }}" 
                          class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
                     {% else %}

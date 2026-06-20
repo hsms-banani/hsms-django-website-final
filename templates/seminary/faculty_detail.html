@@ -310,7 +310,7 @@
                     <div class="profile-image-3d mx-auto max-w-sm">
                         <div class="w-full aspect-square rounded-3xl overflow-hidden shadow-2xl border-4 border-white/30">
                             {% if faculty.photo %}
-                            <img src="{{ faculty.photo.url }}" 
+                            <img loading="lazy" src="{{ faculty.photo.url }}" 
                                  alt="{{ faculty.name }}" 
                                  class="w-full h-full object-cover">
                             {% else %}
@@ -557,7 +557,7 @@
                 <div class="related-card group">
                     <div class="relative h-64 overflow-hidden">
                         {% if related.photo %}
-                        <img src="{{ related.photo.url }}" 
+                        <img loading="lazy" src="{{ related.photo.url }}" 
                              alt="{{ related.name }}" 
                              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                         {% else %}
