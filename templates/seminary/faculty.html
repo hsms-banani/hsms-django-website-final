@@ -1,4 +1,4 @@
-<!-- seminary/faculty.html - REDESIGNED -->
+<!-- seminary/faculty.html - FLUENT DESIGN REDESIGN -->
 {% extends 'base.html' %}
 {% load seminary_filters %}
 
@@ -6,352 +6,270 @@
 
 {% block extra_css %}
 <style>
-    /* Advanced gradient backgrounds */
-    .hero-gradient {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    /* Microsoft Fluent Design System */
+    body {
+        background-color: #faf9f8; /* Fluent standard neutral background */
+        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
+    }
+    
+    .fluent-hero {
+        background-color: #ffffff;
+        border-bottom: 1px solid #e1dfdd;
+        padding-top: 4rem;
+        padding-bottom: 3rem;
+        position: relative;
+    }
+    
+    .fluent-hero h1 {
+        color: #201f1e;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+    }
+    
+    .fluent-hero p {
+        color: #605e5c;
+    }
+
+    .fluent-card {
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.04);
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02), 0 0 2px rgba(0, 0, 0, 0.04);
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
         position: relative;
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
     }
     
-    .hero-gradient::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    .fluent-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.04), 0 0 2px rgba(0, 0, 0, 0.06);
     }
     
-    /* Modern card design with glassmorphism */
-    .faculty-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        position: relative;
-        overflow: hidden;
+    .fluent-btn-primary {
+        background-color: #0078D4;
+        color: #ffffff;
+        border-radius: 4px;
+        transition: background-color 0.1s ease;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1rem;
     }
     
-    .faculty-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-        transition: left 0.5s;
+    .fluent-btn-primary:hover {
+        background-color: #006CBD;
+        color: #ffffff;
+    }
+
+    .fluent-btn-secondary {
+        background-color: #ffffff;
+        color: #323130;
+        border: 1px solid #8a8886;
+        border-radius: 4px;
+        transition: background-color 0.1s ease, border-color 0.1s ease;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1rem;
     }
     
-    .faculty-card:hover::before {
-        left: 100%;
+    .fluent-btn-secondary:hover {
+        background-color: #f3f2f1;
+        color: #201f1e;
     }
-    
-    .faculty-card:hover {
-        transform: translateY(-12px) scale(1.02);
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+    .fluent-badge {
+        background-color: #f3f2f1;
+        color: #323130;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 4px 8px;
+        display: inline-block;
     }
-    
-    /* Animated profile image */
+
+    .fluent-badge-accent {
+        background-color: #e1dfdd;
+        color: #0078D4;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 4px 8px;
+        display: inline-block;
+    }
+
     .faculty-image-wrapper {
         position: relative;
+        width: 100%;
+        height: 320px;
+        background-color: #f3f2f1;
         overflow: hidden;
     }
     
-    .faculty-image-wrapper::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8));
-        opacity: 0;
-        transition: opacity 0.3s ease;
+    /* Fix image object position to prevent head cutoff */
+    .faculty-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center top; /* Anchors the image to the top to keep the head visible */
     }
     
-    .faculty-card:hover .faculty-image-wrapper::after {
-        opacity: 1;
-    }
-    
-    .faculty-image-wrapper img {
-        transition: transform 0.5s ease;
-    }
-    
-    .faculty-card:hover .faculty-image-wrapper img {
-        transform: scale(1.1);
-    }
-    
-    /* Animated badges */
-    .dept-badge {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .dept-badge::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.3);
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
-    }
-    
-    .dept-badge:hover::before {
-        width: 300px;
-        height: 300px;
-    }
-    
-    /* Filter buttons with modern design */
-    .filter-btn {
-        position: relative;
-        overflow: hidden;
-        z-index: 1;
-    }
-    
-    .filter-btn::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        transform: translate(-50%, -50%);
-        transition: width 0.4s, height 0.4s;
-        z-index: -1;
-    }
-    
-    .filter-btn.active::before,
-    .filter-btn:hover::before {
-        width: 300px;
-        height: 300px;
-    }
-    
-    .filter-btn.active {
-        color: white;
-    }
-    
-    /* Floating animation */
-    @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-    }
-    
-    .float-animation {
-        animation: float 3s ease-in-out infinite;
-    }
-    
-    /* Staggered fade-in animation */
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    /* Subtle fade-in animation */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     
     .stagger-animation {
         opacity: 0;
-        animation: fadeInUp 0.6s ease-out forwards;
+        animation: fadeIn 0.4s ease-out forwards;
     }
     
-    .stagger-animation:nth-child(1) { animation-delay: 0.1s; }
-    .stagger-animation:nth-child(2) { animation-delay: 0.2s; }
-    .stagger-animation:nth-child(3) { animation-delay: 0.3s; }
-    .stagger-animation:nth-child(4) { animation-delay: 0.4s; }
-    .stagger-animation:nth-child(5) { animation-delay: 0.5s; }
-    .stagger-animation:nth-child(6) { animation-delay: 0.6s; }
+    .stagger-animation:nth-child(1) { animation-delay: 0.05s; }
+    .stagger-animation:nth-child(2) { animation-delay: 0.1s; }
+    .stagger-animation:nth-child(3) { animation-delay: 0.15s; }
+    .stagger-animation:nth-child(4) { animation-delay: 0.2s; }
+    .stagger-animation:nth-child(5) { animation-delay: 0.25s; }
+    .stagger-animation:nth-child(6) { animation-delay: 0.3s; }
     
-    /* Modern pagination */
-    .pagination-btn {
-        transition: all 0.3s ease;
+    /* Fluent Pivot (Filter tabs) */
+    .fluent-pivot {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        border-bottom: 1px solid #e1dfdd;
+        padding-bottom: 1px;
     }
     
-    .pagination-btn:hover:not(.disabled) {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    .pivot-item {
+        color: #605e5c;
+        font-size: 1rem;
+        font-weight: 400;
+        padding: 0.5rem 0.5rem;
+        margin: 0 0.5rem;
+        border-bottom: 2px solid transparent;
+        transition: color 0.1s ease;
+        position: relative;
+        bottom: -1px;
     }
     
-    /* Stats counter animation */
-    .stat-number {
-        font-variant-numeric: tabular-nums;
+    .pivot-item:hover {
+        color: #201f1e;
+        text-decoration: none;
     }
-    
-    /* Decorative elements */
-    .decorative-blob {
-        position: absolute;
-        border-radius: 50%;
-        filter: blur(60px);
-        opacity: 0.3;
-        animation: blob 7s infinite;
-    }
-    
-    @keyframes blob {
-        0%, 100% { transform: translate(0, 0) scale(1); }
-        33% { transform: translate(30px, -50px) scale(1.1); }
-        66% { transform: translate(-20px, 20px) scale(0.9); }
-    }
-    
-    /* Profile overlay */
-    .profile-overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-        padding: 1.5rem;
-        transform: translateY(100%);
-        transition: transform 0.3s ease;
-    }
-    
-    .faculty-card:hover .profile-overlay {
-        transform: translateY(0);
+
+    .pivot-item.active {
+        color: #201f1e;
+        font-weight: 600;
+        border-bottom: 2px solid #0078D4;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Hero Section with Animated Background -->
-<section class="hero-gradient text-white py-24 relative">
-    <!-- Decorative blobs -->
-    <div class="decorative-blob absolute top-20 left-10 w-64 h-64 bg-purple-400" style="animation-delay: 0s;"></div>
-    <div class="decorative-blob absolute bottom-20 right-10 w-80 h-80 bg-blue-400" style="animation-delay: 2s;"></div>
-    
-    <div class="container mx-auto px-4 relative z-10">
-        <div class="max-w-4xl mx-auto text-center">
-           
-            <h1 class="text-6xl md:text-7xl font-bold font-serif mb-6 leading-tight">
-                Our Faculty
-            </h1>
-            
-            
+<!-- Hero Section -->
+<section class="fluent-hero">
+    <div class="container mx-auto px-4 max-w-7xl">
+        <div class="max-w-4xl">
+            <h1 class="text-4xl md:text-5xl mb-4">Our Faculty</h1>
+            <p class="text-xl">Meet the dedicated educators and leaders who guide our seminary.</p>
         </div>
-    </div>
-    
-    <!-- Wave separator -->
-    <div class="absolute bottom-0 left-0 right-0">
-        <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z" fill="white"/>
-        </svg>
     </div>
 </section>
 
-<!-- Modern Department Filter -->
-<section class="py-12 bg-white sticky top-0 z-40 shadow-md">
-    <div class="container mx-auto px-4">
-        <div class="flex flex-wrap justify-center gap-3">
+<!-- Filter Section -->
+<section class="bg-white sticky top-0 z-40 shadow-sm border-b border-gray-200">
+    <div class="container mx-auto px-4 max-w-7xl py-2">
+        <nav class="fluent-pivot" aria-label="Department filter">
             <a href="{% url 'faculty_list' %}" 
-               class="filter-btn px-8 py-3 rounded-full font-semibold transition-all duration-300 {% if not selected_dept %}active text-white{% else %}bg-gray-100 text-gray-700 hover:text-white{% endif %}">
-                <i class="fas fa-th-large mr-2"></i>All Faculty
+               class="pivot-item {% if not selected_dept %}active{% endif %}">
+                All Faculty
             </a>
             {% for dept in departments %}
             <a href="{% url 'faculty_list' %}?dept={{ dept.slug }}" 
-               class="filter-btn px-8 py-3 rounded-full font-semibold transition-all duration-300 {% if selected_dept == dept.slug %}active text-white{% else %}bg-gray-100 text-gray-700 hover:text-white{% endif %}">
-                <i class="fas fa-graduation-cap mr-2"></i>{{ dept.name }}
+               class="pivot-item {% if selected_dept == dept.slug %}active{% endif %}">
+                {{ dept.name }}
             </a>
             {% endfor %}
-        </div>
+        </nav>
         
         <!-- Results info -->
-        <div class="text-center mt-6">
-            <p class="text-gray-600 text-sm">
-                {% if selected_dept %}
-                    {% for dept in departments %}
-                        {% if dept.slug == selected_dept %}
-                            <span class="font-semibold text-purple-600">{{ page_obj.paginator.count }}</span> faculty members in {{ dept.name }}
-                        {% endif %}
-                    {% endfor %}
-                {% else %}
-                    <span class="font-semibold text-purple-600">{{ page_obj.paginator.count }}</span> total faculty members
-                {% endif %}
-            </p>
+        <div class="mt-3 text-sm text-gray-500 ml-2">
+            {% if selected_dept %}
+                {% for dept in departments %}
+                    {% if dept.slug == selected_dept %}
+                        Showing <strong>{{ page_obj.paginator.count }}</strong> faculty members in {{ dept.name }}
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                Showing <strong>{{ page_obj.paginator.count }}</strong> total faculty members
+            {% endif %}
         </div>
     </div>
 </section>
 
 <!-- Faculty Grid -->
-<section class="py-20 bg-gradient-to-br from-gray-50 via-white to-gray-50">
-    <div class="container mx-auto px-4">
+<section class="py-12">
+    <div class="container mx-auto px-4 max-w-7xl">
         {% if faculty_list %}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {% for faculty in faculty_list %}
-                <div class="faculty-card rounded-3xl overflow-hidden shadow-xl stagger-animation group">
+                <div class="fluent-card stagger-animation">
                     <!-- Image Section -->
-                    <div class="faculty-image-wrapper relative h-80">
+                    <div class="faculty-image-wrapper">
                         {% if faculty.photo %}
                         <img loading="lazy" src="{{ faculty.photo.url }}" 
                              alt="{{ faculty.name }}" 
-                             class="w-full h-full object-cover">
+                             class="faculty-img">
                         {% else %}
-                        <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-400 to-blue-500 text-white text-6xl">
-                            <i class="fas fa-user-graduate"></i>
+                        <div class="w-full h-full flex items-center justify-center text-gray-400 text-6xl">
+                            <i class="fas fa-user"></i>
                         </div>
                         {% endif %}
                         
-                        <!-- Department Badge -->
-                        <div class="absolute top-4 right-4">
-                            <span class="dept-badge px-4 py-2 rounded-full text-white text-xs font-bold shadow-lg">
+                        <!-- Department Badge Overlay -->
+                        <div class="absolute top-3 right-3">
+                            <span class="fluent-badge shadow-sm">
                                 {{ faculty.get_department_display }}
                             </span>
-                        </div>
-                        
-                        <!-- Quick View Overlay -->
-                        <div class="profile-overlay text-white">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    {% if faculty.email %}
-                                    <p class="text-sm mb-1"><i class="fas fa-envelope mr-2"></i>{{ faculty.email|truncatechars:25 }}</p>
-                                    {% endif %}
-                                    {% if faculty.phone %}
-                                    <p class="text-sm"><i class="fas fa-phone mr-2"></i>{{ faculty.phone }}</p>
-                                    {% endif %}
-                                </div>
-                            </div>
                         </div>
                     </div>
                     
                     <!-- Content Section -->
-                    <div class="p-6">
-                        <h3 class="text-2xl font-bold mb-2 text-gray-800 group-hover:text-purple-600 transition-colors">
+                    <div class="p-5 flex-grow flex flex-col">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-1">
                             {{ faculty.name }}
                         </h3>
                         
-                        <p class="text-purple-600 font-semibold mb-3 flex items-center">
-                            <i class="fas fa-award mr-2"></i>{{ faculty.title }}
+                        <p class="text-sm font-medium text-blue-700 mb-3">
+                            {{ faculty.title }}
                         </p>
                         
                         {% if faculty.specialization %}
                         <div class="mb-4">
-                            <span class="inline-block bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">
-                                <i class="fas fa-star mr-1"></i>{{ faculty.specialization }}
+                            <span class="fluent-badge-accent">
+                                {{ faculty.specialization }}
                             </span>
                         </div>
                         {% endif %}
                         
-                        <p class="text-gray-600 text-sm mb-6 line-clamp-3">
+                        <p class="text-gray-600 text-sm mb-6 line-clamp-3 flex-grow">
                             {{ faculty.bio|smart_preview:25 }}
                         </p>
                         
                         <!-- Action Buttons -->
-                        <div class="flex gap-3">
+                        <div class="flex gap-2 mt-auto">
                             <a href="{% url 'faculty_detail' faculty.pk %}" 
-                               class="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-center py-3 rounded-xl font-semibold hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                                <i class="fas fa-user-circle mr-2"></i>View Profile
+                               class="fluent-btn-primary flex-grow">
+                                View Profile
                             </a>
                             {% if faculty.email %}
                             <a href="mailto:{{ faculty.email }}" 
-                               class="bg-gray-100 text-gray-700 p-3 rounded-xl hover:bg-purple-100 hover:text-purple-600 transition-all duration-300">
+                               class="fluent-btn-secondary" title="Email {{ faculty.name }}">
                                 <i class="fas fa-envelope"></i>
                             </a>
                             {% endif %}
@@ -361,67 +279,57 @@
                 {% endfor %}
             </div>
             
-            <!-- Modern Pagination -->
+            <!-- Fluent Pagination -->
             {% if page_obj.has_other_pages %}
-            <div class="mt-16 flex justify-center">
-                <nav class="flex items-center gap-2" aria-label="Pagination">
+            <div class="mt-12 flex justify-center">
+                <nav class="flex items-center gap-1" aria-label="Pagination">
                     {% if page_obj.has_previous %}
                         <a href="?{% if selected_dept %}dept={{ selected_dept }}&{% endif %}page=1" 
-                           class="pagination-btn px-4 py-2 bg-white text-gray-700 rounded-xl shadow-md hover:bg-purple-600 hover:text-white font-medium">
+                           class="fluent-btn-secondary px-3 py-1 text-sm mr-1">
                             <i class="fas fa-angle-double-left"></i>
                         </a>
                         <a href="?{% if selected_dept %}dept={{ selected_dept }}&{% endif %}page={{ page_obj.previous_page_number }}" 
-                           class="pagination-btn px-4 py-2 bg-white text-gray-700 rounded-xl shadow-md hover:bg-purple-600 hover:text-white font-medium">
+                           class="fluent-btn-secondary px-3 py-1 text-sm">
                             <i class="fas fa-angle-left"></i>
                         </a>
                     {% endif %}
 
-                    <!-- Page Numbers -->
-                    {% for page_num in page_obj.paginator.page_range %}
-                        {% if page_num == page_obj.number %}
-                            <span class="pagination-btn px-5 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl shadow-lg font-bold">
-                                {{ page_num }}
-                            </span>
-                        {% elif page_num > page_obj.number|add:'-3' and page_num < page_obj.number|add:'3' %}
-                            <a href="?{% if selected_dept %}dept={{ selected_dept }}&{% endif %}page={{ page_num }}" 
-                               class="pagination-btn px-5 py-2 bg-white text-gray-700 rounded-xl shadow-md hover:bg-purple-600 hover:text-white font-medium">
-                                {{ page_num }}
-                            </a>
-                        {% elif page_num == page_obj.number|add:'-4' or page_num == page_obj.number|add:'4' %}
-                            <span class="px-2 py-2 text-gray-400">...</span>
-                        {% endif %}
-                    {% endfor %}
+                    <div class="flex px-4 gap-1">
+                        {% for page_num in page_obj.paginator.page_range %}
+                            {% if page_num == page_obj.number %}
+                                <span class="fluent-btn-primary px-3 py-1 text-sm cursor-default">
+                                    {{ page_num }}
+                                </span>
+                            {% elif page_num > page_obj.number|add:'-3' and page_num < page_obj.number|add:'3' %}
+                                <a href="?{% if selected_dept %}dept={{ selected_dept }}&{% endif %}page={{ page_num }}" 
+                                   class="fluent-btn-secondary px-3 py-1 text-sm border-transparent hover:border-gray-400">
+                                    {{ page_num }}
+                                </a>
+                            {% elif page_num == page_obj.number|add:'-4' or page_num == page_obj.number|add:'4' %}
+                                <span class="px-2 py-1 text-gray-500 text-sm">...</span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
 
                     {% if page_obj.has_next %}
                         <a href="?{% if selected_dept %}dept={{ selected_dept }}&{% endif %}page={{ page_obj.next_page_number }}" 
-                           class="pagination-btn px-4 py-2 bg-white text-gray-700 rounded-xl shadow-md hover:bg-purple-600 hover:text-white font-medium">
+                           class="fluent-btn-secondary px-3 py-1 text-sm">
                             <i class="fas fa-angle-right"></i>
                         </a>
                         <a href="?{% if selected_dept %}dept={{ selected_dept }}&{% endif %}page={{ page_obj.paginator.num_pages }}" 
-                           class="pagination-btn px-4 py-2 bg-white text-gray-700 rounded-xl shadow-md hover:bg-purple-600 hover:text-white font-medium">
+                           class="fluent-btn-secondary px-3 py-1 text-sm ml-1">
                             <i class="fas fa-angle-double-right"></i>
                         </a>
                     {% endif %}
                 </nav>
             </div>
-            
-            <div class="mt-6 text-center">
-                <p class="text-gray-600 text-sm">
-                    Page <span class="font-semibold text-purple-600">{{ page_obj.number }}</span> of 
-                    <span class="font-semibold text-purple-600">{{ page_obj.paginator.num_pages }}</span>
-                </p>
-            </div>
             {% endif %}
         {% else %}
             <!-- Empty State -->
-            <div class="text-center py-20 max-w-2xl mx-auto">
-                <div class="mb-8 float-animation">
-                    <div class="inline-block p-8 bg-gradient-to-br from-purple-100 to-blue-100 rounded-full">
-                        <i class="fas fa-search text-6xl text-purple-500"></i>
-                    </div>
-                </div>
-                <h3 class="text-3xl font-bold text-gray-700 mb-4">No Faculty Found</h3>
-                <p class="text-gray-500 text-lg mb-8">
+            <div class="text-center py-16 bg-white border border-gray-200 rounded-lg max-w-3xl mx-auto">
+                <i class="fas fa-search text-4xl text-gray-400 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">No Faculty Found</h3>
+                <p class="text-gray-500 mb-6">
                     {% if selected_dept %}
                         We couldn't find any faculty members in the selected department.
                     {% else %}
@@ -430,8 +338,8 @@
                 </p>
                 {% if selected_dept %}
                 <a href="{% url 'faculty_list' %}" 
-                   class="inline-block px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                    <i class="fas fa-th-large mr-2"></i>View All Faculty
+                   class="fluent-btn-primary">
+                    View All Faculty
                 </a>
                 {% endif %}
             </div>
@@ -439,19 +347,16 @@
     </div>
 </section>
 
-<!-- CTA Section -->
-<section class="py-20 bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 text-white relative overflow-hidden">
-    <div class="decorative-blob absolute top-0 left-0 w-96 h-96 bg-white/10"></div>
-    <div class="decorative-blob absolute bottom-0 right-0 w-80 h-80 bg-white/10" style="animation-delay: 3s;"></div>
-    
-    <div class="container mx-auto px-4 text-center relative z-10">
-        <h2 class="text-4xl md:text-5xl font-bold mb-6">Join Our Academic Community</h2>
-        <p class="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
+<!-- Call to Action -->
+<section class="py-16 bg-white border-t border-gray-200 mt-8">
+    <div class="container mx-auto px-4 max-w-4xl text-center">
+        <h2 class="text-3xl font-semibold text-gray-900 mb-4">Join Our Academic Community</h2>
+        <p class="text-lg text-gray-600 mb-8">
             Interested in becoming part of our distinguished faculty? We're always looking for passionate educators.
         </p>
         <a href="{% url 'contact' %}" 
-           class="inline-block px-10 py-4 bg-white text-purple-600 rounded-xl font-bold hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
-            <i class="fas fa-paper-plane mr-2"></i>Get In Touch
+           class="fluent-btn-primary px-8 py-3 text-lg">
+            Get In Touch
         </a>
     </div>
 </section>
