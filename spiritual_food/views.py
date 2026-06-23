@@ -470,17 +470,39 @@ from collections import defaultdict
 
 def liturgical_calendar(request):
     """
-    Display the liturgical calendar, grouped by month, showing current and upcoming events.
+    Display the liturgical calendar, grouped by month, showing current and upcoming months first,
+    followed by past months in reverse chronological order.
     """
     today = timezone.now().date()
-    events = LiturgicalCalendar.objects.filter(date__gte=today).order_by('date')
+    events = LiturgicalCalendar.objects.all()
     
-    events_by_month = defaultdict(list)
+    # Group events by their month (using the first day of the month as key)
+    month_groups = defaultdict(list)
     for event in events:
-        events_by_month[event.date.strftime('%B %Y')].append(event)
+        month_key = event.date.replace(day=1)
+        month_groups[month_key].append(event)
+        
+    # Sort events chronologically within each month
+    for month_key in month_groups:
+        month_groups[month_key].sort(key=lambda e: e.date)
+        
+    # Determine current month start
+    current_month = today.replace(day=1)
+    
+    # Sort months: upcoming (ascending) then past (descending)
+    upcoming_months = sorted([m for m in month_groups.keys() if m >= current_month])
+    past_months = sorted([m for m in month_groups.keys() if m < current_month], reverse=True)
+    
+    sorted_months = upcoming_months + past_months
+    
+    # Build the final context dictionary, preserving the sorted month order
+    events_by_month = {}
+    for m in sorted_months:
+        month_str = m.strftime('%B %Y')
+        events_by_month[month_str] = month_groups[m]
         
     context = {
-        'events_by_month': dict(events_by_month),
+        'events_by_month': events_by_month,
     }
     
     return render(request, 'spiritual_food/liturgical_calendar.html', context)
