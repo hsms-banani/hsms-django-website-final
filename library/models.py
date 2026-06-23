@@ -357,8 +357,8 @@ class Publication(models.Model):
 class Book(Publication):
     """Model for books in the library."""
     authors = models.ManyToManyField(Author, related_name='publications')
-    isbn_10 = models.CharField(max_length=10, blank=True, db_index=True, help_text="10-digit ISBN")
-    isbn_13 = models.CharField(max_length=13, blank=True, db_index=True, help_text="13-digit ISBN")
+    isbn_10 = models.CharField(max_length=50, blank=True, db_index=True, help_text="10-digit ISBN (or variation)")
+    isbn_13 = models.CharField(max_length=50, blank=True, db_index=True, help_text="13-digit ISBN (or variation)")
     edition = models.CharField(max_length=50, blank=True)
     volume = models.CharField(
         max_length=20,
@@ -388,7 +388,7 @@ class Book(Publication):
 
 class Periodical(Publication):
     """Model for periodicals (magazines, journals) in the library."""
-    issn = models.CharField(max_length=8, blank=True, db_index=True, help_text="8-digit ISSN")
+    issn = models.CharField(max_length=50, blank=True, db_index=True, help_text="8-digit ISSN (or variation)")
     issue_date = models.DateField(db_index=True)
     volume = models.CharField(max_length=20, blank=True, db_index=True)
     issue_number = models.CharField(max_length=20, blank=True, db_index=True)

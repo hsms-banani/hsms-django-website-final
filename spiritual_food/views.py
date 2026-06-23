@@ -470,9 +470,10 @@ from collections import defaultdict
 
 def liturgical_calendar(request):
     """
-    Display the liturgical calendar, grouped by month, showing all past and future events.
+    Display the liturgical calendar, grouped by month, showing current and upcoming events.
     """
-    events = LiturgicalCalendar.objects.all().order_by('-date')
+    today = timezone.now().date()
+    events = LiturgicalCalendar.objects.filter(date__gte=today).order_by('date')
     
     events_by_month = defaultdict(list)
     for event in events:
