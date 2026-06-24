@@ -12,17 +12,17 @@
     </div>
 
     <!-- Cover Image -->
-    <div class="aspect-w-3 aspect-h-4 bg-gray-100">
+    <div class="bg-gray-100">
         {% if book.cover_image %}
             <img src="{{ book.cover_image.url }}" 
                  alt="Cover of {{ book.title }}" 
                  class="object-cover w-full h-48 transition-transform duration-200"
                  loading="lazy">
         {% else %}
-            <div class="flex items-center justify-center h-48 bg-gradient-to-br from-gray-100 to-gray-200">
-                <div class="text-center p-4">
-                    <i class="fas fa-book text-gray-400 text-3xl mb-2"></i>
-                    <p class="text-gray-500 text-sm font-medium mixed-content">{{ book.title|truncatechars:30 }}</p>
+            <div class="flex items-center justify-center h-32 bg-gradient-to-br from-blue-50 to-indigo-100 border-b border-indigo-200/50">
+                <div class="text-center p-4 opacity-75">
+                    <i class="fas fa-book-open text-indigo-300 text-3xl mb-2 drop-shadow-sm"></i>
+                    <p class="text-indigo-900 text-xs font-semibold uppercase tracking-wider line-clamp-2">{{ book.title|truncatechars:30 }}</p>
                 </div>
             </div>
         {% endif %}
@@ -68,9 +68,9 @@
             {% if book.category %}
                 <a href="{% url 'library:category_books' book.category.slug %}" 
                    title="{{ book.category.name }}"
-                   class="book-category inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition-colors">
-                    <i class="fas fa-folder text-xs mr-1"></i>
-                    {{ book.category.name }}
+                   class="book-category inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 rounded-md border border-blue-200 hover:bg-blue-100 transition-colors max-w-full">
+                    <i class="fas fa-bookmark text-[10px] mr-1.5 text-blue-400"></i>
+                    <span class="truncate">{{ book.category.name }}</span>
                 </a>
             {% endif %}
             
@@ -85,21 +85,21 @@
         </div>
 
         <!-- Publication Year & Call Number -->
-        <div class="flex justify-between items-center text-xs text-gray-500">
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-500 mt-2 border-t border-gray-100 pt-3">
             <div class="flex items-center english" title="Publication Year">
-                <i class="fas fa-calendar-alt mr-1"></i>
+                <i class="far fa-calendar-alt mr-1.5 text-gray-400"></i>
                 {{ book.publication_year }}
             </div>
             {% if book.accession_number %}
                 <div class="flex items-center english" title="Accession Number: {{ book.accession_number }}">
-                    <i class="fas fa-key mr-1"></i>
-                    <code class="bg-gray-100 px-1 rounded text-xs">{{ book.accession_number }}</code>
+                    <i class="fas fa-hashtag mr-1 text-gray-400"></i>
+                    <span class="font-mono text-gray-600">{{ book.accession_number }}</span>
                 </div>
             {% endif %}
             {% if book.call_number %}
-                <div class="flex items-center english" title="Library Location: {{ book.call_number }}">
-                    <i class="fas fa-map-marker-alt mr-1"></i>
-                    <code class="bg-gray-100 px-1 rounded text-xs">{{ book.call_number }}</code>
+                <div class="flex items-center english w-full" title="Library Location: {{ book.call_number }}">
+                    <i class="fas fa-map-marker-alt mr-1.5 text-gray-400"></i>
+                    <span class="font-mono text-gray-600 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-200 truncate max-w-full">{{ book.call_number }}</span>
                 </div>
             {% endif %}
         </div>
