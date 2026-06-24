@@ -343,7 +343,7 @@ class Publication(models.Model):
 
     @property
     def is_available(self):
-        return self.copies_available > 0 and self.status == 'available'
+        return self.copies_available > 0 and str(self.status).lower() == 'available'
 
     @property
     def is_multilingual(self):

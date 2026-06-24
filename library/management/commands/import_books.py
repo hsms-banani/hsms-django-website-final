@@ -244,7 +244,7 @@ class Command(BaseCommand):
                                 'total_copies': 1,
                                 'copies_available': 1,
                                 'location_shelf': clean_row.get('location_shelf', '').strip(),
-                                'status': clean_row.get('status', 'available').strip() or 'available',
+                                'status': clean_row.get('status', 'available').strip().lower() or 'available',
                             }
 
                             # Safely parse numeric fields
