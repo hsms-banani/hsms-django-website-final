@@ -171,9 +171,16 @@ class Command(BaseCommand):
                 
                 for row_num, row in enumerate(reader, start=2):
                     try:
+                        # Check if row is completely empty
+                        if not any(v.strip() for k, v in row.items() if k is not None and v is not None):
+                            continue
+
+                        # Clean row keys to avoid issues with or without asterisks
+                        clean_row = {str(k).rstrip('* ').strip(): str(v) for k, v in row.items() if k is not None}
+
                         with transaction.atomic():
                             # Check if book with accession number already exists
-                            accession_number = normalize_unicode_text(row.get('accession_number*', '').strip())
+                            accession_number = normalize_unicode_text(clean_row.get('accession_number', '').strip())
                             if not accession_number:
                                 error_msg = f'Row {row_num}: Missing accession_number'
                                 self.stdout.write(self.style.ERROR(error_msg))
@@ -189,49 +196,70 @@ class Command(BaseCommand):
                                 continue
                             
                             # Get related objects
-                            authors = self.get_or_create_authors(row.get('author*', ''))
-                            category = self.get_or_create_category(row.get('category*', ''))
-                            publisher = self.get_or_create_publisher(row.get('publisher*', ''))
+                            authors = self.get_or_create_authors(clean_row.get('author', ''))
+                            category = self.get_or_create_category(clean_row.get('category', ''))
+                            publisher = self.get_or_create_publisher(clean_row.get('publisher', ''))
                             
                             if not authors:
                                 raise ValueError("At least one author is required")
                             
                             # Prepare book data
-                            title = normalize_unicode_text(row.get('title*', '').strip())
-                            title_bangla = normalize_unicode_text(row.get('title_bangla', '').strip())
+                            title = normalize_unicode_text(clean_row.get('title', '').strip())
+                            title_bangla = normalize_unicode_text(clean_row.get('title_bangla', '').strip())
 
                             if not title and title_bangla:
                                 title = title_bangla
 
+                            # Parse publication year robustly
+                            pub_year_str = clean_row.get('publication_year', '').strip()
+                            pub_year = 2024
+                            if pub_year_str:
+                                match = re.search(r'\d{4}', pub_year_str)
+                                if match:
+                                    extracted = int(match.group(0))
+                                    if 1000 <= extracted <= 2025:
+                                        pub_year = extracted
+
                             book_data = {
                                 'title': title,
                                 'title_bangla': title_bangla,
-                                'subtitle': normalize_unicode_text(row.get('subtitle', '').strip()),
-                                'subtitle_bangla': normalize_unicode_text(row.get('subtitle_bangla', '').strip()),
+                                'subtitle': normalize_unicode_text(clean_row.get('subtitle', '').strip()),
+                                'subtitle_bangla': normalize_unicode_text(clean_row.get('subtitle_bangla', '').strip()),
                                 'accession_number': accession_number,
-                                'volume': normalize_unicode_text(row.get('volume', '').strip()),
+                                'volume': normalize_unicode_text(clean_row.get('volume', '').strip()),
                                 'publisher': publisher,
-                                'publication_year': int(row.get('publication_year*', 2024)),
-                                'isbn_10': row.get('isbn_10', '').strip(),
-                                'isbn_13': row.get('isbn_13', '').strip(),
-                                'classification_number': row.get('classification_number*', '').strip(),
-                                'cutter_number': row.get('cutter_number*', '').strip(),
+                                'publication_year': pub_year,
+                                'isbn_10': clean_row.get('isbn_10', '').strip(),
+                                'isbn_13': clean_row.get('isbn_13', '').strip(),
+                                'classification_number': clean_row.get('classification_number', '').strip(),
+                                'cutter_number': clean_row.get('cutter_number', '').strip(),
                                 'category': category,
-                                'language': row.get('language', 'en').strip() or 'en',
+                                'language': clean_row.get('language', 'en').strip() or 'en',
                                 'pages': 0,
-                                'edition': normalize_unicode_text(row.get('edition', '').strip()),
-                                'description': normalize_unicode_text(row.get('description', '').strip()),
-                                'description_bangla': normalize_unicode_text(row.get('description_bangla', '').strip()),
-                                'keywords': normalize_unicode_text(row.get('keywords', '').strip()),
-                                'keywords_bangla': normalize_unicode_text(row.get('keywords_bangla', '').strip()),
-                                'total_copies': int(row.get('total_copies', 1)),
-                                'copies_available': int(row.get('copies_available', 1)),
-                                'location_shelf': row.get('location_shelf', '').strip(),
-                                'status': row.get('status', 'available').strip() or 'available',
+                                'edition': normalize_unicode_text(clean_row.get('edition', '').strip()),
+                                'description': normalize_unicode_text(clean_row.get('description', '').strip()),
+                                'description_bangla': normalize_unicode_text(clean_row.get('description_bangla', '').strip()),
+                                'keywords': normalize_unicode_text(clean_row.get('keywords', '').strip()),
+                                'keywords_bangla': normalize_unicode_text(clean_row.get('keywords_bangla', '').strip()),
+                                'total_copies': 1,
+                                'copies_available': 1,
+                                'location_shelf': clean_row.get('location_shelf', '').strip(),
+                                'status': clean_row.get('status', 'available').strip() or 'available',
                             }
 
+                            # Safely parse numeric fields
+                            try:
+                                book_data['total_copies'] = int(clean_row.get('total_copies', 1))
+                            except (ValueError, TypeError):
+                                book_data['total_copies'] = 1
+
+                            try:
+                                book_data['copies_available'] = int(clean_row.get('copies_available', 1))
+                            except (ValueError, TypeError):
+                                book_data['copies_available'] = 1
+
                             # Handle pages with a regex to extract the main number
-                            pages_str = row.get('pages', '').strip()
+                            pages_str = clean_row.get('pages', '').strip()
                             if pages_str:
                                 try:
                                     # Find the last number in the string
@@ -242,7 +270,7 @@ class Command(BaseCommand):
                                     book_data['pages'] = 0
                             
                             # Add price if provided
-                            price = row.get('price', '').strip()
+                            price = clean_row.get('price', '').strip()
                             if price:
                                 try:
                                     book_data['price'] = Decimal(price)
