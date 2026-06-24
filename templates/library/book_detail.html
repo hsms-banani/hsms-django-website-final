@@ -26,14 +26,14 @@
             <div class="flex flex-col md:flex-row md:items-start space-y-6 md:space-y-0 md:space-x-8">
                 <!-- Book Cover -->
                 <div class="flex-shrink-0">
-                    <div class="w-48 h-64 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center shadow-md">
+                    <div class="w-48 h-64 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg flex items-center justify-center shadow-md border border-indigo-200/50">
                         {% if book.cover_image %}
                             <img loading="lazy" src="{{ book.cover_image.url }}" alt="{{ book.title }}" 
                                  class="w-full h-full object-cover rounded-lg">
                         {% else %}
-                            <div class="text-center p-6">
-                                <i class="fas fa-book text-6xl text-blue-400 mb-4"></i>
-                                <div class="text-sm text-blue-600 font-medium">{{ book.call_number }}</div>
+                            <div class="text-center p-6 opacity-75">
+                                <i class="fas fa-book-open text-6xl text-indigo-300 mb-4 drop-shadow-sm"></i>
+                                <div class="text-sm text-indigo-900 font-semibold font-mono">{{ book.call_number }}</div>
                             </div>
                         {% endif %}
                     </div>
@@ -62,9 +62,12 @@
                         <div><strong>Publication Year:</strong> {{ book.publication_year }}</div>
                         <div><strong>Accession Number:</strong> {{ book.accession_number }}</div>
                         
-                        <div><strong>Category:</strong> 
+                        <div class="flex items-center flex-wrap gap-2"><strong>Category:</strong> 
                             <a href="{% url 'library:category_books' book.category.slug %}" 
-                               class="text-blue-600 hover:text-blue-800">{{ book.category.name }}</a>
+                               class="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 rounded-md border border-blue-200 hover:bg-blue-100 transition-colors">
+                                <i class="fas fa-bookmark text-[10px] mr-1.5 text-blue-400"></i>
+                                {{ book.category.name }}
+                            </a>
                         </div>
                         
                         <div><strong>Language:</strong> {{ book.get_language_display }}</div>
@@ -116,108 +119,9 @@
                 <i class="fas fa-books mr-2 text-blue-500"></i>
                 Related Books
             </h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="book-grid">
                 {% for related_book in related_books %}
-                <div class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 hover:border-blue-300 group">
-                    <a href="{{ related_book.get_absolute_url }}" class="block">
-                        <!-- Book cover or placeholder -->
-                        <div class="h-32 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative">
-                            {% if related_book.cover_image %}
-                                <img loading="lazy" src="{{ related_book.cover_image.url }}" 
-                                     alt="{{ related_book.title }}" 
-                                     class="h-full w-auto object-cover">
-                            {% else %}
-                                <div class="text-center">
-                                    <i class="fas fa-book text-2xl text-gray-400 mb-1"></i>
-                                    <div class="text-xs text-gray-500 font-mono">{{ related_book.call_number }}</div>
-                                </div>
-                            {% endif %}
-                            
-                            <!-- Availability indicator -->
-                            <div class="absolute top-2 right-2">
-                                {% if related_book.is_available %}
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        <i class="fas fa-check-circle mr-1"></i>
-                                        Available
-                                    </span>
-                                {% else %}
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                        <i class="fas fa-times-circle mr-1"></i>
-                                        Not Available
-                                    </span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <!-- Book details -->
-                        <div class="p-4">
-                            <h4 class="font-semibold text-gray-900 text-sm mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                                {{ related_book.title }}
-                            </h4>
-                            
-                            <p class="text-xs text-gray-600 mb-3 line-clamp-1">
-                                by {{ related_book.authors_list }}
-                            </p>
-                            
-                            <!-- Call number and location -->
-                            <div class="bg-gray-50 rounded px-2 py-1 mb-3">
-                                <div class="flex items-center justify-between text-xs">
-                                    <span class="text-gray-500">Call Number:</span>
-                                    <span class="font-mono font-medium text-gray-700">{{ related_book.call_number }}</span>
-                                </div>
-                                {% if related_book.location_shelf %}
-                                <div class="flex items-center justify-between text-xs mt-1">
-                                    <span class="text-gray-500">Location:</span>
-                                    <span class="font-medium text-gray-700 flex items-center">
-                                        <i class="fas fa-map-marker-alt text-red-500 mr-1"></i>
-                                        {{ related_book.location_shelf }}
-                                    </span>
-                                </div>
-                                {% endif %}
-                            </div>
-                            
-                            <!-- Additional info -->
-                            <div class="flex items-center justify-between text-xs">
-                                <span class="text-gray-500">{{ related_book.publication_year }}</span>
-                                <span class="text-gray-500">{{ related_book.category.name }}</span>
-                            </div>
-                            
-                            <!-- Copies info -->
-                            <div class="flex items-center justify-between text-xs mt-1">
-                                <span class="text-gray-500">Copies:</span>
-                                <span class="font-medium {% if related_book.copies_available > 0 %}text-green-600{% else %}text-red-600{% endif %}">
-                                    {{ related_book.copies_available }}/{{ related_book.total_copies }}
-                                </span>
-                            </div>
-                            
-                            <!-- Popular indicator -->
-                            {% if related_book.times_borrowed > 5 %}
-                            <div class="flex items-center text-xs text-orange-600 mt-2">
-                                <i class="fas fa-fire mr-1"></i>
-                                <span>Popular ({{ related_book.times_borrowed }} times borrowed)</span>
-                            </div>
-                            {% endif %}
-                        </div>
-                    </a>
-                    
-                    <!-- Quick actions -->
-                    <div class="px-4 pb-3 border-t border-gray-100">
-                        <div class="flex items-center justify-between mt-2">
-                            <button class="copy-call-number-btn text-xs text-blue-600 hover:text-blue-800 flex items-center"
-                                    data-clipboard-text="{{ related_book.call_number }}"
-                                    title="Copy call number">
-                                <i class="fas fa-copy mr-1"></i>
-                                Copy Call #
-                            </button>
-                            
-                            <a href="{{ related_book.get_absolute_url }}" 
-                               class="text-xs text-gray-600 hover:text-gray-800 flex items-center">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Details
-                            </a>
-                        </div>
-                    </div>
-                </div>
+                    {% include "library/partials/book_card.html" with book=related_book %}
                 {% endfor %}
             </div>
             
