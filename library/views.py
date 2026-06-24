@@ -673,6 +673,11 @@ def category_books(request, slug):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
+    if request.headers.get('HX-Request'):
+        return render(request, 'library/partials/generic_load_more.html', {
+            'page_obj': page_obj
+        })
+    
     return render(request, 'library/category_books.html', {
         'category': category,
         'page_obj': page_obj
@@ -712,6 +717,11 @@ def author_detail(request, slug):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
+    if request.headers.get('HX-Request'):
+        return render(request, 'library/partials/generic_load_more.html', {
+            'page_obj': page_obj
+        })
+    
     return render(request, 'library/author_detail.html', {
         'author': author,
         'page_obj': page_obj
@@ -745,6 +755,11 @@ def publisher_detail(request, slug):
     paginator = Paginator(books, 12)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+    
+    if request.headers.get('HX-Request'):
+        return render(request, 'library/partials/generic_load_more.html', {
+            'page_obj': page_obj
+        })
     
     return render(request, 'library/publisher_detail.html', {
         'publisher': publisher,
