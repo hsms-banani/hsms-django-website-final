@@ -56,8 +56,8 @@
     }
     
     .book-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px -8px rgba(0,0,0,0.15), 0 4px 8px -2px rgba(0,0,0,0.1);
     }
 
     .book-card .book-title {
@@ -105,18 +105,22 @@
     /* Availability badges */
     .availability-badge {
         position: absolute;
-        top: 8px;
-        right: 8px;
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 0.75rem;
-        font-weight: 600;
+        top: 12px;
+        right: 12px;
+        padding: 4px 10px;
+        border-radius: 9999px;
+        font-size: 0.7rem;
+        font-weight: 700;
         text-transform: uppercase;
         font-family: var(--font-english);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        backdrop-filter: blur(4px);
+        z-index: 10;
+        letter-spacing: 0.05em;
     }
-    .available { background: #10B981; color: white; }
-    .unavailable { background: #EF4444; color: white; }
-    .limited { background: #F59E0B; color: white; }
+    .available { background: #059669; color: white; }
+    .unavailable { background: #DC2626; color: white; }
+    .limited { background: #D97706; color: white; }
     
     /* Search result highlighting */
     .search-result-item {

@@ -31,21 +31,23 @@
     <!-- Book Details -->
     <div class="p-4 space-y-3">
         <!-- Title -->
-        <h3 class="book-title text-lg font-semibold text-gray-900 leading-tight">
+        <h3 class="book-title text-lg font-semibold text-gray-900 leading-tight min-h-[3.5rem]">
             {% if book.slug %}
             <a href="{{ book.get_absolute_url }}" 
-               class="hover:text-blue-600 transition-colors mixed-content"
+               class="hover:text-blue-600 transition-colors mixed-content flex flex-col"
                title="{{ book.title }}{% if book.subtitle %} - {{ book.subtitle }}{% endif %}">
-                <span class="text-truncate-mixed">{{ book.title }}</span>
+                <span class="line-clamp-2">{{ book.title }}</span>
                 {% if book.subtitle %}
-                    <span class="text-sm text-gray-600 font-normal block mt-1 mixed-content">{{ book.subtitle|truncatechars:50 }}</span>
+                    <span class="text-sm text-gray-600 font-normal block mt-0.5 mixed-content truncate">{{ book.subtitle }}</span>
                 {% endif %}
             </a>
             {% else %}
-                <span class="text-truncate-mixed">{{ book.title }}</span>
-                {% if book.subtitle %}
-                    <span class="text-sm text-gray-600 font-normal block mt-1 mixed-content">{{ book.subtitle|truncatechars:50 }}</span>
-                {% endif %}
+                <div class="flex flex-col">
+                    <span class="line-clamp-2">{{ book.title }}</span>
+                    {% if book.subtitle %}
+                        <span class="text-sm text-gray-600 font-normal block mt-0.5 mixed-content truncate">{{ book.subtitle }}</span>
+                    {% endif %}
+                </div>
             {% endif %}
         </h3>
 
