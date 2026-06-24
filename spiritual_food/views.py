@@ -476,6 +476,9 @@ def liturgical_calendar(request):
     today = timezone.now().date()
     events = LiturgicalCalendar.objects.all()
     
+    # Get today's event
+    today_event = LiturgicalCalendar.objects.filter(date=today).first()
+    
     # Group events by their month (using the first day of the month as key)
     month_groups = defaultdict(list)
     for event in events:
@@ -503,6 +506,8 @@ def liturgical_calendar(request):
         
     context = {
         'events_by_month': events_by_month,
+        'today_event': today_event,
+        'today': today,
     }
     
     return render(request, 'spiritual_food/liturgical_calendar.html', context)
