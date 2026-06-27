@@ -20,14 +20,16 @@ def run_import_task(task_id, file_path):
     
     try:
         call_command('import_books', file_path, no_color=True, task_id=task_id, stdout=out, stderr=err)
-        task.status = 'COMPLETED'
+        status = 'COMPLETED'
     except Exception as e:
-        task.status = 'FAILED'
+        status = 'FAILED'
         err.write(f"\nFatal Error: {str(e)}")
         
     log = out.getvalue()
     if err.getvalue():
         log += "\nErrors:\n" + err.getvalue()
         
+    task.refresh_from_db()
+    task.status = status
     task.import_log = log
     task.save()
