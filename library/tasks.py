@@ -19,7 +19,7 @@ def run_import_task(task_id, file_path):
     err = io.StringIO()
     
     try:
-        call_command('import_books', file_path, '--no-color', f'--task-id={task_id}', stdout=out, stderr=err)
+        call_command('import_books', file_path, no_color=True, task_id=task_id, stdout=out, stderr=err)
         task.status = 'COMPLETED'
     except Exception as e:
         task.status = 'FAILED'
