@@ -4,17 +4,85 @@
 
 {% block content %}
 <div id="content-main">
+    {% if not task_id %}
     <form action="" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div>
             <label for="csv_file">{% trans 'Please select a CSV file to upload' %}</label>
-            <input type="file" name="csv_file" id="csv_file" accept=".csv">
+            <input type="file" name="csv_file" id="csv_file" accept=".csv" required>
         </div>
         <div class="submit-row">
-            <input type="submit" value="{% trans 'Upload' %}" class="default">
+            <input type="submit" value="{% trans 'Upload and Import' %}" class="default">
         </div>
     </form>
     {% include "admin/library/book/import_instructions.html" %}
+    {% else %}
+    <div style="margin-top: 30px; background: #fff; padding: 20px; border: 1px solid #ddd; border-radius: 4px; text-align: center;">
+        <h2>Importing Books...</h2>
+        <p id="progressStatus" style="color: #666; margin-bottom: 20px;">Starting background task...</p>
+        
+        <div style="width: 100%; background: #eee; border-radius: 10px; height: 20px; margin-bottom: 20px; overflow: hidden;">
+            <div id="progressBar" style="background: #417690; height: 100%; width: 0%; transition: width 0.3s;"></div>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; color: #444; font-size: 14px;">
+            <span>Processed: <strong id="progressProcessed">0</strong> / <strong id="progressTotal">0</strong></span>
+            <span>
+                Success: <strong id="progressSuccess" style="color: green;">0</strong> | 
+                Skipped: <strong id="progressSkipped" style="color: orange;">0</strong> | 
+                Errors: <strong id="progressError" style="color: red;">0</strong>
+            </span>
+        </div>
+    </div>
+    
+    <div id="logContainer" style="display: none; margin-top: 30px; background: #fff; padding: 20px; border: 1px solid #ddd;">
+        <h2>Final Import Log</h2>
+        <pre id="logContent" style="background: #f8f8f8; padding: 15px; border: 1px solid #eee; overflow: auto; max-height: 500px; white-space: pre-wrap; font-family: monospace; text-align: left;"></pre>
+        <div style="margin-top: 20px; text-align: center;">
+            <a href="." class="button" style="padding: 10px 15px; background: #417690; color: white; text-decoration: none; border-radius: 4px;">Upload Another File</a>
+        </div>
+    </div>
+    
+    <script>
+        const taskId = {{ task_id }};
+        const apiUrl = `/library/api/import-progress/${taskId}/`;
+        
+        function pollProgress() {
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if(data.error) {
+                        document.getElementById('progressStatus').innerText = "Error: " + data.error;
+                        return;
+                    }
+                    
+                    document.getElementById('progressBar').style.width = data.progress + '%';
+                    document.getElementById('progressStatus').innerText = "Status: " + data.status_display;
+                    document.getElementById('progressProcessed').innerText = data.processed;
+                    document.getElementById('progressTotal').innerText = data.total;
+                    document.getElementById('progressSuccess').innerText = data.success;
+                    document.getElementById('progressSkipped').innerText = data.skipped;
+                    document.getElementById('progressError').innerText = data.error;
+                    
+                    if(data.status === 'COMPLETED' || data.status === 'FAILED') {
+                        document.getElementById('progressStatus').innerText = "Import Finished!";
+                        document.getElementById('progressBar').style.background = data.status === 'COMPLETED' ? 'green' : 'red';
+                        
+                        document.getElementById('logContainer').style.display = 'block';
+                        document.getElementById('logContent').innerText = data.log || "No log generated.";
+                    } else {
+                        setTimeout(pollProgress, 1000); // poll every 1 second
+                    }
+                })
+                .catch(error => {
+                    console.error('Error polling progress:', error);
+                    setTimeout(pollProgress, 2000);
+                });
+        }
+        
+        pollProgress();
+    </script>
+    {% endif %}
 
     {% if import_log %}
     <div style="margin-top: 30px; background: #fff; padding: 20px; border: 1px solid #ddd;">

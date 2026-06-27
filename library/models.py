@@ -735,3 +735,38 @@ class LibraryPasswordSettings(models.Model):
 
     def __str__(self):
         return "Library Password Settings"
+
+
+class BookImportTask(models.Model):
+    """Model to track the background progress of bulk importing books"""
+    
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('PROCESSING', 'Processing'),
+        ('COMPLETED', 'Completed'),
+        ('FAILED', 'Failed'),
+    ]
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    file = models.FileField(upload_to='library/csv_uploads/')
+    total_rows = models.IntegerField(default=0)
+    processed_rows = models.IntegerField(default=0)
+    success_count = models.IntegerField(default=0)
+    error_count = models.IntegerField(default=0)
+    skipped_count = models.IntegerField(default=0)
+    import_log = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def get_progress_percentage(self):
+        if self.total_rows == 0:
+            return 0
+        return int((self.processed_rows / self.total_rows) * 100)
+
+    class Meta:
+        verbose_name = "Book Import Task"
+        verbose_name_plural = "Book Import Tasks"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Import Task {self.id} - {self.get_status_display()}"

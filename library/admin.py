@@ -413,26 +413,27 @@ class BookAdmin(admin.ModelAdmin):
             filename = fs.save(csv_file.name, csv_file)
             file_path = fs.path(filename)
 
-            import io
-            out = io.StringIO()
-            err = io.StringIO()
-            import_log = ""
+            from library.models import BookImportTask
+            from library.tasks import run_import_task
+            import threading
             
             try:
-                call_command('import_books', file_path, '--no-color', stdout=out, stderr=err)
-                import_log = out.getvalue()
-                self.message_user(request, "Successfully imported books from CSV file. See log below for details.")
+                task = BookImportTask.objects.create(file=filename)
+                
+                # Start background thread
+                thread = threading.Thread(target=run_import_task, args=(task.id, file_path))
+                thread.daemon = True
+                thread.start()
+                
+                self.message_user(request, f'Started background import for {filename}. Please wait while we process the file.')
+                context = self.admin_site.each_context(request)
+                context['task_id'] = task.id
+                return render(request, "admin/library/book/upload_csv.html", context)
+                
             except Exception as e:
-                import_log = out.getvalue()
-                if err.getvalue():
-                    import_log += "\nErrors:\n" + err.getvalue()
-                if not import_log:
-                    import_log = f'Exception: {str(e)}'
-                self.message_user(request, f"Import finished with some errors. See log below for details.", level=messages.WARNING)
-
-            context = self.admin_site.each_context(request)
-            context['import_log'] = import_log
-            return render(request, "admin/library/book/upload_csv.html", context)
+                self.message_user(request, f"Failed to start import task: {str(e)}", level=messages.ERROR)
+            
+            return redirect(".")
         
         context = self.admin_site.each_context(request)
         return render(request, "admin/library/book/upload_csv.html", context)

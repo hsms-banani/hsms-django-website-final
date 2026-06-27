@@ -29,6 +29,12 @@ class Command(BaseCommand):
             action='store_true',
             help='Perform a dry run without saving to database'
         )
+        parser.add_argument(
+            '--task-id',
+            type=int,
+            default=None,
+            help='ID of BookImportTask to update progress'
+        )
 
     def detect_encoding(self, file_path):
         """Auto-detect file encoding"""
@@ -136,6 +142,15 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         csv_file = options['csv_file']
         dry_run = options['dry_run']
+        task_id = options.get('task_id')
+        
+        task = None
+        if task_id:
+            from library.models import BookImportTask
+            try:
+                task = BookImportTask.objects.get(id=task_id)
+            except BookImportTask.DoesNotExist:
+                pass
         
         # Detect encoding
         encoding = options['encoding']
@@ -171,9 +186,15 @@ class Command(BaseCommand):
                 if missing_fields:
                     raise CommandError(f'Missing required columns: {", ".join(missing_fields)}')
                 
-                self.stdout.write(self.style.SUCCESS(f'\n📚 Starting import from {csv_file}...\n'))
+                rows = list(reader)
+                total_rows = len(rows)
+                if task:
+                    task.total_rows = total_rows
+                    task.save()
+                    
+                self.stdout.write(self.style.SUCCESS(f'\n📚 Starting import from {csv_file} ({total_rows} rows)...\n'))
                 
-                for row_num, row in enumerate(reader, start=2):
+                for row_num, row in enumerate(rows, start=2):
                     try:
                         # Check if row is completely empty
                         if not any(v.strip() for k, v in row.items() if k is not None and v is not None):
@@ -347,6 +368,21 @@ class Command(BaseCommand):
                         error_messages.append(error_msg)
                         error_count += 1
                         continue
+                        
+                    finally:
+                        if task and row_num % 10 == 0:
+                            task.processed_rows = row_num - 1
+                            task.success_count = success_count
+                            task.skipped_count = skipped_count
+                            task.error_count = error_count
+                            task.save()
+                            
+                if task:
+                    task.processed_rows = total_rows
+                    task.success_count = success_count
+                    task.skipped_count = skipped_count
+                    task.error_count = error_count
+                    task.save()
         
         except FileNotFoundError:
             raise CommandError(f'File not found: {csv_file}')

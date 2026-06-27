@@ -135,28 +135,49 @@ def upload_csv(request):
             filename = fs.save(csv_file.name, csv_file)
             file_path = fs.path(filename)
             
-            import io
-            out = io.StringIO()
-            err = io.StringIO()
-            import_log = ""
-            try:
-                # Use the enhanced import command with encoding detection
-                call_command('import_books', file_path, '--no-color', stdout=out, stderr=err)
-                import_log = out.getvalue()
-                messages.success(request, f'Successfully imported books from {filename}. See log below for details.')
-            except Exception as e:
-                import_log = out.getvalue()
-                if err.getvalue():
-                    import_log += "\nErrors:\n" + err.getvalue()
-                if not import_log:
-                    import_log = f'Exception: {str(e)}'
-                messages.warning(request, f'Import finished with errors. See log below for details.')
+            from library.models import BookImportTask
+            from library.tasks import run_import_task
+            import threading
             
-            return render(request, 'library/upload_csv.html', {'import_log': import_log})
+            try:
+                task = BookImportTask.objects.create(file=filename)
+                
+                # Start background thread
+                thread = threading.Thread(target=run_import_task, args=(task.id, file_path))
+                thread.daemon = True
+                thread.start()
+                
+                messages.info(request, f'Started background import for {filename}. Please wait while we process the file.')
+                return render(request, 'library/upload_csv.html', {'task_id': task.id})
+                
+            except Exception as e:
+                messages.error(request, f'Failed to start import task: {str(e)}')
+            
+            return render(request, 'library/upload_csv.html')
         else:
             messages.error(request, 'No CSV file selected.')
 
     return render(request, 'library/upload_csv.html')
+
+from django.http import JsonResponse
+
+def check_import_progress(request, task_id):
+    from library.models import BookImportTask
+    try:
+        task = BookImportTask.objects.get(id=task_id)
+        return JsonResponse({
+            'status': task.status,
+            'status_display': task.get_status_display(),
+            'total': task.total_rows,
+            'processed': task.processed_rows,
+            'success': task.success_count,
+            'skipped': task.skipped_count,
+            'error': task.error_count,
+            'progress': task.get_progress_percentage(),
+            'log': task.import_log if task.status in ['COMPLETED', 'FAILED'] else None
+        })
+    except BookImportTask.DoesNotExist:
+        return JsonResponse({'error': 'Task not found'}, status=404)
 
 def _get_filtered_sorted_books(request):
     """

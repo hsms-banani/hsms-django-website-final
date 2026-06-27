@@ -45,6 +45,7 @@ urlpatterns = [
     # CSV Import/Export
     path('download-csv-template/', views.download_csv_template, name='download_csv_template'),
     path('upload-csv/', views.upload_csv, name='upload_csv'),
+    path('api/import-progress/<int:task_id>/', views.check_import_progress, name='check_import_progress'),
 
     # Borrowing System
     path('my-books/', views_borrowing.my_borrowed_books, name='my_borrowed_books'),
