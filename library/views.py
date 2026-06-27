@@ -165,35 +165,22 @@ def _get_filtered_sorted_books(request):
         query_language = detect_text_language(query)
         
         if using_postgres:
-            # Enhanced PostgreSQL search with multilingual support
-            if query_language in ['bn', 'mixed']:
-                search_vector = (
-                    SearchVector('title', weight='A') + 
-                    SearchVector('title_bangla', weight='A') +
-                    SearchVector('subtitle', weight='B') +
-                    SearchVector('subtitle_bangla', weight='B') +
-                    SearchVector('authors__first_name', weight='B') +
-                    SearchVector('authors__last_name', weight='B') +
-                    SearchVector('authors__first_name_bangla', weight='B') +
-                    SearchVector('authors__last_name_bangla', weight='B') +
-                    SearchVector('keywords', weight='C') +
-                    SearchVector('keywords_bangla', weight='C') +
-                    SearchVector('isbn_10', weight='D') +
-                    SearchVector('isbn_13', weight='D') +
-                    SearchVector('call_number', weight='D')
-                )
-            else:
-                # Standard English search
-                search_vector = (
-                    SearchVector('title', weight='A') + 
-                    SearchVector('subtitle', weight='B') +
-                    SearchVector('authors__first_name', weight='B') +
-                    SearchVector('authors__last_name', weight='B') + 
-                    SearchVector('isbn_10', weight='C') +
-                    SearchVector('isbn_13', weight='C') +
-                    SearchVector('keywords', weight='C') +
-                    SearchVector('call_number', weight='D')
-                )
+            # Enhanced PostgreSQL search with unified multilingual support
+            search_vector = (
+                SearchVector('title', weight='A') + 
+                SearchVector('title_bangla', weight='A') +
+                SearchVector('subtitle', weight='B') +
+                SearchVector('subtitle_bangla', weight='B') +
+                SearchVector('authors__first_name', weight='B') +
+                SearchVector('authors__last_name', weight='B') +
+                SearchVector('authors__first_name_bangla', weight='B') +
+                SearchVector('authors__last_name_bangla', weight='B') +
+                SearchVector('keywords', weight='C') +
+                SearchVector('keywords_bangla', weight='C') +
+                SearchVector('isbn_10', weight='D') +
+                SearchVector('isbn_13', weight='D') +
+                SearchVector('call_number', weight='D')
+            )
             
             search_query = SearchQuery(query)
             books = books.annotate(
@@ -205,27 +192,16 @@ def _get_filtered_sorted_books(request):
             final_q = Q()
             
             for word in query_words:
-                if query_language in ['bn', 'mixed']:
-                    # Search in both English and Bangla fields
-                    word_q = (
-                        Q(title__icontains=word) | Q(title_bangla__icontains=word) |
-                        Q(subtitle__icontains=word) | Q(subtitle_bangla__icontains=word) |
-                        Q(authors__first_name__icontains=word) | Q(authors__last_name__icontains=word) |
-                        Q(authors__first_name_bangla__icontains=word) | Q(authors__last_name_bangla__icontains=word) |
-                        Q(keywords__icontains=word) | Q(keywords_bangla__icontains=word) |
-                        Q(isbn_10__icontains=word) | Q(isbn_13__icontains=word) |
-                        Q(call_number__icontains=word) |
-                        Q(publisher__name__icontains=word) | Q(category__name__icontains=word)
-                    )
-                else:
-                    # Standard English search
-                    word_q = (
-                        Q(title__icontains=word) | Q(subtitle__icontains=word) |
-                        Q(authors__first_name__icontains=word) | Q(authors__last_name__icontains=word) |
-                        Q(isbn_10__icontains=word) | Q(isbn_13__icontains=word) |
-                        Q(keywords__icontains=word) | Q(call_number__icontains=word) |
-                        Q(publisher__name__icontains=word) | Q(category__name__icontains=word)
-                    )
+                word_q = (
+                    Q(title__icontains=word) | Q(title_bangla__icontains=word) |
+                    Q(subtitle__icontains=word) | Q(subtitle_bangla__icontains=word) |
+                    Q(authors__first_name__icontains=word) | Q(authors__last_name__icontains=word) |
+                    Q(authors__first_name_bangla__icontains=word) | Q(authors__last_name_bangla__icontains=word) |
+                    Q(isbn_10__icontains=word) | Q(isbn_13__icontains=word) |
+                    Q(keywords__icontains=word) | Q(keywords_bangla__icontains=word) |
+                    Q(call_number__icontains=word) |
+                    Q(publisher__name__icontains=word) | Q(category__name__icontains=word)
+                )
                 final_q &= word_q
             
             if final_q:

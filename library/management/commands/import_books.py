@@ -362,7 +362,12 @@ class Command(BaseCommand):
         self.stdout.write('='*60 + '\n')
         
         if error_messages:
-            raise CommandError("\n".join(error_messages))
+            summary_msg = f"Imported {success_count}, Skipped {skipped_count}, Failed {error_count}."
+            if error_messages:
+                summary_msg += f" First error: {error_messages[0]}"
+                if len(error_messages) > 1:
+                    summary_msg += f" (and {len(error_messages)-1} more errors)."
+            raise CommandError(summary_msg)
 
         if dry_run:
             self.stdout.write(self.style.WARNING('This was a DRY RUN. No data was saved.\n'))
