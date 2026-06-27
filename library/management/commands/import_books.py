@@ -159,11 +159,15 @@ class Command(BaseCommand):
                 reader = csv.DictReader(content.splitlines())
                 # Validate required columns
                 required_fields = ['title', 'author', 'publisher', 'publication_year', 
-                                 'classification_number', 'cutter_number', 'category', 
-                                 'accession_number']
+                                 'cutter_number', 'category', 'accession_number']
                 
-                fieldnames_without_star = [fn.rstrip('* ') for fn in reader.fieldnames]
+                fieldnames_without_star = [fn.rstrip('* ').lower() for fn in reader.fieldnames]
+                has_classification = 'classification_number' in fieldnames_without_star or 'classification' in fieldnames_without_star
+                
                 missing_fields = [field for field in required_fields if field not in fieldnames_without_star]
+                if not has_classification:
+                    missing_fields.append('classification_number (or classification)')
+                
                 if missing_fields:
                     raise CommandError(f'Missing required columns: {", ".join(missing_fields)}')
                 
@@ -175,8 +179,8 @@ class Command(BaseCommand):
                         if not any(v.strip() for k, v in row.items() if k is not None and v is not None):
                             continue
 
-                        # Clean row keys to avoid issues with or without asterisks
-                        clean_row = {str(k).rstrip('* ').strip(): str(v) for k, v in row.items() if k is not None}
+                        # Clean row keys to avoid issues with or without asterisks, and make lowercase
+                        clean_row = {str(k).rstrip('* ').strip().lower(): str(v) for k, v in row.items() if k is not None}
 
                         with transaction.atomic():
                             # Check if book with accession number already exists
@@ -209,6 +213,9 @@ class Command(BaseCommand):
 
                             if not title and title_bangla:
                                 title = title_bangla
+                            
+                            if not title:
+                                raise ValueError("Title is required")
 
                             # Parse publication year robustly
                             pub_year_str = clean_row.get('publication_year', '').strip()
@@ -219,6 +226,38 @@ class Command(BaseCommand):
                                     extracted = int(match.group(0))
                                     if 1000 <= extracted <= 2025:
                                         pub_year = extracted
+
+                            # Parse and fix Dewey Decimal classification number
+                            classification = clean_row.get('classification_number', '')
+                            if not classification:
+                                classification = clean_row.get('classification', '')
+                            classification = classification.strip()
+                            
+                            if not classification:
+                                raise ValueError("Classification number is required")
+                            
+                            # Fix Dewey Decimal format issues caused by Excel
+                            if classification.startswith('0.') and len(classification) >= 4 and classification[2].isdigit():
+                                classification = classification[2:]
+                                
+                            parts = classification.split('.', 1)
+                            if parts[0].isdigit():
+                                parts[0] = parts[0].zfill(3)
+                                classification = '.'.join(parts)
+
+                            # Parse language safely
+                            raw_lang = clean_row.get('language', 'en').strip().lower()
+                            lang_map = {
+                                'english': 'en', 'eng': 'en', 'en': 'en',
+                                'bangla': 'bn', 'bengali': 'bn', 'bn': 'bn',
+                                'hindi': 'hi', 'urdu': 'ur', 'arabic': 'ar'
+                            }
+                            language = lang_map.get(raw_lang, 'en')
+
+                            # Parse status safely
+                            raw_status = clean_row.get('status', 'available').strip().lower()
+                            valid_statuses = [c[0] for c in Book.AVAILABILITY_STATUS]
+                            status = raw_status if raw_status in valid_statuses else 'available'
 
                             book_data = {
                                 'title': title,
@@ -231,10 +270,10 @@ class Command(BaseCommand):
                                 'publication_year': pub_year,
                                 'isbn_10': clean_row.get('isbn_10', '').strip(),
                                 'isbn_13': clean_row.get('isbn_13', '').strip(),
-                                'classification_number': clean_row.get('classification_number', '').strip(),
+                                'classification_number': classification,
                                 'cutter_number': clean_row.get('cutter_number', '').strip(),
                                 'category': category,
-                                'language': clean_row.get('language', 'en').strip() or 'en',
+                                'language': language,
                                 'pages': 0,
                                 'edition': normalize_unicode_text(clean_row.get('edition', '').strip()),
                                 'description': normalize_unicode_text(clean_row.get('description', '').strip()),
@@ -244,7 +283,7 @@ class Command(BaseCommand):
                                 'total_copies': 1,
                                 'copies_available': 1,
                                 'location_shelf': clean_row.get('location_shelf', '').strip(),
-                                'status': clean_row.get('status', 'available').strip().lower() or 'available',
+                                'status': status,
                             }
 
                             # Safely parse numeric fields
@@ -257,6 +296,10 @@ class Command(BaseCommand):
                                 book_data['copies_available'] = int(clean_row.get('copies_available', 1))
                             except (ValueError, TypeError):
                                 book_data['copies_available'] = 1
+                            
+                            # Ensure copies available doesn't exceed total copies
+                            if book_data['copies_available'] > book_data['total_copies']:
+                                book_data['copies_available'] = book_data['total_copies']
 
                             # Handle pages with a regex to extract the main number
                             pages_str = clean_row.get('pages', '').strip()

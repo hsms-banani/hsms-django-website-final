@@ -710,16 +710,14 @@ class LibraryPasswordSettings(models.Model):
     """Singleton model to store the default password for new users"""
     default_password = models.CharField(
         max_length=255, 
-        help_text="Default password for new library users. This will be hashed automatically."
+        help_text="Default password for new library users. This must be stored in plain text so it can be distributed."
     )
 
     def save(self, *args, **kwargs):
-        """Enforce a single instance and hash the password"""
+        """Enforce a single instance"""
         if not self.pk and LibraryPasswordSettings.objects.exists():
             raise ValidationError("There can be only one LibraryPasswordSettings instance.")
         
-        # Hash the password before saving
-        self.default_password = make_password(self.default_password)
         return super(LibraryPasswordSettings, self).save(*args, **kwargs)
 
     def clean(self):
