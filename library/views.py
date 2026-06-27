@@ -135,14 +135,24 @@ def upload_csv(request):
             filename = fs.save(csv_file.name, csv_file)
             file_path = fs.path(filename)
             
+            import io
+            out = io.StringIO()
+            err = io.StringIO()
+            import_log = ""
             try:
                 # Use the enhanced import command with encoding detection
-                call_command('import_books', file_path)
-                messages.success(request, f'Successfully imported books from {filename}.')
+                call_command('import_books', file_path, '--no-color', stdout=out, stderr=err)
+                import_log = out.getvalue()
+                messages.success(request, f'Successfully imported books from {filename}. See log below for details.')
             except Exception as e:
-                messages.error(request, f'Error importing books: {e}')
+                import_log = out.getvalue()
+                if err.getvalue():
+                    import_log += "\nErrors:\n" + err.getvalue()
+                if not import_log:
+                    import_log = f'Exception: {str(e)}'
+                messages.warning(request, f'Import finished with errors. See log below for details.')
             
-            return render(request, 'library/upload_csv.html')
+            return render(request, 'library/upload_csv.html', {'import_log': import_log})
         else:
             messages.error(request, 'No CSV file selected.')
 

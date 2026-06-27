@@ -15,5 +15,12 @@
         </div>
     </form>
     {% include "admin/library/book/import_instructions.html" %}
+
+    {% if import_log %}
+    <div style="margin-top: 30px; background: #fff; padding: 20px; border: 1px solid #ddd;">
+        <h2>Import Log</h2>
+        <pre style="background: #f8f8f8; padding: 15px; border: 1px solid #eee; overflow: auto; max-height: 500px; white-space: pre-wrap; font-family: monospace;">{{ import_log }}</pre>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

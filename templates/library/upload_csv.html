@@ -54,5 +54,12 @@
             </button>
         </div>
     </form>
+
+    {% if import_log %}
+    <div class="mt-8 bg-gray-50 border border-gray-200 rounded-lg p-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Import Log</h3>
+        <pre class="whitespace-pre-wrap text-sm text-gray-700 bg-white border border-gray-300 p-4 rounded overflow-auto max-h-96">{{ import_log }}</pre>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

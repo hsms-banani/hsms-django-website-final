@@ -413,15 +413,26 @@ class BookAdmin(admin.ModelAdmin):
             filename = fs.save(csv_file.name, csv_file)
             file_path = fs.path(filename)
 
+            import io
+            out = io.StringIO()
+            err = io.StringIO()
+            import_log = ""
+            
             try:
-                call_command('import_books', file_path)
-                self.message_user(request, "Successfully imported books from CSV file.")
-            except CommandError as e:
-                self.message_user(request, f"Error importing books: {e}", level=messages.ERROR)
+                call_command('import_books', file_path, '--no-color', stdout=out, stderr=err)
+                import_log = out.getvalue()
+                self.message_user(request, "Successfully imported books from CSV file. See log below for details.")
             except Exception as e:
-                self.message_user(request, f"An unexpected error occurred: {e}", level=messages.ERROR)
+                import_log = out.getvalue()
+                if err.getvalue():
+                    import_log += "\nErrors:\n" + err.getvalue()
+                if not import_log:
+                    import_log = f'Exception: {str(e)}'
+                self.message_user(request, f"Import finished with some errors. See log below for details.", level=messages.WARNING)
 
-            return redirect("..")
+            context = self.admin_site.each_context(request)
+            context['import_log'] = import_log
+            return render(request, "admin/library/book/upload_csv.html", context)
         
         context = self.admin_site.each_context(request)
         return render(request, "admin/library/book/upload_csv.html", context)
