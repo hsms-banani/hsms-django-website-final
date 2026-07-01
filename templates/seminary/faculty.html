@@ -109,7 +109,7 @@
         border: 1px solid rgba(0, 0, 0, 0.04);
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02), 0 0 2px rgba(0, 0, 0, 0.04);
-        transition: box-shadow 0.2s ease, transform 0.2s ease;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         position: relative;
         overflow: hidden;
         display: flex;
@@ -117,8 +117,8 @@
     }
     
     .fluent-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.04), 0 0 2px rgba(0, 0, 0, 0.06);
+        transform: translateY(-8px);
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.05);
     }
     
     .fluent-btn-primary {
@@ -190,6 +190,11 @@
         height: 100%;
         object-fit: cover;
         object-position: center top; /* Anchors the image to the top to keep the head visible */
+        transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    
+    .fluent-card:hover .faculty-img {
+        transform: scale(1.05);
     }
     
     /* Subtle fade-in animation */
@@ -322,7 +327,7 @@
                     
                     <!-- Content Section -->
                     <div class="p-5 flex-grow flex flex-col">
-                        <h3 class="text-xl font-semibold text-gray-900 mb-1">
+                        <h3 class="faculty-name text-xl font-semibold text-gray-900 mb-1 whitespace-nowrap overflow-hidden">
                             {{ faculty.name }}
                         </h3>
                         
@@ -437,4 +442,20 @@
         </a>
     </div>
 </section>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const names = document.querySelectorAll('.faculty-name');
+        names.forEach(name => {
+            let sizeRem = 1.25; // text-xl is 1.25rem
+            name.style.fontSize = sizeRem + 'rem';
+            // Keep reducing the font size until it fits without overflowing
+            // Minimum size capped at 0.8rem to ensure it remains readable
+            while (name.scrollWidth > name.offsetWidth && sizeRem > 0.8) {
+                sizeRem -= 0.05;
+                name.style.fontSize = sizeRem + 'rem';
+            }
+        });
+    });
+</script>
 {% endblock %}
