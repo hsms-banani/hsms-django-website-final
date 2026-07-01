@@ -403,7 +403,7 @@ class Command(BaseCommand):
                 summary_msg += f" First error: {error_messages[0]}"
                 if len(error_messages) > 1:
                     summary_msg += f" (and {len(error_messages)-1} more errors)."
-            raise CommandError(summary_msg)
+            self.stdout.write(self.style.WARNING(summary_msg))
 
         if dry_run:
             self.stdout.write(self.style.WARNING('This was a DRY RUN. No data was saved.\n'))
