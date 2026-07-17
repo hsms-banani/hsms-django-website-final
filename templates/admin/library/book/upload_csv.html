@@ -29,8 +29,8 @@
             <span>Processed: <strong id="progressProcessed">0</strong> / <strong id="progressTotal">0</strong></span>
             <span>
                 Success: <strong id="progressSuccess" style="color: green;">0</strong> | 
-                Skipped: <strong id="progressSkipped" style="color: orange;">0</strong> | 
-                Errors: <strong id="progressError" style="color: red;">0</strong>
+                Skipped: <strong id="progressSkipped" style="color: orange; cursor: pointer; text-decoration: underline;" onclick="showLogDetails('skipped')" title="Click to see skipped books">0</strong> | 
+                Errors: <strong id="progressError" style="color: red; cursor: pointer; text-decoration: underline;" onclick="showLogDetails('error')" title="Click to see errors">0</strong>
             </span>
         </div>
     </div>
@@ -43,9 +43,52 @@
         </div>
     </div>
     
+    <!-- Modal for showing skipped/error details -->
+    <div id="detailsModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+        <div style="background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 800px; border-radius: 5px;">
+            <span onclick="document.getElementById('detailsModal').style.display='none'" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            <h2 id="detailsModalTitle">Details</h2>
+            <pre id="detailsModalContent" style="background: #f8f8f8; padding: 15px; border: 1px solid #eee; overflow: auto; max-height: 400px; white-space: pre-wrap; font-family: monospace; text-align: left;"></pre>
+        </div>
+    </div>
+    
     <script>
         const taskId = {{ task_id }};
         const apiUrl = `/library/api/import-progress/${taskId}/`;
+        let fullImportLog = "";
+        
+        function showLogDetails(type) {
+            if (!fullImportLog) {
+                alert("Please wait for the import to finish to see the details.");
+                return;
+            }
+            
+            const lines = fullImportLog.split('\n');
+            let filteredLines = [];
+            let title = "";
+            
+            if (type === 'skipped') {
+                title = "Skipped Books Details";
+                filteredLines = lines.filter(line => line.includes("Skipping."));
+                if (filteredLines.length === 0) filteredLines = ["No skipped books found in the log."];
+            } else if (type === 'error') {
+                title = "Error Details";
+                filteredLines = lines.filter(line => line.includes("✗ Row") || line.includes("Missing accession_number") || line.includes("Error:") || line.includes("Fatal Error:"));
+                if (filteredLines.length === 0) filteredLines = ["No errors found in the log."];
+            }
+            
+            document.getElementById('detailsModalTitle').innerText = title;
+            document.getElementById('detailsModalContent').innerText = filteredLines.join('\n');
+            document.getElementById('detailsModal').style.display = 'block';
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('detailsModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
         
         function pollProgress() {
             fetch(apiUrl)
@@ -69,7 +112,8 @@
                         document.getElementById('progressBar').style.background = data.status === 'COMPLETED' ? 'green' : 'red';
                         
                         document.getElementById('logContainer').style.display = 'block';
-                        document.getElementById('logContent').innerText = data.log || "No log generated.";
+                        fullImportLog = data.log || "No log generated.";
+                        document.getElementById('logContent').innerText = fullImportLog;
                     } else {
                         setTimeout(pollProgress, 1000); // poll every 1 second
                     }
