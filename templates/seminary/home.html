@@ -7,6 +7,22 @@
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css">
 <style>
+    /* Pro Smooth Scroll Reveal Micro-Animations */
+    .reveal-on-scroll {
+        opacity: 0;
+        transform: translateY(32px);
+        transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: opacity, transform;
+    }
+    .reveal-on-scroll.is-revealed {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    .reveal-stagger > *:nth-child(1) { transition-delay: 0ms; }
+    .reveal-stagger > *:nth-child(2) { transition-delay: 120ms; }
+    .reveal-stagger > *:nth-child(3) { transition-delay: 240ms; }
+    .reveal-stagger > *:nth-child(4) { transition-delay: 360ms; }
+
     /* Custom Splide Styling for Fluent Theme */
     .faculty-splide .splide__arrow,
     .news-splide .splide__arrow {
@@ -491,12 +507,12 @@
     <!-- Welcome Section -->
     <section class="py-20 bg-white border-b border-slate-100 relative">
         <div class="container mx-auto px-4 max-w-6xl">
-            <div class="text-center mb-16">
+            <div class="text-center mb-16 reveal-on-scroll">
                 <h2 class="text-4xl md:text-5xl fluent-section-title mb-4">Welcome to Our Seminary</h2>
                 <p class="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">Holy Spirit Major Seminary is committed to forming future priests through comprehensive education in Philosophy and Theology, fostering spiritual growth and service to the Church and society.</p>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 reveal-on-scroll reveal-stagger">
                 <div class="fluent-card p-8 text-center group cursor-pointer">
                     <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300 shadow-sm">
                         <i class="fas fa-graduation-cap text-2xl"></i>
@@ -528,7 +544,7 @@
     {% if featured_news %}
     <section class="py-24 bg-[#f8fafc] border-b border-slate-200/80 relative">
         <div class="container mx-auto px-4 max-w-6xl">
-            <div class="flex justify-between items-end mb-10">
+            <div class="flex justify-between items-end mb-10 reveal-on-scroll">
                 <div>
                     <h2 class="text-4xl md:text-5xl fluent-section-title">Latest News</h2>
                 </div>
@@ -537,7 +553,7 @@
                 </a>
             </div>
             
-            <div id="news-splide" class="splide news-splide" aria-label="Latest News Articles">
+            <div id="news-splide" class="splide news-splide reveal-on-scroll" aria-label="Latest News Articles">
                 <div class="splide__track">
                     <ul class="splide__list">
                         {% for news in featured_news %}
@@ -607,7 +623,7 @@
         <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
         <div class="container mx-auto px-4 max-w-6xl relative z-10">
-            <div class="flex justify-between items-end mb-12">
+            <div class="flex justify-between items-end mb-12 reveal-on-scroll">
                 <div>
                     <h2 class="text-4xl md:text-5xl font-bold tracking-tight text-white mb-2">Upcoming Events</h2>
                     <p class="text-slate-300 text-sm">Join us for our upcoming spiritual, academic, and community gatherings</p>
@@ -617,7 +633,7 @@
                 </a>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 reveal-on-scroll reveal-stagger">
                 {% for event in upcoming_events %}
                 <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl flex flex-row group hover:bg-white/15 hover:-translate-y-1.5 transition-all duration-300 overflow-hidden shadow-xl">
                     <!-- Left Accent/Date Block -->
@@ -657,7 +673,7 @@
     {% if faculty_highlights %}
     <section class="py-24 bg-white relative">
         <div class="container mx-auto px-4 max-w-6xl">
-            <div class="flex justify-between items-end mb-10">
+            <div class="flex justify-between items-end mb-10 reveal-on-scroll">
                 <div>
                     <h2 class="text-4xl md:text-5xl fluent-section-title">Our Faculty</h2>
                 </div>
@@ -666,7 +682,7 @@
                 </a>
             </div>
             
-            <div id="faculty-splide" class="splide faculty-splide" aria-label="Our Faculty Members">
+            <div id="faculty-splide" class="splide faculty-splide reveal-on-scroll" aria-label="Our Faculty Members">
                 <div class="splide__track">
                     <ul class="splide__list">
                         {% for faculty in faculty_highlights %}
@@ -722,14 +738,14 @@
     {% if recent_publications %}
     <section class="py-24 bg-[#f8fafc] border-t border-slate-200/80 relative">
         <div class="container mx-auto px-4 max-w-6xl">
-            <div class="flex justify-between items-end mb-12">
+            <div class="flex justify-between items-end mb-12 reveal-on-scroll">
                 <h2 class="text-4xl md:text-5xl fluent-section-title">Recent Publications</h2>
                 <a href="{% url 'publications' %}" class="text-[var(--fluent-primary)] hover:underline font-semibold flex items-center text-sm">
                     View All Publications <i class="fas fa-arrow-right ml-2"></i>
                 </a>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 reveal-on-scroll reveal-stagger">
                 {% for publication in recent_publications %}
                 <div class="fluent-card flex flex-col h-full group hover:-translate-y-1">
                     <div class="relative overflow-hidden h-48 bg-white flex items-center justify-center p-4 border-b border-gray-100">
@@ -850,6 +866,24 @@
                 newsAutoplay.play();
             }
         }
+
+        // Pro Smooth Scroll Reveal Micro-Animation Engine
+        const revealObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-revealed');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            root: null,
+            rootMargin: '0px 0px -50px 0px',
+            threshold: 0.1
+        });
+
+        document.querySelectorAll('.reveal-on-scroll').forEach(el => {
+            revealObserver.observe(el);
+        });
     });
 
     // Enhanced Hero Slider functionality with auto-play
