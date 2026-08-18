@@ -619,8 +619,8 @@
                     <ul class="splide__list">
                         {% for faculty in faculty_highlights %}
                         <li class="splide__slide p-2">
-                            <div class="fluent-card p-6 text-center group flex flex-col items-center h-full">
-                                <div class="w-32 h-32 rounded-full p-1 border-2 border-gray-100 mb-5 relative group-hover:border-[var(--fluent-primary)] transition-colors duration-300 bg-white shadow-sm z-10">
+                            <div class="fluent-card p-6 text-center group flex flex-col items-center h-full hover:shadow-xl transition-all duration-300">
+                                <div class="w-32 h-32 rounded-full p-1 border-2 border-gray-100 mb-5 relative group-hover:border-[var(--fluent-primary)] group-hover:scale-105 transition-all duration-300 bg-white shadow-sm z-10">
                                     {% if faculty.photo %}
                                     <img loading="lazy" src="{{ faculty.photo.url }}" alt="{{ faculty.name }}" class="w-full h-full rounded-full object-cover">
                                     {% else %}
@@ -637,6 +637,28 @@
                             </div>
                         </li>
                         {% endfor %}
+                        {% if faculty_highlights|length <= 4 %}
+                        {% for faculty in faculty_highlights %}
+                        <li class="splide__slide p-2">
+                            <div class="fluent-card p-6 text-center group flex flex-col items-center h-full hover:shadow-xl transition-all duration-300">
+                                <div class="w-32 h-32 rounded-full p-1 border-2 border-gray-100 mb-5 relative group-hover:border-[var(--fluent-primary)] group-hover:scale-105 transition-all duration-300 bg-white shadow-sm z-10">
+                                    {% if faculty.photo %}
+                                    <img loading="lazy" src="{{ faculty.photo.url }}" alt="{{ faculty.name }}" class="w-full h-full rounded-full object-cover">
+                                    {% else %}
+                                    <div class="w-full h-full rounded-full bg-blue-50 flex items-center justify-center">
+                                        <i class="fas fa-user text-blue-300 text-4xl"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="bg-white bg-opacity-80 -mt-10 pt-10 pb-2 px-2 w-full rounded-xl flex-grow flex flex-col items-center">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-1 group-hover:text-[var(--fluent-primary)] transition-colors line-clamp-1">{{ faculty.name }}</h3>
+                                    <p class="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-3 line-clamp-1">{{ faculty.title }}</p>
+                                    <span class="fluent-tag">{{ faculty.get_department_display }}</span>
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                        {% endif %}
                     </ul>
                 </div>
             </div>
@@ -693,17 +715,18 @@
     document.addEventListener('DOMContentLoaded', function() {
         const facultySplideEl = document.getElementById('faculty-splide');
         if (facultySplideEl && typeof Splide !== 'undefined') {
-            const facultyCount = facultySplideEl.querySelectorAll('.splide__slide').length;
-            new Splide('#faculty-splide', {
-                type: facultyCount > 4 ? 'loop' : 'slide',
+            const facultySplide = new Splide('#faculty-splide', {
+                type: 'loop',
                 perPage: 4,
                 perMove: 1,
                 gap: '1.5rem',
                 autoplay: true,
-                interval: 3500,
-                speed: 700,
+                interval: 2500,
+                speed: 800,
+                easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
                 pauseOnHover: true,
                 pauseOnFocus: true,
+                resetProgress: false,
                 arrows: true,
                 pagination: true,
                 breakpoints: {
@@ -724,7 +747,15 @@
                         gap: '0.75rem',
                     }
                 }
-            }).mount();
+            });
+
+            facultySplide.mount();
+
+            // Force autoplay to start immediately
+            const autoplay = facultySplide.Components.Autoplay;
+            if (autoplay) {
+                autoplay.play();
+            }
         }
     });
 
