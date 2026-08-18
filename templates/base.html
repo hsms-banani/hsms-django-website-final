@@ -250,26 +250,30 @@
 
         /* Header styles - Premium Refined */
         .top-header {
-            background-color: #0f172a !important;
+            background-color: #080f1e !important;
             color: #cbd5e1 !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .main-header {
-            background-color: rgba(255, 255, 255, 0.98) !important;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05) !important;
+            background-color: rgba(255, 255, 255, 0.96) !important;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06) !important;
         }
 
         .main-nav {
-            background: linear-gradient(135deg, #1e3a8a 0%, #172554 100%) !important;
+            background: linear-gradient(135deg, #0b1b36 0%, #102a4e 50%, #0b1b36 100%) !important;
             color: white !important;
+            border-bottom: 2px solid rgba(245, 158, 11, 0.4);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
-        /* Footer styles - Force consistency */
+        /* Footer styles - Luxury Dark Theme */
         .main-footer {
-            background: linear-gradient(135deg, #1e3a8a 0%, #172554 100%) !important;
-            color: white !important;
-            border-top: 4px solid #667eea;
+            background: linear-gradient(180deg, #080e1a 0%, #060a14 60%, #03050a 100%) !important;
+            color: #cbd5e1 !important;
+            position: relative;
         }
 
         .main-footer h3,
@@ -459,38 +463,39 @@
 </head>
 <body class="bg-white text-gray-800 overflow-x-hidden">
     <!-- Top Header - Fixed styling -->
-    <div class="top-header text-white py-2 text-sm">
+    <div class="top-header text-slate-300 py-2 text-xs md:text-sm">
         <div class="container mx-auto px-4 flex justify-between items-center">
             <div class="flex items-center space-x-4">
-                <span><i class="fas fa-map-marker-alt mr-1"></i> Banani, Dhaka, Bangladesh</span>
-                <span class="hidden sm:inline"><i class="fas fa-envelope mr-1"></i>hsmsmajorseminary@gmail.com</span>
+                <span class="flex items-center"><i class="fas fa-map-marker-alt text-amber-400 mr-1.5"></i> Banani, Dhaka, Bangladesh</span>
+                <span class="hidden sm:flex items-center"><i class="fas fa-envelope text-blue-400 mr-1.5"></i> hsmsmajorseminary@gmail.com</span>
             </div>
-                            <div class="hidden md:flex items-center space-x-4">
-                                                    {% if user.is_authenticated %}
-                                                        <span class="text-white font-semibold">Welcome, {{ user.get_full_name|default:user.username }}</span>
-                                                        <a href="{% url 'library:my_borrowed_books' %}" class="bg-white/20 px-3 py-1 rounded-full text-sm hover:bg-white/30 transition-colors">
-                                                            <i class="fas fa-user-circle mr-1"></i> My Account
-                                                        </a>
-                                                        {% if user.is_staff %}
-                                                            <a href="{% url 'library:librarian_dashboard' %}" class="bg-green-500/80 px-3 py-1 rounded-full text-sm hover:bg-green-500/90 transition-colors">
-                                                                <i class="fas fa-tachometer-alt mr-1"></i> Dashboard
-                                                            </a>
-                                                            <a href="{% url 'admin:index' %}" class="bg-blue-500/80 px-3 py-1 rounded-full text-sm hover:bg-blue-500/90 transition-colors">
-                                                                <i class="fas fa-cogs mr-1"></i> Admin
-                                                            </a>
-                                                        {% endif %}
-                                                        <form action="{% url 'logout' %}" method="post" class="inline">
-                                                            {% csrf_token %}
-                                                            <button type="submit" class="bg-red-500/80 px-3 py-1 rounded-full text-sm hover:bg-red-500/90 transition-colors">
-                                                                <i class="fas fa-sign-out-alt mr-1"></i> Logout
-                                                            </button>
-                                                        </form>
-                                                    {% else %}
-                                                        <a href="{% url 'login' %}" class="bg-white/20 px-3 py-1 rounded-full text-sm hover:bg-white/30 transition-colors">
-                                                            <i class="fas fa-sign-in-alt mr-1"></i> Login
-                                                        </a>
-                                                    {% endif %}
-                            </div>        </div>
+            <div class="flex items-center space-x-3">
+                {% if user.is_authenticated %}
+                    <span class="text-white font-medium hidden md:inline">Welcome, {{ user.get_full_name|default:user.username }}</span>
+                    <a href="{% url 'library:my_borrowed_books' %}" class="bg-white/10 hover:bg-white/20 text-white px-3 py-1 rounded-full text-xs font-medium transition-all backdrop-blur-sm border border-white/10">
+                        <i class="fas fa-user-circle mr-1"></i> My Account
+                    </a>
+                    {% if user.is_staff %}
+                        <a href="{% url 'library:librarian_dashboard' %}" class="bg-emerald-600/90 hover:bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-medium transition-all shadow-sm">
+                            <i class="fas fa-tachometer-alt mr-1"></i> Dashboard
+                        </a>
+                        <a href="{% url 'admin:index' %}" class="bg-blue-600/90 hover:bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-medium transition-all shadow-sm">
+                            <i class="fas fa-cogs mr-1"></i> Admin
+                        </a>
+                    {% endif %}
+                    <form action="{% url 'logout' %}" method="post" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-rose-600/90 hover:bg-rose-500 text-white px-3 py-1 rounded-full text-xs font-medium transition-all shadow-sm">
+                            <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}" class="bg-blue-600 hover:bg-blue-500 text-white px-3.5 py-1 rounded-full text-xs font-semibold transition-all shadow-sm flex items-center">
+                        <i class="fas fa-sign-in-alt mr-1.5"></i> Login
+                    </a>
+                {% endif %}
+            </div>
+        </div>
     </div>
 
     <!-- Main Header - Fixed styling -->
@@ -500,19 +505,19 @@
                 <!-- Logo and Seminary Name -->
                 <div class="flex items-center space-x-4">
                     <!-- Logo -->
-                    <div class="flex-shrink-0 relative overflow-hidden rounded-full logo-shine-container">
+                    <div class="flex-shrink-0 relative overflow-hidden rounded-full ring-2 ring-blue-600/20 shadow-md p-0.5 bg-white">
                         <img loading="lazy" src="{% static 'img/logo.png' %}" 
                             alt="Holy Spirit Major Seminary Logo" 
-                            class="w-12 h-12 md:w-16 md:h-16 object-contain">
+                            class="w-12 h-12 md:w-14 md:h-14 object-contain">
                     </div>
 
                     <!-- Name and Tagline -->
                     <div>
-                        <h1 class="text-lg md:text-2xl font-bold premium-logo-text leading-tight">
+                        <h1 class="text-xl md:text-2xl font-bold font-serif text-gray-900 tracking-tight leading-tight">
                             Holy Spirit Major Seminary
                         </h1>
-                        <p class="text-xs md:text-sm text-gray-600 italic">
-                            Dedicated for Service
+                        <p class="text-xs md:text-sm text-blue-700 font-medium tracking-wide flex items-center">
+                            <span class="w-1.5 h-1.5 bg-amber-500 rounded-full mr-1.5"></span> Dedicated for Service
                         </p>
                     </div>
                 </div>
@@ -764,86 +769,124 @@
     </main>
 
     <!-- Footer - Fixed styling -->
-    <footer class="main-footer mt-16">
-        <div class="container mx-auto px-4 py-12">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <!-- Seminary Info -->
-                <div class="col-span-1 md:col-span-2">
-                    <div class="flex items-center space-x-4 mb-6">
-                        <!-- Logo -->
-                        <div class="flex-shrink-0">
+    <footer class="main-footer mt-16 relative overflow-hidden">
+        <!-- Top Gradient Accent Bar -->
+        <div class="h-1.5 w-full bg-gradient-to-r from-blue-600 via-amber-500 to-indigo-600"></div>
+
+        <div class="container mx-auto px-4 py-16 relative z-10">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-10">
+                <!-- Seminary Info (Col 5) -->
+                <div class="md:col-span-5 space-y-6">
+                    <div class="flex items-center space-x-3.5">
+                        <div class="flex-shrink-0 bg-white/10 p-1.5 rounded-full border border-white/15 shadow-md">
                             <img loading="lazy" src="{% static 'img/hsms-logo-mini.png' %}" 
                                 alt="Holy Spirit Major Seminary Logo" 
                                 class="w-10 h-10 md:w-12 md:h-12 object-contain">
                         </div>
 
-                        <!-- Name and Tagline -->
                         <div>
-                            <h3 class="text-lg md:text-xl font-bold font-serif text-gray-100">
+                            <h3 class="text-xl font-bold font-serif text-white tracking-tight">
                                 Holy Spirit Major Seminary
                             </h3>
-                            <p class="text-gray-400 text-sm">
+                            <p class="text-amber-400 text-xs font-semibold tracking-wider uppercase">
                                 Dedicated for Service
                             </p>
                         </div>
                     </div>
 
-                    <p class="text-gray-300 mb-4 leading-relaxed">
-                        Holy Spirit Major Seminary is committed to forming future priests and religious through comprehensive education in Philosophy and Theology, fostering spiritual growth and service to the Church and society.
+                    <p class="text-slate-300 text-sm leading-relaxed max-w-md">
+                        Holy Spirit Major Seminary is committed to forming future priests and religious through comprehensive education in Philosophy and Theology, fostering spiritual growth and dedicated service to the Church and society.
                     </p>
-                    <div class="flex space-x-4">
-                        <a href="https://www.facebook.com/profile.php?id=61587276509353" target="_blank" rel="noopener noreferrer" class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
-                            <i class="fab fa-facebook-f"></i>
+
+                    <div class="flex items-center space-x-3 pt-2">
+                        <a href="https://www.facebook.com/profile.php?id=61587276509353" target="_blank" rel="noopener noreferrer" class="w-9 h-9 bg-white/10 border border-white/15 rounded-xl flex items-center justify-center text-white hover:bg-blue-600 hover:border-blue-500 hover:scale-110 transition-all shadow-sm">
+                            <i class="fab fa-facebook-f text-sm"></i>
                         </a>
-                        <a href="https://www.youtube.com/@Holy-Spirit-Major-Seminary" class="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center hover:bg-red-700 transition-colors">
-                            <i class="fab fa-youtube"></i>
+                        <a href="https://www.youtube.com/@Holy-Spirit-Major-Seminary" target="_blank" rel="noopener noreferrer" class="w-9 h-9 bg-white/10 border border-white/15 rounded-xl flex items-center justify-center text-white hover:bg-red-600 hover:border-red-500 hover:scale-110 transition-all shadow-sm">
+                            <i class="fab fa-youtube text-sm"></i>
                         </a>
-                        <a href="#" class="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center hover:bg-pink-700 transition-colors">
-                            <i class="fab fa-instagram"></i>
+                        <a href="#" class="w-9 h-9 bg-white/10 border border-white/15 rounded-xl flex items-center justify-center text-white hover:bg-pink-600 hover:border-pink-500 hover:scale-110 transition-all shadow-sm">
+                            <i class="fab fa-instagram text-sm"></i>
                         </a>
                     </div>
                 </div>
 
-                <!-- Quick Links -->
-                <div>
-                    <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
-                    <ul class="space-y-2">
-                        <li><a href="{% url 'about_seminary' %}" class="text-gray-300 hover:text-white transition-colors">About Us</a></li>
-                        <li><a href="{% url 'faculty_list' %}" class="text-gray-300 hover:text-white transition-colors">Faculty</a></li>
-                        <li><a href="{% url 'hsit_about' %}" class="text-gray-300 hover:text-white transition-colors">HSIT</a></li>
-                        <li><a href="{% url 'publications' %}" class="text-gray-300 hover:text-white transition-colors">Publications</a></li>
-                        <li><a href="{% url 'events_list' %}" class="text-gray-300 hover:text-white transition-colors">Events</a></li>
-                        <li><a href="{% url 'contact' %}" class="text-gray-300 hover:text-white transition-colors">Contact</a></li>
+                <!-- Quick Links (Col 3) -->
+                <div class="md:col-span-3">
+                    <h4 class="text-base font-bold text-white uppercase tracking-wider mb-5 flex items-center">
+                        <span class="w-2 h-2 bg-amber-400 rounded-full mr-2"></span> Quick Navigation
+                    </h4>
+                    <ul class="space-y-2.5 text-sm">
+                        <li>
+                            <a href="{% url 'about_seminary' %}" class="text-slate-300 hover:text-amber-400 transition-colors flex items-center group">
+                                <i class="fas fa-chevron-right text-amber-400/70 text-[10px] mr-2 transition-transform group-hover:translate-x-1"></i> About Our Seminary
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'faculty_list' %}" class="text-slate-300 hover:text-amber-400 transition-colors flex items-center group">
+                                <i class="fas fa-chevron-right text-amber-400/70 text-[10px] mr-2 transition-transform group-hover:translate-x-1"></i> Faculty & Formation Team
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'hsit_about' %}" class="text-slate-300 hover:text-amber-400 transition-colors flex items-center group">
+                                <i class="fas fa-chevron-right text-amber-400/70 text-[10px] mr-2 transition-transform group-hover:translate-x-1"></i> About HSIT
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'publications' %}" class="text-slate-300 hover:text-amber-400 transition-colors flex items-center group">
+                                <i class="fas fa-chevron-right text-amber-400/70 text-[10px] mr-2 transition-transform group-hover:translate-x-1"></i> Publications & Research
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'events_list' %}" class="text-slate-300 hover:text-amber-400 transition-colors flex items-center group">
+                                <i class="fas fa-chevron-right text-amber-400/70 text-[10px] mr-2 transition-transform group-hover:translate-x-1"></i> Upcoming Events
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'contact' %}" class="text-slate-300 hover:text-amber-400 transition-colors flex items-center group">
+                                <i class="fas fa-chevron-right text-amber-400/70 text-[10px] mr-2 transition-transform group-hover:translate-x-1"></i> Contact Us
+                            </a>
+                        </li>
                     </ul>
                 </div>
 
-                <!-- Contact Info -->
-                <div>
-                    <h4 class="text-lg font-semibold mb-4">Contact Info</h4>
-                    <div class="space-y-3">
-                        <div class="flex items-start space-x-3">
-                            <i class="fas fa-map-marker-alt text-blue-400 mt-1"></i>
+                <!-- Contact & Location Info (Col 4) -->
+                <div class="md:col-span-4 space-y-4">
+                    <h4 class="text-base font-bold text-white uppercase tracking-wider mb-5 flex items-center">
+                        <span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span> Contact & Location
+                    </h4>
+                    
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3.5 hover:border-blue-500/40 transition-all">
+                        <div class="flex items-start space-x-3 text-xs md:text-sm">
+                            <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
                             <div>
-                                <p class="text-gray-300">Holy Spirit Major Seminary</p>
-                                <p class="text-gray-300">Block A-112, Road 27, Banani, Dhaka 1213</p>
-                                <p class="text-gray-300">Bangladesh</p>
+                                <p class="text-white font-medium">Holy Spirit Major Seminary</p>
+                                <p class="text-slate-300 text-xs">Block A-112, Road 27, Banani, Dhaka-1213, Bangladesh</p>
                             </div>
                         </div>
-                        <div class="flex items-center space-x-3">
-                            <i class="fas fa-envelope text-blue-400"></i>
-                            <p class="text-gray-300">hsmsmajorseminary@gmail.com</p>
+
+                        <div class="flex items-center space-x-3 text-xs md:text-sm pt-2 border-t border-white/10">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <span class="text-slate-300 truncate">hsmsmajorseminary@gmail.com</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="border-t border-white border-opacity-10 mt-8 pt-8 text-center">
-                <p class="text-blue-200">
-                    &copy; <span id="currentYear">2025</span> Holy Spirit Major Seminary. All rights reserved. | 
-                    <a href="{% url 'privacy_policy' %}" class="hover:text-white transition-colors">Privacy Policy</a> | 
-                    <a href="{% url 'terms_of_service' %}" class="hover:text-white transition-colors">Terms of Service</a> | 
-                    <a href="{% url 'site_map' %}" class="hover:text-white transition-colors">Sitemap</a>
+            <!-- Bottom Divider & Copyright -->
+            <div class="border-t border-white/10 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-400 space-y-4 md:space-y-0">
+                <p>
+                    &copy; <span id="currentYear">2026</span> <strong class="text-slate-200">Holy Spirit Major Seminary</strong>. All rights reserved.
                 </p>
+                <div class="flex space-x-6">
+                    <a href="{% url 'privacy_policy' %}" class="hover:text-amber-400 transition-colors">Privacy Policy</a>
+                    <a href="{% url 'terms_of_service' %}" class="hover:text-amber-400 transition-colors">Terms of Service</a>
+                    <a href="{% url 'site_map' %}" class="hover:text-amber-400 transition-colors">Sitemap</a>
+                </div>
             </div>
         </div>
     </footer>
