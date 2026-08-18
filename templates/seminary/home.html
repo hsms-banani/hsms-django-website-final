@@ -8,7 +8,8 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css">
 <style>
     /* Custom Splide Styling for Fluent Theme */
-    .faculty-splide .splide__arrow {
+    .faculty-splide .splide__arrow,
+    .news-splide .splide__arrow {
         background: rgba(255, 255, 255, 0.9);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
@@ -19,41 +20,51 @@
         transition: all 0.2s ease;
         opacity: 0.85;
     }
-    .faculty-splide .splide__arrow:hover {
+    .faculty-splide .splide__arrow:hover,
+    .news-splide .splide__arrow:hover {
         background: var(--fluent-primary);
         color: white;
         opacity: 1;
         transform: scale(1.08);
     }
-    .faculty-splide .splide__arrow:hover svg {
+    .faculty-splide .splide__arrow:hover svg,
+    .news-splide .splide__arrow:hover svg {
         fill: white;
     }
-    .faculty-splide .splide__arrow--prev {
+    .faculty-splide .splide__arrow--prev,
+    .news-splide .splide__arrow--prev {
         left: -1.25rem;
     }
-    .faculty-splide .splide__arrow--next {
+    .faculty-splide .splide__arrow--next,
+    .news-splide .splide__arrow--next {
         right: -1.25rem;
     }
     @media (max-width: 640px) {
-        .faculty-splide .splide__arrow--prev { left: 0.25rem; }
-        .faculty-splide .splide__arrow--next { right: 0.25rem; }
+        .faculty-splide .splide__arrow--prev,
+        .news-splide .splide__arrow--prev { left: 0.25rem; }
+        .faculty-splide .splide__arrow--next,
+        .news-splide .splide__arrow--next { right: 0.25rem; }
     }
-    .faculty-splide .splide__pagination {
+    .faculty-splide .splide__pagination,
+    .news-splide .splide__pagination {
         bottom: -1.75rem;
     }
-    .faculty-splide .splide__pagination__page {
+    .faculty-splide .splide__pagination__page,
+    .news-splide .splide__pagination__page {
         background: #cbd5e1;
         width: 8px;
         height: 8px;
         transition: all 0.3s ease;
     }
-    .faculty-splide .splide__pagination__page.is-active {
+    .faculty-splide .splide__pagination__page.is-active,
+    .news-splide .splide__pagination__page.is-active {
         background: var(--fluent-primary);
         width: 24px;
         border-radius: 4px;
         transform: scale(1);
     }
-    .faculty-splide .splide__track {
+    .faculty-splide .splide__track,
+    .news-splide .splide__track {
         padding-top: 0.5rem;
         padding-bottom: 0.75rem;
     }
@@ -517,37 +528,72 @@
     {% if featured_news %}
     <section class="py-20 bg-white">
         <div class="container mx-auto px-4 max-w-6xl">
-            <div class="flex justify-between items-end mb-12">
-                <h2 class="text-4xl md:text-5xl fluent-section-title">Latest News</h2>
+            <div class="flex justify-between items-end mb-10">
+                <div>
+                    <h2 class="text-4xl md:text-5xl fluent-section-title">Latest News</h2>
+                </div>
                 <a href="{% url 'news_list' %}" class="text-[var(--fluent-primary)] hover:underline font-semibold flex items-center text-sm">
                     View All News <i class="fas fa-arrow-right ml-2"></i>
                 </a>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {% for news in featured_news %}
-                <article class="fluent-card flex flex-col h-full group">
-                    <div class="relative overflow-hidden h-48">
-                        {% if news.featured_image %}
-                        <img loading="lazy" src="{{ news.featured_image.url }}" alt="{{ news.title }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
-                        {% else %}
-                        <div class="w-full h-full bg-blue-50 flex items-center justify-center transition-transform duration-500 group-hover:scale-105">
-                            <i class="fas fa-newspaper text-blue-300 text-5xl"></i>
-                        </div>
+            <div id="news-splide" class="splide news-splide" aria-label="Latest News Articles">
+                <div class="splide__track">
+                    <ul class="splide__list">
+                        {% for news in featured_news %}
+                        <li class="splide__slide p-2">
+                            <article class="fluent-card flex flex-col h-full group hover:shadow-xl transition-all duration-300">
+                                <div class="relative overflow-hidden h-48 rounded-t-2xl">
+                                    {% if news.featured_image %}
+                                    <img loading="lazy" src="{{ news.featured_image.url }}" alt="{{ news.title }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                                    {% else %}
+                                    <div class="w-full h-full bg-blue-50 flex items-center justify-center transition-transform duration-500 group-hover:scale-105">
+                                        <i class="fas fa-newspaper text-blue-300 text-5xl"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="p-6 flex flex-col flex-grow bg-white bg-opacity-80">
+                                    <h3 class="text-xl font-semibold mb-3 text-gray-800 line-clamp-2 leading-tight group-hover:text-[var(--fluent-primary)] transition-colors">
+                                        <a href="{{ news.get_absolute_url }}">{{ news.title }}</a>
+                                    </h3>
+                                    <p class="text-gray-600 mb-6 line-clamp-3 text-sm flex-grow">{{ news.excerpt }}</p>
+                                    <div class="flex justify-between items-center text-xs text-gray-500 mt-auto pt-4 border-t border-gray-100">
+                                        <span class="flex items-center"><i class="far fa-calendar-alt mr-2"></i>{{ news.created_at|date:"M d, Y" }}</span>
+                                        <a href="{{ news.get_absolute_url }}" class="text-[var(--fluent-primary)] font-semibold hover:underline">Read More</a>
+                                    </div>
+                                </div>
+                            </article>
+                        </li>
+                        {% endfor %}
+                        {% if featured_news|length <= 3 %}
+                        {% for news in featured_news %}
+                        <li class="splide__slide p-2">
+                            <article class="fluent-card flex flex-col h-full group hover:shadow-xl transition-all duration-300">
+                                <div class="relative overflow-hidden h-48 rounded-t-2xl">
+                                    {% if news.featured_image %}
+                                    <img loading="lazy" src="{{ news.featured_image.url }}" alt="{{ news.title }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                                    {% else %}
+                                    <div class="w-full h-full bg-blue-50 flex items-center justify-center transition-transform duration-500 group-hover:scale-105">
+                                        <i class="fas fa-newspaper text-blue-300 text-5xl"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="p-6 flex flex-col flex-grow bg-white bg-opacity-80">
+                                    <h3 class="text-xl font-semibold mb-3 text-gray-800 line-clamp-2 leading-tight group-hover:text-[var(--fluent-primary)] transition-colors">
+                                        <a href="{{ news.get_absolute_url }}">{{ news.title }}</a>
+                                    </h3>
+                                    <p class="text-gray-600 mb-6 line-clamp-3 text-sm flex-grow">{{ news.excerpt }}</p>
+                                    <div class="flex justify-between items-center text-xs text-gray-500 mt-auto pt-4 border-t border-gray-100">
+                                        <span class="flex items-center"><i class="far fa-calendar-alt mr-2"></i>{{ news.created_at|date:"M d, Y" }}</span>
+                                        <a href="{{ news.get_absolute_url }}" class="text-[var(--fluent-primary)] font-semibold hover:underline">Read More</a>
+                                    </div>
+                                </div>
+                            </article>
+                        </li>
+                        {% endfor %}
                         {% endif %}
-                    </div>
-                    <div class="p-6 flex flex-col flex-grow bg-white bg-opacity-80">
-                        <h3 class="text-xl font-semibold mb-3 text-gray-800 line-clamp-2 leading-tight group-hover:text-[var(--fluent-primary)] transition-colors">
-                            <a href="{{ news.get_absolute_url }}">{{ news.title }}</a>
-                        </h3>
-                        <p class="text-gray-600 mb-6 line-clamp-3 text-sm flex-grow">{{ news.excerpt }}</p>
-                        <div class="flex justify-between items-center text-xs text-gray-500 mt-auto pt-4 border-t border-gray-100">
-                            <span class="flex items-center"><i class="far fa-calendar-alt mr-2"></i>{{ news.created_at|date:"M d, Y" }}</span>
-                            <a href="{{ news.get_absolute_url }}" class="text-[var(--fluent-primary)] font-semibold hover:underline">Read More</a>
-                        </div>
-                    </div>
-                </article>
-                {% endfor %}
+                    </ul>
+                </div>
             </div>
         </div>
     </section>
@@ -755,6 +801,47 @@
             const autoplay = facultySplide.Components.Autoplay;
             if (autoplay) {
                 autoplay.play();
+            }
+        }
+
+        // Initialize Splide for Latest News
+        const newsSplideEl = document.getElementById('news-splide');
+        if (newsSplideEl && typeof Splide !== 'undefined') {
+            const newsSplide = new Splide('#news-splide', {
+                type: 'loop',
+                perPage: 3,
+                perMove: 1,
+                gap: '1.5rem',
+                autoplay: true,
+                interval: 3000,
+                speed: 800,
+                easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+                pauseOnHover: true,
+                pauseOnFocus: true,
+                resetProgress: false,
+                arrows: true,
+                pagination: true,
+                breakpoints: {
+                    1024: {
+                        perPage: 3,
+                        gap: '1.25rem',
+                    },
+                    768: {
+                        perPage: 2,
+                        gap: '1rem',
+                    },
+                    640: {
+                        perPage: 1,
+                        gap: '0.75rem',
+                    }
+                }
+            });
+
+            newsSplide.mount();
+
+            const newsAutoplay = newsSplide.Components.Autoplay;
+            if (newsAutoplay) {
+                newsAutoplay.play();
             }
         }
     });
