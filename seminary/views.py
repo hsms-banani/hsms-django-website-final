@@ -25,13 +25,13 @@ def home(request):
     context = {
         'site_settings': site_settings,
         'sliders': Slider.objects.filter(is_active=True).order_by('order')[:5],
-        'featured_news': News.objects.filter(is_published=True, is_featured=True).order_by('-created_at')[:3],
+        'featured_news': News.objects.filter(is_published=True, is_featured=True).only('id', 'title', 'slug', 'excerpt', 'featured_image', 'created_at').order_by('-created_at')[:10],
         'upcoming_events': Event.objects.filter(
             is_published=True, 
             start_date__gte=timezone.now()
-        ).order_by('start_date')[:3],
-        'recent_publications': Publication.objects.filter(is_published=True).order_by('-publication_date')[:3],
-        'faculty_highlights': Faculty.objects.filter(is_active=True).order_by('order')[:4],
+        ).order_by('start_date')[:6],
+        'recent_publications': Publication.objects.filter(is_published=True).order_by('-publication_date')[:6],
+        'faculty_highlights': Faculty.objects.filter(is_active=True).only('id', 'name', 'title', 'photo', 'department', 'order').order_by('order')[:25],
         'current_announcements': Announcement.objects.filter(
             is_active=True,
             show_on_homepage=True,
