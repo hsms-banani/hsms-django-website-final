@@ -489,7 +489,7 @@
     {% endif %}
 
     <!-- Welcome Section -->
-    <section class="py-20 bg-[#faf9f8]">
+    <section class="py-20 bg-white border-b border-slate-100 relative">
         <div class="container mx-auto px-4 max-w-6xl">
             <div class="text-center mb-16">
                 <h2 class="text-4xl md:text-5xl fluent-section-title mb-4">Welcome to Our Seminary</h2>
@@ -526,7 +526,7 @@
 
     <!-- Featured News -->
     {% if featured_news %}
-    <section class="py-20 bg-white">
+    <section class="py-24 bg-[#f8fafc] border-b border-slate-200/80 relative">
         <div class="container mx-auto px-4 max-w-6xl">
             <div class="flex justify-between items-end mb-10">
                 <div>
@@ -601,41 +601,47 @@
 
     <!-- Upcoming Events -->
     {% if upcoming_events %}
-    <section class="py-20 bg-[#faf9f8]">
-        <div class="container mx-auto px-4 max-w-6xl">
+    <section class="py-24 bg-gradient-to-br from-[#0b1b36] via-[#102a4e] to-[#0a182e] text-white relative overflow-hidden shadow-2xl">
+        <!-- Subtle background glowing accents -->
+        <div class="absolute -top-24 -left-24 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="container mx-auto px-4 max-w-6xl relative z-10">
             <div class="flex justify-between items-end mb-12">
-                <h2 class="text-4xl md:text-5xl fluent-section-title">Upcoming Events</h2>
-                <a href="{% url 'events_list' %}" class="text-[var(--fluent-primary)] hover:underline font-semibold flex items-center text-sm">
+                <div>
+                    <h2 class="text-4xl md:text-5xl font-bold tracking-tight text-white mb-2">Upcoming Events</h2>
+                    <p class="text-slate-300 text-sm">Join us for our upcoming spiritual, academic, and community gatherings</p>
+                </div>
+                <a href="{% url 'events_list' %}" class="text-blue-400 hover:text-blue-300 hover:underline font-semibold flex items-center text-sm transition-colors">
                     View All Events <i class="fas fa-arrow-right ml-2"></i>
                 </a>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {% for event in upcoming_events %}
-                <div class="fluent-card flex flex-row group hover:-translate-y-1">
+                <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl flex flex-row group hover:bg-white/15 hover:-translate-y-1.5 transition-all duration-300 overflow-hidden shadow-xl">
                     <!-- Left Accent/Date Block -->
-                    <div class="w-24 bg-white border-r border-gray-100 flex flex-col items-center justify-center py-6 relative flex-shrink-0">
-                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-[var(--fluent-primary)]"></div>
-                        <span class="text-3xl font-bold text-gray-800 leading-none mb-1">{{ event.start_date|date:"d" }}</span>
-                        <span class="text-xs uppercase font-semibold text-gray-500 tracking-wider">{{ event.start_date|date:"M" }}</span>
+                    <div class="w-24 bg-gradient-to-b from-blue-600 to-indigo-700 text-white flex flex-col items-center justify-center py-6 relative flex-shrink-0 shadow-inner">
+                        <span class="text-3xl font-extrabold leading-none mb-1 text-white">{{ event.start_date|date:"d" }}</span>
+                        <span class="text-xs uppercase font-bold text-blue-100 tracking-wider">{{ event.start_date|date:"M" }}</span>
                     </div>
                     
                     <!-- Content -->
-                    <div class="p-5 flex flex-col flex-grow bg-white bg-opacity-60">
-                        <h3 class="text-lg font-semibold mb-2 text-gray-800 line-clamp-2 group-hover:text-[var(--fluent-primary)] transition-colors">
+                    <div class="p-5 flex flex-col flex-grow text-white">
+                        <h3 class="text-lg font-semibold mb-2 text-white line-clamp-2 group-hover:text-blue-300 transition-colors">
                             <a href="{{ event.get_absolute_url }}">{{ event.title }}</a>
                         </h3>
-                        <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ event.description|smart_preview:25 }}</p>
+                        <p class="text-sm text-slate-300 mb-4 line-clamp-2 leading-relaxed">{{ event.description|smart_preview:25 }}</p>
                         
-                        <div class="mt-auto space-y-2">
+                        <div class="mt-auto space-y-2 pt-3 border-t border-white/10">
                             {% if event.location %}
-                            <div class="flex items-center text-xs text-gray-500">
-                                <i class="fas fa-map-marker-alt w-4 text-center mr-2 text-[var(--fluent-primary)]"></i>
+                            <div class="flex items-center text-xs text-slate-300">
+                                <i class="fas fa-map-marker-alt w-4 text-center mr-2 text-blue-400"></i>
                                 <span class="truncate">{{ event.location }}</span>
                             </div>
                             {% endif %}
-                            <div class="flex items-center text-xs text-gray-500">
-                                <i class="far fa-clock w-4 text-center mr-2 text-[var(--fluent-primary)]"></i>
+                            <div class="flex items-center text-xs text-slate-300">
+                                <i class="far fa-clock w-4 text-center mr-2 text-blue-400"></i>
                                 <span>{{ event.start_date|date:"g:i A" }}</span>
                             </div>
                         </div>
@@ -649,7 +655,7 @@
 
     <!-- Faculty Highlights -->
     {% if faculty_highlights %}
-    <section class="py-20 bg-white">
+    <section class="py-24 bg-white relative">
         <div class="container mx-auto px-4 max-w-6xl">
             <div class="flex justify-between items-end mb-10">
                 <div>
@@ -714,7 +720,7 @@
 
     <!-- Recent Publications -->
     {% if recent_publications %}
-    <section class="py-20 bg-[#faf9f8]">
+    <section class="py-24 bg-[#f8fafc] border-t border-slate-200/80 relative">
         <div class="container mx-auto px-4 max-w-6xl">
             <div class="flex justify-between items-end mb-12">
                 <h2 class="text-4xl md:text-5xl fluent-section-title">Recent Publications</h2>
