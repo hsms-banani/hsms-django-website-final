@@ -216,14 +216,19 @@
                             <span class="l-badge">{{ today_event.get_season_display }}</span>
                             <span class="l-badge">Cycle {{ today_event.get_cycle_display }}</span>
                             <span class="l-badge">{{ today_event.get_rank_display }}</span>
+                            {% if today_event.secondary_color %}
+                            <span class="l-badge bg-black/20" title="Liturgical Color Options">
+                                <i class="fas fa-palette text-xs mr-1"></i> {{ today_event.get_color_display }} / {{ today_event.get_secondary_color_display }}
+                            </span>
+                            {% endif %}
                             {% if today_event.is_holy_day_of_obligation %}
                             <span class="l-badge badge-alert" style="color: #9d5d00; background: #fff4ce;"><i class="fas fa-exclamation-circle"></i> {% trans "Holy Day" %}</span>
                             {% endif %}
                         </div>
 
                         {% if today_event.saints.all %}
-                        <div class="mt-4 p-3 rounded-lg" style="background: rgba(0,0,0,0.05);">
-                            <strong class="text-xs uppercase tracking-wider block mb-1 opacity-80">Commemorating</strong>
+                        <div class="mt-3 p-3 rounded-lg" style="background: rgba(0,0,0,0.05);">
+                            <strong class="text-xs uppercase tracking-wider block mb-1 opacity-80">Commemorating Saints</strong>
                             <span class="text-sm font-medium">
                                 {% for saint in today_event.saints.all %}
                                 {{ saint.name }}{% if not forloop.last %}, {% endif %}
@@ -231,9 +236,21 @@
                             </span>
                         </div>
                         {% endif %}
+
+                        {% if today_event.commemorations %}
+                        <div class="mt-3 p-3 rounded-lg bg-black/10 text-sm">
+                            <strong class="text-xs uppercase tracking-wider block mb-1 opacity-90 flex items-center gap-1">
+                                <i class="fas fa-cross text-xs"></i> Commemorations / স্মৃতিতর্পণ
+                            </strong>
+                            <div class="whitespace-pre-line opacity-95 text-xs">{{ today_event.commemorations }}</div>
+                        </div>
+                        {% endif %}
                     </div>
                     
                     <div class="flex flex-col justify-center">
+                        <div class="mb-2 font-semibold text-sm opacity-90 flex items-center gap-1">
+                            <i class="fas fa-book-open"></i> Primary Readings (প্রধান পাঠসমূহ)
+                        </div>
                         <div class="reading-grid !border-none !pt-0 !mt-0 text-base">
                             <div class="reading-label"><i class="fas fa-book-open w-5 opacity-70"></i> 1st:</div>
                             <div>{{ today_event.first_reading }}</div>
@@ -249,6 +266,37 @@
                             <div class="reading-label"><i class="fas fa-bible w-5 opacity-70"></i> Gospel:</div>
                             <div class="font-bold">{{ today_event.gospel }}</div>
                         </div>
+
+                        {% if today_event.alt_first_reading or today_event.alt_gospel or today_event.alt_reading_title %}
+                        <div class="mt-4 pt-3 border-t border-dashed border-current/25">
+                            <div class="text-xs font-bold uppercase tracking-wider mb-2 opacity-95 flex items-center gap-1.5">
+                                <i class="fas fa-exchange-alt text-xs"></i>
+                                {% if today_event.alt_reading_title %}
+                                    {{ today_event.alt_reading_title }}
+                                {% else %}
+                                    Or Alternative Readings (অথবা বাণীবিতান)
+                                {% endif %}
+                            </div>
+                            <div class="reading-grid !pt-1 !mt-0 !border-none text-sm">
+                                {% if today_event.alt_first_reading %}
+                                <div class="reading-label"><i class="fas fa-book-open w-5 opacity-70"></i> Alt 1st:</div>
+                                <div>{{ today_event.alt_first_reading }}</div>
+                                {% endif %}
+                                {% if today_event.alt_responsorial_psalm %}
+                                <div class="reading-label"><i class="fas fa-music w-5 opacity-70"></i> Alt Ps:</div>
+                                <div>{{ today_event.alt_responsorial_psalm }}</div>
+                                {% endif %}
+                                {% if today_event.alt_second_reading %}
+                                <div class="reading-label"><i class="fas fa-book-open w-5 opacity-70"></i> Alt 2nd:</div>
+                                <div>{{ today_event.alt_second_reading }}</div>
+                                {% endif %}
+                                {% if today_event.alt_gospel %}
+                                <div class="reading-label"><i class="fas fa-bible w-5 opacity-70"></i> Alt Gos:</div>
+                                <div class="font-bold">{{ today_event.alt_gospel }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -270,7 +318,7 @@
                             <span class="date-header">{{ event.date|date:"d" }}</span>
                             <span class="text-sm font-medium opacity-90">{{ event.date|date:"l" }}</span>
                         </div>
-                        <div class="flex gap-1 flex-wrap justify-end max-w-[50%]">
+                        <div class="flex gap-1 flex-wrap justify-end max-w-[60%]">
                             {% if event.is_holy_day_of_obligation %}
                             <span class="l-badge badge-alert" style="color: #9d5d00; background: #fff4ce;" title="Holy Day of Obligation"><i class="fas fa-exclamation-circle"></i></span>
                             {% endif %}
@@ -281,18 +329,33 @@
                     <h3 class="event-title">{{ event.name }}</h3>
 
                     <!-- Mini Badges -->
-                    <div class="flex flex-wrap gap-1.5 mb-4">
+                    <div class="flex flex-wrap gap-1.5 mb-3">
                         <span class="l-badge text-xs px-2 py-0.5">{{ event.get_season_display }}</span>
                         <span class="l-badge text-xs px-2 py-0.5">{{ event.get_rank_display }}</span>
+                        {% if event.secondary_color %}
+                        <span class="l-badge text-xs px-2 py-0.5 bg-black/20" title="Dual Color Options: {{ event.get_color_display }} or {{ event.get_secondary_color_display }}">
+                            <i class="fas fa-palette text-[10px] mr-1"></i> {{ event.get_color_display }}/{{ event.get_secondary_color_display }}
+                        </span>
+                        {% endif %}
                     </div>
 
                     <!-- Saints -->
                     {% if event.saints.all %}
-                    <div class="text-sm mb-3 opacity-90 leading-tight">
+                    <div class="text-sm mb-2 opacity-90 leading-tight">
                         <i class="fas fa-user-circle mr-1"></i>
                         {% for saint in event.saints.all %}
                         {{ saint.name }}{% if not forloop.last %}, {% endif %}
                         {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Local Commemorations -->
+                    {% if event.commemorations %}
+                    <div class="mb-3 p-2 rounded bg-black/10 text-xs">
+                        <strong class="block text-[10px] font-semibold mb-0.5 opacity-90 flex items-center gap-1">
+                            <i class="fas fa-cross text-[9px]"></i> Commemorations / স্মৃতিতর্পণ
+                        </strong>
+                        <div class="whitespace-pre-line opacity-95 text-xs">{{ event.commemorations }}</div>
                     </div>
                     {% endif %}
 
@@ -312,6 +375,38 @@
                         <div class="reading-label">Gos:</div>
                         <div class="font-bold">{{ event.gospel }}</div>
                     </div>
+
+                    <!-- Alternative Readings (Or / অথবা) -->
+                    {% if event.alt_first_reading or event.alt_gospel or event.alt_reading_title %}
+                    <div class="mt-3 pt-2.5 border-t border-dashed border-current/25">
+                        <div class="text-[11px] font-bold uppercase tracking-wider mb-1 opacity-95 flex items-center gap-1">
+                            <i class="fas fa-exchange-alt text-[9px]"></i>
+                            {% if event.alt_reading_title %}
+                                {{ event.alt_reading_title }}
+                            {% else %}
+                                Or / অথবা (Alt Readings)
+                            {% endif %}
+                        </div>
+                        <div class="reading-grid !pt-1 !mt-0 !border-none text-xs">
+                            {% if event.alt_first_reading %}
+                            <div class="reading-label">Alt 1st:</div>
+                            <div>{{ event.alt_first_reading }}</div>
+                            {% endif %}
+                            {% if event.alt_responsorial_psalm %}
+                            <div class="reading-label">Alt Ps:</div>
+                            <div>{{ event.alt_responsorial_psalm }}</div>
+                            {% endif %}
+                            {% if event.alt_second_reading %}
+                            <div class="reading-label">Alt 2nd:</div>
+                            <div>{{ event.alt_second_reading }}</div>
+                            {% endif %}
+                            {% if event.alt_gospel %}
+                            <div class="reading-label">Alt Gos:</div>
+                            <div class="font-bold">{{ event.alt_gospel }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
 
                 </div>
                 {% endfor %}

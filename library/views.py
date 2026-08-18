@@ -3,7 +3,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db import connections
 from django.http import JsonResponse, HttpResponse
-from django.db.models import Q, Count, Case, When, Prefetch, Sum, Avg, Q, F
+from django.db.models import Q, Count, Case, When, Prefetch, Sum, Avg, F, IntegerField
 from django.db.models.functions import TruncDate
 from datetime import datetime, timedelta
 from django.core.paginator import Paginator
@@ -181,7 +181,7 @@ def check_import_progress(request, task_id):
 
 def _get_filtered_sorted_books(request):
     """
-    Enhanced filtering with multilingual support
+    Enhanced filtering with multilingual support, search accuracy, and relevance scoring
     """
     books = get_optimized_book_queryset()
     query = request.GET.get('q', '').strip()
@@ -218,27 +218,60 @@ def _get_filtered_sorted_books(request):
                 rank=SearchRank(search_vector, search_query)
             ).filter(rank__gte=0.1)
         else:
-            # Enhanced SQLite search with multilingual support
-            query_words = query.split()
-            final_q = Q()
-            
+            # Enhanced SQLite search with relevance scoring & stop-word precision
+            STOP_WORDS = {'my', 'in', 'of', 'to', 'a', 'an', 'the', 'is', 'it', 'by', 'for', 'on', 'at', 'or', 'and'}
+            query_words = [w for w in query.split() if w.lower() not in STOP_WORDS or len(query.split()) == 1]
+            if not query_words:
+                query_words = query.split()
+
+            # Exact phrase query condition
+            exact_phrase_q = (
+                Q(title__icontains=query) | Q(title_bangla__icontains=query) |
+                Q(subtitle__icontains=query) | Q(subtitle_bangla__icontains=query) |
+                Q(authors__first_name__icontains=query) | Q(authors__last_name__icontains=query) |
+                Q(authors__first_name_bangla__icontains=query) | Q(authors__last_name_bangla__icontains=query) |
+                Q(isbn_10__icontains=query) | Q(isbn_13__icontains=query) |
+                Q(call_number__icontains=query) | Q(keywords__icontains=query) |
+                Q(keywords_bangla__icontains=query)
+            )
+
+            # Word-level query condition
+            words_q = Q()
             for word in query_words:
-                word_q = (
-                    Q(title__icontains=word) | Q(title_bangla__icontains=word) |
-                    Q(subtitle__icontains=word) | Q(subtitle_bangla__icontains=word) |
-                    Q(authors__first_name__icontains=word) | Q(authors__last_name__icontains=word) |
-                    Q(authors__first_name_bangla__icontains=word) | Q(authors__last_name_bangla__icontains=word) |
-                    Q(isbn_10__icontains=word) | Q(isbn_13__icontains=word) |
-                    Q(keywords__icontains=word) | Q(keywords_bangla__icontains=word) |
-                    Q(call_number__icontains=word) |
-                    Q(publisher__name__icontains=word) | Q(category__name__icontains=word)
+                w_lower = word.lower()
+                if w_lower in STOP_WORDS and len(query_words) > 1:
+                    # Ignore short stop words for broad generic fields like publisher/category
+                    word_q = (
+                        Q(title__icontains=word) | Q(title_bangla__icontains=word) |
+                        Q(subtitle__icontains=word) | Q(subtitle_bangla__icontains=word) |
+                        Q(authors__first_name__icontains=word) | Q(authors__last_name__icontains=word)
+                    )
+                else:
+                    word_q = (
+                        Q(title__icontains=word) | Q(title_bangla__icontains=word) |
+                        Q(subtitle__icontains=word) | Q(subtitle_bangla__icontains=word) |
+                        Q(authors__first_name__icontains=word) | Q(authors__last_name__icontains=word) |
+                        Q(authors__first_name_bangla__icontains=word) | Q(authors__last_name_bangla__icontains=word) |
+                        Q(isbn_10__icontains=word) | Q(isbn_13__icontains=word) |
+                        Q(keywords__icontains=word) | Q(keywords_bangla__icontains=word) |
+                        Q(call_number__icontains=word) |
+                        Q(publisher__name__icontains=word) | Q(category__name__icontains=word)
+                    )
+                words_q &= word_q
+
+            books = books.filter(exact_phrase_q | words_q)
+
+            # Relevance scoring for SQLite search
+            books = books.annotate(
+                search_score=Case(
+                    When(Q(title__iexact=query) | Q(title_bangla__iexact=query), then=100),
+                    When(Q(title__icontains=query) | Q(title_bangla__icontains=query), then=80),
+                    When(Q(subtitle__icontains=query) | Q(subtitle_bangla__icontains=query), then=50),
+                    When(Q(authors__first_name__icontains=query) | Q(authors__last_name__icontains=query), then=40),
+                    default=10,
+                    output_field=IntegerField()
                 )
-                final_q &= word_q
-            
-            if final_q:
-                books = books.filter(final_q).distinct()
-            else:
-                books = books.none()
+            )
 
         # Track search with language detection
         try:
@@ -276,12 +309,12 @@ def _get_filtered_sorted_books(request):
                 Q(authors__last_name__icontains=author_q) |
                 Q(authors__first_name_bangla__icontains=author_q) | 
                 Q(authors__last_name_bangla__icontains=author_q)
-            ).distinct()
+            )
         else:
             books = books.filter(
                 Q(authors__first_name__icontains=author_q) | 
                 Q(authors__last_name__icontains=author_q)
-            ).distinct()
+            )
 
     publisher_slug = request.GET.get('publisher')
     publisher_q = request.GET.get('publisher_q')
@@ -304,25 +337,37 @@ def _get_filtered_sorted_books(request):
         '-times_borrowed', 'times_borrowed', '-created_at', 'created_at', 
         'call_number', '-call_number', 'language', '-language'
     ]
-    if query and using_postgres:
-        valid_sorts.append('relevance')
-        if sort_by == '-created_at':  # Default sort for search should be relevance
-            sort_by = 'relevance'
+    if query:
+        if using_postgres:
+            valid_sorts.append('relevance')
+            if sort_by == '-created_at':
+                sort_by = 'relevance'
+        else:
+            if sort_by == '-created_at':
+                sort_by = '-search_score'
 
     if sort_by == 'relevance' and 'rank' in books.query.annotations:
         books = books.order_by('-rank', '-created_at')
+    elif sort_by == '-search_score' and 'search_score' in books.query.annotations:
+        books = books.order_by('-search_score', '-created_at')
     elif sort_by in valid_sorts:
         books = books.order_by(sort_by)
     
-    return books
+    # Always call distinct() before returning to prevent duplicate rows in search results
+    return books.distinct()
 
 def library_home(request):
-    """Enhanced home view with multilingual support"""
+    """Enhanced home view with multilingual support and recommendations fallback"""
     books = _get_filtered_sorted_books(request)
 
     paginator = Paginator(books, 16)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+
+    # Fetch recommended books if search/filter returned 0 results
+    recommended_books = None
+    if page_obj.paginator.count == 0:
+        recommended_books = Book.objects.select_related('publisher', 'category').prefetch_related('authors').filter(status='available').order_by('-times_borrowed', '-created_at')[:4]
 
     # Get filter options with language-aware caching
     user_language = request.GET.get('language', 'all')
@@ -374,6 +419,7 @@ def library_home(request):
         'author_q_value': author_q_value,
         'publisher_q_value': publisher_q_value,
         'detected_language': detect_text_language(request.GET.get('q', '')),
+        'recommended_books': recommended_books,
     }
 
     if request.headers.get('HX-Request'):

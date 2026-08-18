@@ -1,8 +1,43 @@
 <!-- partials/book_grid.html -->
 {% load static library_extras humanize %}
 
-<div id="results-counter" class="flex items-center justify-between mb-6">
-    <p class="text-sm text-gray-600">Showing <span class="font-semibold">{{ page_obj.start_index }}-{{ page_obj.end_index }}</span> results</p>
+<div id="results-counter" class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-4 rounded-xl border border-gray-200/80 shadow-xs">
+    <div class="flex items-center gap-3">
+        <span class="text-sm font-semibold text-gray-700">
+            {% if page_obj %}
+                Showing results <span class="text-blue-600 font-bold">{{ page_obj.start_index }}-{{ page_obj.end_index }}</span>
+            {% else %}
+                No results found
+            {% endif %}
+        </span>
+        {% if search_query %}
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                <i class="fas fa-search text-[10px] mr-1"></i> "{{ search_query }}"
+            </span>
+        {% endif %}
+    </div>
+
+    <!-- Active Filters Chips -->
+    {% if search_query or selected_filters.category or selected_filters.author or selected_filters.publisher or selected_filters.status %}
+    <div class="flex flex-wrap items-center gap-2">
+        <span class="text-xs text-gray-500 font-medium">Active:</span>
+        {% if search_query %}
+        <a href="?{% query_transform request q='' %}" hx-get="{% url 'library:home' %}?{% query_transform request q='' %}" hx-target="#book-grid-container" hx-indicator="#book-grid-skeleton" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition">
+            Search: <strong>{{ search_query }}</strong> <i class="fas fa-times text-[10px]"></i>
+        </a>
+        {% endif %}
+
+        {% if selected_filters.category %}
+        <a href="?{% query_transform request category='' %}" hx-get="{% url 'library:home' %}?{% query_transform request category='' %}" hx-target="#book-grid-container" hx-indicator="#book-grid-skeleton" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 hover:bg-indigo-200 transition">
+            Category <i class="fas fa-times text-[10px]"></i>
+        </a>
+        {% endif %}
+
+        <a href="{% url 'library:home' %}" hx-get="{% url 'library:home' %}" hx-target="#book-grid-container" hx-indicator="#book-grid-skeleton" class="text-xs text-red-600 hover:text-red-800 font-semibold underline ml-1">
+            Clear all
+        </a>
+    </div>
+    {% endif %}
 </div>
 
 <div class="book-grid mb-8">
@@ -10,7 +45,7 @@
         {% include "library/partials/book_card.html" %}
     {% empty %}
         <div class="col-span-full">
-            {% include "library/partials/empty_state.html" with title="No Books Found" message="Your search or filter criteria did not match any books." show_clear_filter=True %}
+            {% include "library/partials/empty_state.html" with title="No Books Found" message="We couldn't find any books matching your search criteria." show_clear_filter=True %}
         </div>
     {% endfor %}
 </div>
@@ -20,6 +55,8 @@
 {% if page_obj.has_next %}
 <div class="text-center mt-8">
     <button hx-get="{% url 'library:load_more_books' %}?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}" 
+            hx-target="#pagination-container"
+            hx-swap="outerHTML"
             class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 ease-in-out">
         <span class="htmx-indicator">
             <i class="fas fa-spinner fa-spin mr-2"></i>Loading...

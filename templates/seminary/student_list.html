@@ -1,4 +1,3 @@
-
 {% extends 'base.html' %}
 {% load static %}
 
@@ -6,18 +5,42 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-8" x-data="studentList()">
-    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-        <div class="px-6 py-4 border-b">
-            <h1 class="text-3xl font-bold font-serif text-gray-800">Our Students</h1>
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-100">
+        <!-- Page Header -->
+        <div class="px-6 py-5 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <h1 class="text-3xl font-bold font-serif text-gray-800">Our Students</h1>
+                <span x-show="!loading" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200" x-text="students.length + ' ' + (students.length === 1 ? 'Student' : 'Students')"></span>
+            </div>
+            <button x-show="hasActiveFilters()" @click="clearFilters()" class="inline-flex items-center text-xs text-indigo-600 hover:text-indigo-800 font-medium px-3 py-1.5 rounded-md hover:bg-indigo-50 transition border border-indigo-200">
+                <i class="fas fa-undo mr-1.5 text-xs"></i> Reset All Filters
+            </button>
         </div>
 
         <!-- Filters and Controls -->
-        <div class="px-6 py-4 bg-gray-50">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="px-6 py-5 bg-gray-50/80 border-b border-gray-200">
+            <!-- Primary Search Input: Student Name -->
+            <div class="mb-4">
+                <label for="search_name" class="block text-sm font-semibold text-gray-700 mb-1">Search by Student Name</label>
+                <div class="relative rounded-md shadow-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <input type="text" id="search_name" x-model="search_name" @input.debounce.300ms="fetchStudents"
+                        placeholder="Type student name to search..." 
+                        class="block w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition">
+                    <button type="button" x-show="search_name" @click="clearSearch()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none">
+                        <i class="fas fa-times-circle text-gray-400 hover:text-gray-600"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Secondary Filters Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 <!-- Status Filter -->
                 <div>
-                    <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-                    <select id="status" x-model="status" @change="fetchStudents" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                    <label for="status" class="block text-xs font-medium text-gray-600 mb-1">Status</label>
+                    <select id="status" x-model="status" @change="fetchStudents" class="block w-full pl-3 pr-8 py-2 text-xs border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md bg-white">
                         <option value="active">Active</option>
                         <option value="graduated">Graduated</option>
                         <option value="all">All</option>
@@ -25,97 +48,175 @@
                 </div>
                 <!-- Student Type Filter -->
                 <div>
-                    <label for="student_type" class="block text-sm font-medium text-gray-700">Student Type</label>
-                    <select id="student_type" x-model="student_type" @change="fetchStudents" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                        <option value="">All</option>
+                    <label for="student_type" class="block text-xs font-medium text-gray-600 mb-1">Student Type</label>
+                    <select id="student_type" x-model="student_type" @change="fetchStudents" class="block w-full pl-3 pr-8 py-2 text-xs border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md bg-white">
+                        <option value="">All Types</option>
                         <option value="diocesan">Diocesan</option>
                         <option value="congregation">Congregation</option>
                     </select>
                 </div>
                 <!-- Affiliation Filter -->
                 <div>
-                    <label for="affiliation" class="block text-sm font-medium text-gray-700">Diocese/Congregation</label>
-                    <input type="text" id="affiliation" x-model="affiliation" @input.debounce.300ms="fetchStudents" placeholder="Filter by diocese or congregation" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <label for="affiliation" class="block text-xs font-medium text-gray-600 mb-1">Diocese/Congregation</label>
+                    <input type="text" id="affiliation" x-model="affiliation" @input.debounce.300ms="fetchStudents" placeholder="Filter diocese/congregation" class="block w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-xs bg-white">
                 </div>
                 <!-- Year Joined Filter -->
                 <div>
-                    <label for="year_joined" class="block text-sm font-medium text-gray-700">Year Joined</label>
-                    <input type="number" id="year_joined" x-model="year_joined" @input.debounce.300ms="fetchStudents" placeholder="Filter by year" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <label for="year_joined" class="block text-xs font-medium text-gray-600 mb-1">Year Joined</label>
+                    <input type="number" id="year_joined" x-model="year_joined" @input.debounce.300ms="fetchStudents" placeholder="Filter by year" class="block w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-xs bg-white">
                 </div>
                 <!-- Name of Study Filter -->
                 <div>
-                    <label for="name_of_study" class="block text-sm font-medium text-gray-700">Name of Study</label>
-                    <input type="text" id="name_of_study" x-model="name_of_study" @input.debounce.300ms="fetchStudents" placeholder="Filter by study name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <label for="name_of_study" class="block text-xs font-medium text-gray-600 mb-1">Name of Study</label>
+                    <input type="text" id="name_of_study" x-model="name_of_study" @input.debounce.300ms="fetchStudents" placeholder="Filter by study" class="block w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-xs bg-white">
                 </div>
                 <!-- Year Completed Filter -->
                 <div>
-                    <label for="year_completed" class="block text-sm font-medium text-gray-700">Year Completed</label>
-                    <input type="number" id="year_completed" x-model="year_completed" @input.debounce.300ms="fetchStudents" placeholder="Filter by year" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <label for="year_completed" class="block text-xs font-medium text-gray-600 mb-1">Year Completed</label>
+                    <input type="number" id="year_completed" x-model="year_completed" @input.debounce.300ms="fetchStudents" placeholder="Filter by year" class="block w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-xs bg-white">
                 </div>
+            </div>
+
+            <!-- Active Filter Chips / Pills -->
+            <div x-show="hasActiveFilters()" class="mt-3.5 pt-3 border-t border-gray-200 flex flex-wrap items-center gap-2">
+                <span class="text-xs font-medium text-gray-500">Active filters:</span>
+                
+                <template x-if="search_name.trim()">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                        Name: <strong x-text="search_name"></strong>
+                        <button type="button" @click="clearSearch()" class="text-indigo-600 hover:text-indigo-900 ml-0.5">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </span>
+                </template>
+
+                <template x-if="status !== 'active'">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-800">
+                        Status: <strong x-text="status.charAt(0).toUpperCase() + status.slice(1)"></strong>
+                        <button type="button" @click="status = 'active'; fetchStudents();" class="text-gray-600 hover:text-gray-900 ml-0.5">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </span>
+                </template>
+
+                <template x-if="student_type">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        Type: <strong x-text="student_type === 'diocesan' ? 'Diocesan' : 'Congregation'"></strong>
+                        <button type="button" @click="student_type = ''; fetchStudents();" class="text-blue-600 hover:text-blue-900 ml-0.5">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </span>
+                </template>
+
+                <template x-if="affiliation.trim()">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
+                        Affiliation: <strong x-text="affiliation"></strong>
+                        <button type="button" @click="affiliation = ''; fetchStudents();" class="text-teal-600 hover:text-teal-900 ml-0.5">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </span>
+                </template>
+
+                <template x-if="year_joined">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                        Joined: <strong x-text="year_joined"></strong>
+                        <button type="button" @click="year_joined = ''; fetchStudents();" class="text-amber-600 hover:text-amber-900 ml-0.5">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </span>
+                </template>
+
+                <template x-if="name_of_study.trim()">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        Study: <strong x-text="name_of_study"></strong>
+                        <button type="button" @click="name_of_study = ''; fetchStudents();" class="text-purple-600 hover:text-purple-900 ml-0.5">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </span>
+                </template>
+
+                <template x-if="year_completed">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                        Completed: <strong x-text="year_completed"></strong>
+                        <button type="button" @click="year_completed = ''; fetchStudents();" class="text-emerald-600 hover:text-emerald-900 ml-0.5">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </span>
+                </template>
             </div>
         </div>
 
-        <!-- Student List -->
+        <!-- Student List Table -->
         <div class="px-6 py-4">
             <template x-if="loading">
-                <div class="text-center py-8">
-                    <i class="fas fa-spinner fa-spin text-4xl text-gray-500"></i>
-                    <p class="mt-2 text-gray-600">Loading students...</p>
+                <div class="text-center py-12">
+                    <i class="fas fa-spinner fa-spin text-4xl text-indigo-500"></i>
+                    <p class="mt-3 text-gray-600 font-medium">Loading students...</p>
                 </div>
             </template>
 
             <template x-if="!loading && students.length === 0">
-                <div class="text-center py-8">
-                    <i class="fas fa-exclamation-circle text-4xl text-gray-400"></i>
-                    <p class="mt-2 text-gray-600">No students found matching your criteria.</p>
+                <div class="text-center py-12 px-4">
+                    <div class="mx-auto w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-4">
+                        <i class="fas fa-user-slash text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800">No students found</h3>
+                    <p class="mt-1 text-sm text-gray-500 max-w-sm mx-auto">
+                        <span x-show="search_name">No students matched search "<strong x-text="search_name"></strong>".</span>
+                        <span x-show="!search_name">No students match your filter criteria.</span>
+                    </p>
+                    <div class="mt-5">
+                        <button type="button" @click="clearFilters()" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <i class="fas fa-sync-alt mr-2"></i> Reset Filters & View All
+                        </button>
+                    </div>
                 </div>
             </template>
 
             <template x-if="!loading && students.length > 0">
-            <template x-if="!loading && students.length > 0">
-                <div class="overflow-x-auto bg-white rounded-lg shadow-sm">
+                <div class="overflow-x-auto bg-white rounded-lg border border-gray-200 shadow-sm">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                     Photo
                                 </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                     Name
                                 </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                     Name of Study
                                 </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                     Year Joined
                                 </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                     Year Completed
                                 </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Diocese/Congregation
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    Diocese / Congregation
                                 </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                     Status
                                 </th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             <template x-for="student in students" :key="student.id">
-                                <tr class="hover:bg-gray-50">
+                                <tr class="hover:bg-indigo-50/30 transition">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <img loading="lazy" x-show="student.photo_url" :src="student.photo_url" alt="Student Photo" class="h-10 w-10 rounded-full object-cover">
-                                        <div x-show="!student.photo_url" class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
+                                        <img loading="lazy" x-show="student.photo_url" :src="student.photo_url" alt="Student Photo" class="h-10 w-10 rounded-full object-cover border border-gray-200 shadow-xs">
+                                        <div x-show="!student.photo_url" class="h-10 w-10 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-500 text-sm font-medium">
                                             <i class="fas fa-user"></i>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="student.name"></td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="student.name_of_study"></td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="student.year_joined"></td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="student.year_completed"></td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="student.student_type === 'diocesan' ? student.diocese : student.congregation"></td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900" x-text="student.name"></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600" x-text="student.name_of_study || '-'"></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600" x-text="student.year_joined || '-'"></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600" x-text="student.year_completed || '-'"></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600" x-text="student.student_type === 'diocesan' ? (student.diocese || '-') : (student.congregation || '-')"></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                        <span class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full"
                                             :class="{
                                                 'bg-green-100 text-green-800': student.status === 'active',
                                                 'bg-blue-100 text-blue-800': student.status === 'graduated',
@@ -130,7 +231,6 @@
                     </table>
                 </div>
             </template>
-            </template>
         </div>
     </div>
 </div>
@@ -142,6 +242,7 @@
         return {
             students: [],
             loading: true,
+            search_name: '',
             status: 'active',
             student_type: '',
             affiliation: '',
@@ -153,9 +254,36 @@
                 this.fetchStudents();
             },
 
+            hasActiveFilters() {
+                return (this.search_name && this.search_name.trim() !== '') ||
+                       (this.status !== 'active') ||
+                       (this.student_type !== '') ||
+                       (this.affiliation && this.affiliation.trim() !== '') ||
+                       (this.year_joined !== '') ||
+                       (this.name_of_study && this.name_of_study.trim() !== '') ||
+                       (this.year_completed !== '');
+            },
+
+            clearSearch() {
+                this.search_name = '';
+                this.fetchStudents();
+            },
+
+            clearFilters() {
+                this.search_name = '';
+                this.status = 'active';
+                this.student_type = '';
+                this.affiliation = '';
+                this.year_joined = '';
+                this.name_of_study = '';
+                this.year_completed = '';
+                this.fetchStudents();
+            },
+
             fetchStudents() {
                 this.loading = true;
                 const params = new URLSearchParams({
+                    search_name: this.search_name,
                     status: this.status,
                     student_type: this.student_type,
                     affiliation: this.affiliation,

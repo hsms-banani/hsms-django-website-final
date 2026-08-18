@@ -22,6 +22,7 @@ class StudentList(generics.ListAPIView):
     
     def get_queryset(self):
         # Get filters
+        search_name = self.request.query_params.get('search_name', None) or self.request.query_params.get('name', None) or self.request.query_params.get('search', None)
         status = self.request.query_params.get('status', 'active')
         student_type = self.request.query_params.get('student_type', None)
         affiliation = self.request.query_params.get('affiliation', None)
@@ -31,8 +32,15 @@ class StudentList(generics.ListAPIView):
         
         queryset = Student.objects.all()
 
+        # Apply search by student name filter
+        if search_name and search_name.strip():
+            query = search_name.strip()
+            queryset = queryset.filter(
+                models.Q(name__icontains=query) | models.Q(student_id__icontains=query)
+            )
+
         # Apply status filter
-        if status != 'all':
+        if status and status != 'all':
             queryset = queryset.filter(status=status)
         
         # Apply student type filter
@@ -40,21 +48,22 @@ class StudentList(generics.ListAPIView):
             queryset = queryset.filter(student_type=student_type)
         
         # Apply affiliation filter (searches in diocese or congregation based on student_type, or both if student_type is not specified)
-        if affiliation:
+        if affiliation and affiliation.strip():
+            aff = affiliation.strip()
             if student_type == 'diocesan':
-                queryset = queryset.filter(diocese__icontains=affiliation)
+                queryset = queryset.filter(diocese__icontains=aff)
             elif student_type == 'congregation':
-                queryset = queryset.filter(congregation__icontains=affiliation)
+                queryset = queryset.filter(congregation__icontains=aff)
             else: # Search in both if student_type is not specified
-                queryset = queryset.filter(models.Q(diocese__icontains=affiliation) | models.Q(congregation__icontains=affiliation))
+                queryset = queryset.filter(models.Q(diocese__icontains=aff) | models.Q(congregation__icontains=aff))
         
         # Apply year joined filter
         if year_joined:
             queryset = queryset.filter(year_joined=year_joined)
             
         # Apply name of study filter
-        if name_of_study:
-            queryset = queryset.filter(name_of_study__icontains=name_of_study)
+        if name_of_study and name_of_study.strip():
+            queryset = queryset.filter(name_of_study__icontains=name_of_study.strip())
             
         # Apply year completed filter
         if year_completed:

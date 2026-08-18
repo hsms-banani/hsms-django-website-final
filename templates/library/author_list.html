@@ -14,7 +14,6 @@
     {% for author in page_obj %}
     <a href="{% url 'library:author_detail' author.slug %}" class="block p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
         <h3 class="font-semibold text-lg text-gray-900">{{ author.full_name }}</h3>
-        <p class="text-sm text-gray-600">{{ author.book_count }} books</p>
     </a>
     {% empty %}
     <p class="col-span-full text-center text-gray-500 py-8">No authors available.</p>
@@ -25,7 +24,7 @@
 {% if page_obj.has_other_pages %}
 <nav class="flex items-center justify-between mt-8">
     <div class="flex items-center text-sm text-gray-700">
-        Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} results
+        Showing results {{ page_obj.start_index }}-{{ page_obj.end_index }}
     </div>
     
     <div class="flex items-center space-x-2">

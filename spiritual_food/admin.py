@@ -14,21 +14,24 @@ class SaintAdmin(admin.ModelAdmin):
 
 @admin.register(LiturgicalCalendar)
 class LiturgicalCalendarAdmin(admin.ModelAdmin):
-    list_display = ['name', 'date', 'rank', 'color', 'is_holy_day_of_obligation']
-    list_filter = ['rank', 'season', 'color', 'is_holy_day_of_obligation', 'date']
-    search_fields = ['name', 'first_reading', 'responsorial_psalm', 'second_reading', 'gospel']
+    list_display = ['name', 'date', 'rank', 'color', 'secondary_color', 'is_holy_day_of_obligation']
+    list_filter = ['rank', 'season', 'color', 'secondary_color', 'is_holy_day_of_obligation', 'date']
+    search_fields = ['name', 'first_reading', 'responsorial_psalm', 'second_reading', 'gospel', 'commemorations']
     date_hierarchy = 'date'
     
     fieldsets = (
         ('Event Information', {
-            'fields': ('name', 'date', 'season', 'rank', 'color', 'is_holy_day_of_obligation')
+            'fields': ('name', 'date', 'season', 'rank', 'color', 'secondary_color', 'is_holy_day_of_obligation')
         }),
-        ('Readings', {
+        ('Primary Readings', {
             'fields': ('cycle', 'first_reading', 'responsorial_psalm', 'second_reading', 'gospel'),
+        }),
+        ('Alternative Readings (Or / অথবা)', {
+            'fields': ('alt_reading_title', 'alt_first_reading', 'alt_responsorial_psalm', 'alt_second_reading', 'alt_gospel'),
             'classes': ('collapse',)
         }),
-        ('Saints', {
-            'fields': ('saints',),
+        ('Commemorations & Saints', {
+            'fields': ('commemorations', 'saints'),
             'classes': ('collapse',)
         }),
     )

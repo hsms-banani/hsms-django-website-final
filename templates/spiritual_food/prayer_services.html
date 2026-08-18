@@ -2,205 +2,288 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Prayer Services Schedule{% endblock %}
+{% block title %}Prayer Services Schedule | Holy Spirit Major Seminary{% endblock %}
 
 {% block content %}
 {% if banner %}
-<section class="relative bg-cover bg-center text-white py-32" style="background-image: url('{{ banner.image.url }}');">
-    <div class="absolute inset-0 bg-black opacity-60"></div>
+<section class="relative bg-cover bg-center text-white py-24 md:py-32" style="background-image: url('{{ banner.image.url }}');">
+    <div class="absolute inset-0 bg-gradient-to-r from-blue-950/90 via-purple-950/85 to-indigo-950/90"></div>
     <div class="container mx-auto px-4 relative">
         <div class="max-w-4xl mx-auto text-center">
-            <h1 class="text-5xl font-bold font-serif mb-4 animate-fade-in-up">{{ banner.title|default:"Prayer Services" }}</h1>
-            {% if banner.subtitle %}
-            <p class="text-xl opacity-90 animate-fade-in-up" style="animation-delay: 0.2s;">
-                {{ banner.subtitle }}
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-amber-300 text-xs font-semibold uppercase tracking-wider mb-4 border border-white/20">
+                <i class="fas fa-church text-xs"></i> Spiritual Life & Worship
+            </span>
+            <h1 class="text-4xl md:text-6xl font-bold font-serif mb-4 text-white leading-tight animate-fade-in-up">
+                {{ banner.title|default:"Prayer Services Schedule" }}
+            </h1>
+            <p class="text-lg md:text-xl text-white/90 max-w-2xl mx-auto leading-relaxed mb-8 animate-fade-in-up" style="animation-delay: 0.2s;">
+                {{ banner.subtitle|default:"Join us in daily prayer, Holy Mass, and Eucharistic devotion at Holy Spirit Major Seminary." }}
             </p>
-            {% endif %}
+            <div class="flex flex-wrap items-center justify-center gap-4 animate-fade-in-up" style="animation-delay: 0.3s;">
+                <a href="{% url 'spiritual_food:prayer_request' %}" 
+                   class="bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold px-7 py-3.5 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 flex items-center gap-2">
+                    <i class="fas fa-hands-praying"></i> Submit Prayer Request
+                </a>
+                <a href="#schedule-section" 
+                   class="bg-white/15 hover:bg-white/25 text-white font-semibold px-6 py-3.5 rounded-full border border-white/30 backdrop-blur-md transition-all flex items-center gap-2">
+                    <i class="fas fa-calendar-alt"></i> View Schedule
+                </a>
+            </div>
         </div>
     </div>
 </section>
 {% else %}
 <!-- Hero Section -->
-<section class="bg-gradient-primary py-16">
-    <div class="container mx-auto px-4">
-        <div class="text-center text-white">
-            <h1 class="text-4xl md:text-5xl font-bold font-serif mb-4">
+<section class="relative bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900 py-20 text-white overflow-hidden">
+    <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+    <div class="container mx-auto px-4 relative">
+        <div class="max-w-4xl mx-auto text-center">
+            <span class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 backdrop-blur-md text-amber-300 text-xs font-semibold uppercase tracking-wider mb-4 border border-white/20">
+                <i class="fas fa-church text-xs"></i> Spiritual Life & Worship
+            </span>
+            <h1 class="text-4xl md:text-5xl font-bold font-serif mb-4 text-white">
                 Prayer Services Schedule
             </h1>
-            <p class="text-xl">Join us in worship and prayer</p>
+            <p class="text-lg md:text-xl text-blue-100 max-w-2xl mx-auto leading-relaxed mb-8">
+                Join us in daily prayer, Holy Mass, and Eucharistic adoration at Holy Spirit Major Seminary.
+            </p>
+            <div class="flex flex-wrap items-center justify-center gap-4">
+                <a href="{% url 'spiritual_food:prayer_request' %}" 
+                   class="bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold px-7 py-3.5 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 flex items-center gap-2">
+                    <i class="fas fa-hands-praying"></i> Submit Prayer Request
+                </a>
+                <a href="#schedule-section" 
+                   class="bg-white/15 hover:bg-white/25 text-white font-semibold px-6 py-3.5 rounded-full border border-white/30 backdrop-blur-md transition-all flex items-center gap-2">
+                    <i class="fas fa-calendar-alt"></i> View Schedule
+                </a>
+            </div>
         </div>
     </div>
 </section>
 {% endif %}
 
+<!-- Highlighted Important Information Section (Prominent Top Banner) -->
+<section class="relative -mt-8 z-10 container mx-auto px-4 max-w-5xl mb-12">
+    <div class="bg-white rounded-2xl shadow-xl border border-indigo-100 p-6 md:p-8 backdrop-blur-lg">
+        <div class="flex items-center gap-3 mb-4 pb-3 border-b border-gray-100">
+            <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-info-circle text-lg"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold text-gray-900 font-serif">Important Information & Guidelines</h3>
+                <p class="text-xs text-gray-500">Key details for attending worship services</p>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="flex items-start gap-3.5 p-3.5 rounded-xl bg-blue-50/60 border border-blue-100">
+                <div class="w-9 h-9 rounded-lg bg-blue-600 text-white flex items-center justify-center flex-shrink-0 text-sm shadow-xs">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-900 text-sm mb-1">Timely Arrival</h4>
+                    <p class="text-xs text-gray-600 leading-relaxed">Please arrive 10-15 minutes before the service begins to ensure quiet preparation.</p>
+                </div>
+            </div>
+
+            <div class="flex items-start gap-3.5 p-3.5 rounded-xl bg-purple-50/60 border border-purple-100">
+                <div class="w-9 h-9 rounded-lg bg-purple-600 text-white flex items-center justify-center flex-shrink-0 text-sm shadow-xs">
+                    <i class="fas fa-church"></i>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-900 text-sm mb-1">Service Location</h4>
+                    <p class="text-xs text-gray-600 leading-relaxed">All services are held in the Main Seminary Chapel unless specified otherwise.</p>
+                </div>
+            </div>
+
+            <div class="flex items-start gap-3.5 p-3.5 rounded-xl bg-amber-50/60 border border-amber-100">
+                <div class="w-9 h-9 rounded-lg bg-amber-600 text-white flex items-center justify-center flex-shrink-0 text-sm shadow-xs">
+                    <i class="fas fa-hands-praying"></i>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-900 text-sm mb-1">Mass Intentions</h4>
+                    <p class="text-xs text-gray-600 leading-relaxed">You can request specific Mass intentions and prayers online at any time.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div id="schedule-section"></div>
+
 <!-- Daily Services -->
 {% if daily_services %}
-<section class="py-16 bg-white">
-    <div class="container mx-auto px-4">
-        <div class="max-w-4xl mx-auto">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold font-serif text-gray-800 mb-2">
-                    Daily Services
-                </h2>
-                <p class="text-gray-600">Services held every day</p>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {% for service in daily_services %}
-                <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6 shadow-md hover-lift">
-                    <div class="flex items-start space-x-4">
-                        <div class="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-pray text-white text-2xl"></i>
-                        </div>
-                        <div class="flex-1">
-                            <h3 class="text-xl font-semibold text-gray-800 mb-2">
+<section class="py-12 bg-white">
+    <div class="container mx-auto px-4 max-w-6xl">
+        <div class="text-center mb-10">
+            <span class="text-xs font-bold text-indigo-600 uppercase tracking-widest block mb-1">Regular Devotions</span>
+            <h2 class="text-3xl font-bold font-serif text-gray-900">
+                Daily Services
+            </h2>
+            <p class="text-gray-600 text-sm mt-1">Communal prayer held every day throughout the year</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for service in daily_services %}
+            <div class="bg-gradient-to-br from-indigo-50/80 via-white to-purple-50/60 rounded-2xl p-6 border border-indigo-100 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                <div class="flex items-start space-x-4">
+                    <div class="w-14 h-14 bg-gradient-to-tr from-indigo-600 to-purple-600 text-white rounded-2xl flex items-center justify-center flex-shrink-0 shadow-md">
+                        <i class="fas fa-pray text-2xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between gap-2 mb-1">
+                            <h3 class="text-lg font-bold text-gray-900">
                                 {{ service.service_name }}
                             </h3>
-                            <div class="space-y-1 text-gray-600">
-                                <p><i class="fas fa-clock mr-2 text-blue-600"></i>{{ service.time|time:"g:i A" }}</p>
-                                <p><i class="fas fa-map-marker-alt mr-2 text-blue-600"></i>{{ service.location }}</p>
-                            </div>
-                            {% if service.description %}
-                            <p class="text-sm text-gray-600 mt-3">{{ service.description }}</p>
-                            {% endif %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 border border-indigo-200">
+                                {{ service.get_service_type_display }}
+                            </span>
                         </div>
+                        <div class="flex flex-wrap items-center gap-4 text-xs text-gray-600 mt-2">
+                            <span class="inline-flex items-center font-semibold text-indigo-700">
+                                <i class="fas fa-clock mr-1.5 text-indigo-500"></i>{{ service.time|time:"g:i A" }}
+                            </span>
+                            <span class="inline-flex items-center text-gray-600">
+                                <i class="fas fa-map-marker-alt mr-1.5 text-indigo-500"></i>{{ service.location }}
+                            </span>
+                        </div>
+                        {% if service.description %}
+                        <p class="text-xs text-gray-600 mt-3 leading-relaxed border-t border-indigo-100/60 pt-2.5">{{ service.description }}</p>
+                        {% endif %}
                     </div>
                 </div>
-                {% endfor %}
             </div>
+            {% endfor %}
         </div>
     </div>
 </section>
 {% endif %}
 
 <!-- Weekly Schedule -->
-<section class="py-16 bg-gray-50">
-    <div class="container mx-auto px-4">
-        <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold font-serif text-gray-800 mb-2">
-                    Weekly Schedule
-                </h2>
-                <p class="text-gray-600">Services organized by day of the week</p>
-            </div>
-            
-            <div class="space-y-6">
-                {% for day, day_name in weekday_services.items %}
-                {% if day_name %}
-                <div class="bg-white rounded-xl shadow-md overflow-hidden">
-                    <div class="bg-gradient-primary text-white px-6 py-4">
-                        <h3 class="text-2xl font-semibold capitalize">{{ day|title }}</h3>
-                    </div>
-                    <div class="p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {% for service in day_name %}
-                            <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-400 hover:shadow-md transition-all">
-                                <h4 class="font-semibold text-gray-800 mb-2">
+<section class="py-14 bg-gray-50/70 border-t border-gray-100">
+    <div class="container mx-auto px-4 max-w-6xl">
+        <div class="text-center mb-10">
+            <span class="text-xs font-bold text-indigo-600 uppercase tracking-widest block mb-1">Weekly Liturgical Timetable</span>
+            <h2 class="text-3xl font-bold font-serif text-gray-900">
+                Weekly Schedule
+            </h2>
+            <p class="text-gray-600 text-sm mt-1">Services organized by day of the week</p>
+        </div>
+        
+        <div class="space-y-6">
+            {% for day, day_name in weekday_services.items %}
+            {% if day_name %}
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden transition hover:shadow-md">
+                <div class="bg-gradient-to-r from-indigo-900 to-purple-900 text-white px-6 py-4 flex items-center justify-between">
+                    <h3 class="text-xl font-bold capitalize flex items-center gap-2">
+                        <i class="fas fa-calendar-day text-amber-400 text-lg"></i> {{ day|title }}
+                    </h3>
+                    <span class="text-xs font-medium px-2.5 py-1 bg-white/10 rounded-full text-white/90">
+                        {{ day_name|length }} {{ day_name|length|pluralize:"Service,Services" }}
+                    </span>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {% for service in day_name %}
+                        <div class="bg-gray-50/60 border border-gray-200 rounded-xl p-4 hover:border-indigo-400 hover:bg-white hover:shadow-sm transition-all">
+                            <div class="flex items-start justify-between gap-2 mb-2">
+                                <h4 class="font-bold text-gray-900 text-sm">
                                     {{ service.service_name }}
                                 </h4>
-                                <div class="text-sm space-y-1 text-gray-600">
-                                    <p><i class="fas fa-clock mr-2 text-blue-600"></i>{{ service.time|time:"g:i A" }}</p>
-                                    <p><i class="fas fa-map-marker-alt mr-2 text-blue-600"></i>{{ service.location }}</p>
-                                    <span class="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs mt-2">
-                                        {{ service.get_service_type_display }}
-                                    </span>
-                                </div>
+                                <span class="inline-block bg-indigo-50 text-indigo-700 font-medium px-2 py-0.5 rounded text-[11px] border border-indigo-100">
+                                    {{ service.get_service_type_display }}
+                                </span>
                             </div>
-                            {% empty %}
-                            <p class="text-gray-500 italic col-span-full">No services scheduled for this day.</p>
-                            {% endfor %}
+                            <div class="text-xs space-y-1 text-gray-600">
+                                <p class="font-semibold text-indigo-900"><i class="fas fa-clock mr-1.5 text-indigo-600"></i>{{ service.time|time:"g:i A" }}</p>
+                                <p><i class="fas fa-map-marker-alt mr-1.5 text-gray-400"></i>{{ service.location }}</p>
+                                {% if service.description %}
+                                <p class="text-[11px] text-gray-500 mt-2 line-clamp-2">{{ service.description }}</p>
+                                {% endif %}
+                            </div>
                         </div>
+                        {% empty %}
+                        <p class="text-gray-500 italic col-span-full text-sm">No specific services scheduled for this day.</p>
+                        {% endfor %}
                     </div>
                 </div>
-                {% endif %}
-                {% endfor %}
             </div>
+            {% endif %}
+            {% endfor %}
         </div>
     </div>
 </section>
 
 <!-- Special Services -->
 {% if special_services %}
-<section class="py-16 bg-white">
-    <div class="container mx-auto px-4">
-        <div class="max-w-4xl mx-auto">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold font-serif text-gray-800 mb-2">
-                    Special Occasions
-                </h2>
-                <p class="text-gray-600">Services for special feast days and celebrations</p>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {% for service in special_services %}
-                <div class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-6 shadow-md hover-lift">
-                    <div class="flex items-start space-x-4">
-                        <div class="w-16 h-16 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-star text-white text-2xl"></i>
-                        </div>
-                        <div class="flex-1">
-                            <h3 class="text-xl font-semibold text-gray-800 mb-2">
+<section class="py-14 bg-white border-t border-gray-100">
+    <div class="container mx-auto px-4 max-w-6xl">
+        <div class="text-center mb-10">
+            <span class="text-xs font-bold text-amber-600 uppercase tracking-widest block mb-1">Feast Days & Special Occasions</span>
+            <h2 class="text-3xl font-bold font-serif text-gray-900">
+                Special Occasions
+            </h2>
+            <p class="text-gray-600 text-sm mt-1">Services for special feast days, devotions, and solemnities</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for service in special_services %}
+            <div class="bg-gradient-to-br from-amber-50/70 via-orange-50/40 to-yellow-50/60 rounded-2xl p-6 border border-amber-200/70 shadow-sm hover:shadow-md transition-all">
+                <div class="flex items-start space-x-4">
+                    <div class="w-14 h-14 bg-gradient-to-tr from-amber-500 to-orange-500 text-white rounded-2xl flex items-center justify-center flex-shrink-0 shadow-md">
+                        <i class="fas fa-star text-2xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between gap-2 mb-1">
+                            <h3 class="text-lg font-bold text-gray-900">
                                 {{ service.service_name }}
                             </h3>
-                            <div class="space-y-1 text-gray-600">
-                                <p><i class="fas fa-clock mr-2 text-orange-600"></i>{{ service.time|time:"g:i A" }}</p>
-                                <p><i class="fas fa-map-marker-alt mr-2 text-orange-600"></i>{{ service.location }}</p>
-                            </div>
-                            {% if service.description %}
-                            <p class="text-sm text-gray-600 mt-3">{{ service.description }}</p>
-                            {% endif %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-200">
+                                Special
+                            </span>
                         </div>
+                        <div class="flex flex-wrap items-center gap-4 text-xs text-gray-700 mt-2">
+                            <span class="inline-flex items-center font-semibold text-amber-800">
+                                <i class="fas fa-clock mr-1.5 text-amber-600"></i>{{ service.time|time:"g:i A" }}
+                            </span>
+                            <span class="inline-flex items-center text-gray-600">
+                                <i class="fas fa-map-marker-alt mr-1.5 text-amber-600"></i>{{ service.location }}
+                            </span>
+                        </div>
+                        {% if service.description %}
+                        <p class="text-xs text-gray-600 mt-3 leading-relaxed border-t border-amber-200/50 pt-2.5">{{ service.description }}</p>
+                        {% endif %}
                     </div>
                 </div>
-                {% endfor %}
             </div>
+            {% endfor %}
         </div>
     </div>
 </section>
 {% endif %}
 
-<!-- Call to Action -->
-<section class="py-16 bg-gradient-to-br from-blue-900 to-purple-900 text-white">
-    <div class="container mx-auto px-4">
+<!-- Call to Action Banner -->
+<section class="py-16 bg-gradient-to-br from-indigo-950 via-purple-900 to-blue-950 text-white relative overflow-hidden">
+    <div class="container mx-auto px-4 relative z-10">
         <div class="max-w-3xl mx-auto text-center">
-            <h2 class="text-3xl md:text-4xl font-bold font-serif mb-6">
-                All Are Welcome
+            <span class="w-12 h-12 rounded-full bg-white/10 inline-flex items-center justify-center text-amber-300 text-xl mb-4 border border-white/20">
+                <i class="fas fa-hands-praying"></i>
+            </span>
+            <h2 class="text-3xl md:text-4xl font-bold font-serif mb-4">
+                Need Special Prayers or Mass Intentions?
             </h2>
-            <p class="text-xl mb-8 text-white/90">
-                Join us in prayer and worship. Experience the peace and grace of communal prayer.
+            <p class="text-lg text-white/90 mb-8 leading-relaxed">
+                Submit your intentions to our seminary community. We are honored to remember you, your family, and your intentions in our daily prayers.
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="{% url 'spiritual_food:home' %}" 
-                   class="bg-white text-blue-900 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors">
-                    <i class="fas fa-arrow-left mr-2"></i>Back to Spiritual Food
-                </a>
                 <a href="{% url 'spiritual_food:prayer_request' %}" 
-                   class="bg-yellow-500 text-white px-8 py-3 rounded-full font-semibold hover:bg-yellow-600 transition-colors">
+                   class="bg-amber-500 hover:bg-amber-600 text-gray-900 px-8 py-3.5 rounded-full font-bold shadow-lg hover:shadow-xl transition-all">
                     <i class="fas fa-hands mr-2"></i>Submit Prayer Request
                 </a>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Information Section -->
-<section class="py-16 bg-gray-50">
-    <div class="container mx-auto px-4">
-        <div class="max-w-4xl mx-auto">
-            <div class="bg-white rounded-xl shadow-md p-8">
-                <h3 class="text-2xl font-bold text-gray-800 mb-6">Important Information</h3>
-                
-                <div class="space-y-4 text-gray-600">
-                    <div class="flex items-start space-x-3">
-                        <i class="fas fa-info-circle text-blue-600 mt-1"></i>
-                        <p>Please arrive 10 minutes before the service begins to ensure timely participation.</p>
-                    </div>
-                    
-                    <div class="flex items-start space-x-3">
-                        <i class="fas fa-church text-blue-600 mt-1"></i>
-                        <p>All services are held in the main chapel unless otherwise specified.</p>
-                    </div>
-                </div>
+                <a href="{% url 'spiritual_food:home' %}" 
+                   class="bg-white/15 hover:bg-white/25 text-white px-8 py-3.5 rounded-full font-semibold border border-white/30 backdrop-blur-md transition-all">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Spiritual Food
+                </a>
             </div>
         </div>
     </div>

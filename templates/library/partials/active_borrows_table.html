@@ -82,7 +82,7 @@
 {% if page_obj.has_other_pages %}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding: 15px; background: #f7fafc; border-radius: 8px;">
     <div style="color: #718096; font-size: 14px;">
-        Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} results
+        Showing results {{ page_obj.start_index }}-{{ page_obj.end_index }}
     </div>
     <div style="display: flex; gap: 5px;">
         {% if page_obj.has_previous %}

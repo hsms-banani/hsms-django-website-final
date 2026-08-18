@@ -5,7 +5,7 @@
     <!-- Availability Badge -->
     <div class="availability-badge {% if book.is_available %}available{% else %}unavailable{% endif %}" title="{% if book.is_available %}This book is available to borrow{% else %}This book is currently not available to borrow{% endif %}">
         {% if book.is_available %}
-            Available ({{ book.copies_available }})
+            Available
         {% else %}
             Not Available
         {% endif %}

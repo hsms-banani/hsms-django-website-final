@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block library_title %}All Books{% endblock %}
-{% block library_subtitle %}{{ page_obj.paginator.count }} books in our collection{% endblock %}
+{% block library_subtitle %}Explore our e-Library collection{% endblock %}
 
 {% block library_content %}
 <!-- Filters -->
@@ -22,7 +22,7 @@
                     <option value="">All Categories</option>
                     {% for category in categories %}
                     <option value="{{ category.slug }}" {% if current_filters.category == category.slug %}selected{% endif %}>
-                        {{ category.name }} ({{ category.book_count }})
+                        {{ category.name }}
                     </option>
                     {% endfor %}
                 </select>
@@ -93,7 +93,7 @@
 {% if page_obj.has_other_pages %}
 <nav class="flex items-center justify-between">
     <div class="flex items-center text-sm text-gray-700">
-        Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} results
+        Showing results {{ page_obj.start_index }}-{{ page_obj.end_index }}
     </div>
     
     <div class="flex items-center space-x-2">

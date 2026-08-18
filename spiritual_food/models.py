@@ -323,11 +323,23 @@ class LiturgicalCalendar(models.Model):
     season = models.CharField(max_length=20, choices=SEASON_CHOICES, blank=True)
     rank = models.CharField(max_length=20, choices=RANK_CHOICES, default='weekday')
     color = models.CharField(max_length=10, choices=COLOR_CHOICES, default='green')
+    secondary_color = models.CharField(max_length=10, choices=COLOR_CHOICES, blank=True, null=True, help_text="Optional secondary color (e.g. White when primary color is Green)")
     
+    # Primary Readings
     first_reading = models.CharField(max_length=100, blank=True)
     responsorial_psalm = models.CharField(max_length=100, blank=True)
     second_reading = models.CharField(max_length=100, blank=True)
     gospel = models.CharField(max_length=100, blank=True)
+    
+    # Alternative Reading Set ("Or / অথবা")
+    alt_reading_title = models.CharField(max_length=200, blank=True, help_text="Title for alternative readings, e.g. 'Or Common of Saints' / 'অথবা বাণীবিতান'")
+    alt_first_reading = models.CharField(max_length=100, blank=True, help_text="Alternative 1st Reading")
+    alt_responsorial_psalm = models.CharField(max_length=100, blank=True, help_text="Alternative Psalm")
+    alt_second_reading = models.CharField(max_length=100, blank=True, help_text="Alternative 2nd Reading")
+    alt_gospel = models.CharField(max_length=100, blank=True, help_text="Alternative Gospel")
+    
+    # Local Commemorations & Necrology
+    commemorations = models.TextField(blank=True, help_text="Local diocese/seminary commemorations or necrology (+ deceased priests/religious)")
     
     cycle = models.CharField(max_length=2, choices=CYCLE_CHOICES, blank=True)
     saints = models.ManyToManyField(Saint, blank=True)

@@ -17,15 +17,13 @@
                             {% endif %}
                         {% endif %}
                     </h4>
+                    {% if author.primary_language %}
                     <p class="text-sm text-gray-500 flex items-center">
-                        <i class="fas fa-book text-xs mr-1"></i>
-                        {{ author.book_count }} book{{ author.book_count|pluralize }}
-                        {% if author.primary_language %}
-                            <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
-                                {% if author.primary_language == 'bn' %}বাংলা{% elif author.primary_language == 'en' %}English{% else %}Mixed{% endif %}
-                            </span>
-                        {% endif %}
+                        <span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">
+                            {% if author.primary_language == 'bn' %}বাংলা{% elif author.primary_language == 'en' %}English{% else %}Mixed{% endif %}
+                        </span>
                     </p>
+                    {% endif %}
                 </div>
                 <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
             </div>

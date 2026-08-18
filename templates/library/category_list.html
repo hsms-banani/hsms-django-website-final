@@ -13,8 +13,7 @@
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {% for category in categories %}
     <a href="{% url 'library:category_books' category.slug %}" class="category-card p-6 rounded-lg block text-center hover:shadow-lg transition-all">
-        <h3 class="font-semibold mb-2 text-xl">{{ category.name }}</h3>
-        <div class="text-sm opacity-90">{{ category.book_count }} books</div>
+        <h3 class="font-semibold text-xl">{{ category.name }}</h3>
     </a>
     {% empty %}
     <p class="col-span-full text-center text-gray-500 py-8">No categories available.</p>
