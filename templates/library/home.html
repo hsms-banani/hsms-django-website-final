@@ -39,11 +39,12 @@
                                hx-get="{% url 'library:home' %}"
                                hx-trigger="keyup changed delay:300ms, search"
                                hx-target="#book-grid-container"
-                               hx-indicator="#book-grid-skeleton"
+                               hx-indicator="#book-grid-skeleton, #search-progress-bar"
                                hx-push-url="true">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-search text-gray-400"></i>
                         </div>
+                        <div id="search-progress-bar" class="search-progress-bar htmx-indicator"></div>
                         {% if search_query %}
                         <a href="{% url 'library:home' %}" hx-get="{% url 'library:home' %}" hx-target="#book-grid-container" hx-indicator="#book-grid-skeleton" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600" title="Clear search">
                             <i class="fas fa-times-circle"></i>

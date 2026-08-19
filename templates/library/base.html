@@ -1,4 +1,4 @@
-<!-- templates/library/base.html - Complete Enhanced Version -->
+<!-- templates/library/base.html - Enhanced with Top Page Progress Bar & Search Loaders -->
 {% extends "base.html" %}
 {% load static %}
 
@@ -51,13 +51,13 @@
 
     /* Book card improvements */
     .book-card {
-        transition: transform 0.2s, box-shadow 0.2s;
+        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         font-family: var(--font-mixed);
     }
     
     .book-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 24px -8px rgba(0,0,0,0.15), 0 4px 8px -2px rgba(0,0,0,0.1);
+        transform: translateY(-5px);
+        box-shadow: 0 20px 30px -10px rgba(15, 23, 42, 0.12), 0 8px 15px -6px rgba(15, 23, 42, 0.08);
     }
 
     .book-card .book-title {
@@ -88,18 +88,7 @@
 
     input[type="text"]:focus, input[type="search"]:focus, textarea:focus {
         outline: none;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-
-    /* Language-specific text direction support */
-    .rtl {
-        direction: rtl;
-        text-align: right;
-    }
-
-    .ltr {
-        direction: ltr;
-        text-align: left;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
     }
 
     /* Availability badges */
@@ -129,134 +118,65 @@
     
     .search-highlight {
         background-color: #FEF3C7;
-        padding: 1px 2px;
-        border-radius: 2px;
-        font-weight: 500;
+        padding: 1px 3px;
+        border-radius: 3px;
+        font-weight: 600;
     }
     
     /* Category cards */
     .category-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
         color: white;
-        transition: transform 0.2s;
+        transition: transform 0.2s, box-shadow 0.2s;
     }
     .category-card:hover {
-        transform: scale(1.02);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(30, 58, 138, 0.2);
     }
     
     /* Modern title styling with language support */
     .library-title {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #6B21A8 100%);
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #7c3aed 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
         font-weight: 800;
         letter-spacing: -0.02em;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         background-size: 200% auto;
-        animation: shimmer 8s linear infinite;
+        animation: shimmerTitle 8s linear infinite;
         font-family: var(--font-english);
     }
 
-    @keyframes shimmer {
+    @keyframes shimmerTitle {
         from { background-position: 200% center; }
         to { background-position: 0% center; }
     }
-
-    /* Text truncation with language support */
-    .text-truncate-bangla {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        word-break: keep-all;
-    }
-
-    .text-truncate-mixed {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        word-break: break-word;
-        overflow-wrap: break-word;
-    }
-
-    /* Loading spinner */
-    .loading-spinner {
-        border: 2px solid #f3f3f3;
-        border-top: 2px solid #3498db;
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        animation: spin 1s linear infinite;
-        display: inline-block;
-        margin-right: 8px;
-    }
-    
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    
-    /* Search suggestions with language support */
-    .search-suggestions {
-        max-height: 400px;
-        overflow-y: auto;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        font-family: var(--font-mixed);
-    }
-    
-    .suggestion-item:hover {
-        background-color: #F3F4F6;
-    }
-    
-    /* Responsive book grid */
-    .book-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 1.5rem;
-    }
-    
-    @media (max-width: 768px) {
-        .book-grid {
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 1rem;
-        }
-        
-        .bangla, [lang="bn"] {
-            font-size: 1em;
-            line-height: 1.7;
-        }
-    }
-    
-    /* HTMX indicators */
-    .htmx-indicator { display: none; }
-    .htmx-request .htmx-indicator { display: inline-block; }
-    .htmx-request.htmx-indicator { display: inline-block; }
 
     /* Language toggle styles */
     .language-toggle {
         display: inline-flex;
         background: #f3f4f6;
-        border-radius: 8px;
-        padding: 2px;
+        border-radius: 9999px;
+        padding: 3px;
+        border: 1px solid #e5e7eb;
     }
 
     .language-toggle button {
-        padding: 6px 12px;
+        padding: 6px 14px;
         border: none;
         background: transparent;
-        border-radius: 6px;
-        font-size: 0.875rem;
-        font-weight: 500;
+        border-radius: 9999px;
+        font-size: 0.85rem;
+        font-weight: 600;
         transition: all 0.2s;
         cursor: pointer;
+        color: #4b5563;
     }
 
     .language-toggle button.active {
-        background: white;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        color: #3B82F6;
+        background: #2563eb;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+        color: white;
     }
 
     /* Quick search specific styles */
@@ -265,7 +185,7 @@
     }
 
     #quick-search-input:focus {
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
         border-color: #3B82F6;
     }
 
@@ -280,71 +200,17 @@
         visibility: visible;
     }
 
-    /* Quick search results positioning */
-    #quick-search-results {
-        width: calc(100% + 48px); /* Extend to include the search button */
+    /* Responsive book grid */
+    .book-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1.5rem;
     }
-
-    /* Smooth scrollbar for search results */
-    .search-suggestions::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .search-suggestions::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 3px;
-    }
-
-    .search-suggestions::-webkit-scrollbar-thumb {
-        background: #cbd5e0;
-        border-radius: 3px;
-    }
-
-    .search-suggestions::-webkit-scrollbar-thumb:hover {
-        background: #a0aec0;
-    }
-
-    /* Line clamp utilities */
-    .line-clamp-1 {
-        overflow: hidden;
-        display: -webkit-box;
-        -webkit-line-clamp: 1;
-        -webkit-box-orient: vertical;
-    }
-
-    .line-clamp-2 {
-        overflow: hidden;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-    }
-
-    /* Print styles */
-    @media print {
-        .book-card {
-            break-inside: avoid;
-            page-break-inside: avoid;
-        }
-        
-        .bangla, [lang="bn"] {
-            font-size: 12pt;
-            line-height: 1.6;
-        }
-    }
-
-    /* High contrast mode support */
-    @media (prefers-contrast: high) {
-        .search-highlight {
-            background-color: #FFFF00;
-            color: #000000;
-        }
-    }
-
-    /* Dark mode support */
-    @media (prefers-color-scheme: dark) {
-        .search-highlight {
-            background-color: #FCD34D;
-            color: #1F2937;
+    
+    @media (max-width: 768px) {
+        .book-grid {
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1rem;
         }
     }
 </style>
@@ -352,12 +218,92 @@
 
 {% block extra_js %}
 <script>
+// ============================================
+// TOP PAGE & HTMX NAVIGATION PROGRESS BAR ENGINE
+// ============================================
+(function() {
+    let topProgressBar = null;
+    let progressTimer = null;
+    
+    function getProgressBar() {
+        if (!topProgressBar) {
+            topProgressBar = document.getElementById('top-page-progress-bar');
+            if (!topProgressBar) {
+                topProgressBar = document.createElement('div');
+                topProgressBar.id = 'top-page-progress-bar';
+                document.body.appendChild(topProgressBar);
+            }
+        }
+        return topProgressBar;
+    }
+    
+    window.startTopProgressBar = function() {
+        const bar = getProgressBar();
+        if (progressTimer) clearInterval(progressTimer);
+        
+        bar.style.width = '0%';
+        bar.classList.add('active');
+        
+        let width = 15;
+        bar.style.width = width + '%';
+        
+        progressTimer = setInterval(() => {
+            if (width < 88) {
+                width += Math.random() * 10 + 3;
+                if (width > 88) width = 88;
+                bar.style.width = width + '%';
+            }
+        }, 120);
+    };
+    
+    window.finishTopProgressBar = function() {
+        const bar = getProgressBar();
+        if (progressTimer) clearInterval(progressTimer);
+        
+        bar.style.width = '100%';
+        setTimeout(() => {
+            bar.classList.remove('active');
+            setTimeout(() => {
+                bar.style.width = '0%';
+            }, 300);
+        }, 200);
+    };
+
+    // Auto-trigger progress bar when navigating or clicking links
+    document.addEventListener('DOMContentLoaded', function() {
+        startTopProgressBar();
+        finishTopProgressBar();
+
+        document.addEventListener('click', function(e) {
+            const anchor = e.target.closest('a');
+            if (anchor && anchor.href && anchor.href.startsWith(window.location.origin) && !anchor.target && !anchor.hasAttribute('download')) {
+                startTopProgressBar();
+            }
+        });
+    });
+
+    window.addEventListener('beforeunload', function() {
+        startTopProgressBar();
+    });
+
+    // HTMX Integration for Top Progress Bar
+    document.body.addEventListener('htmx:beforeRequest', function(evt) {
+        startTopProgressBar();
+    });
+
+    document.body.addEventListener('htmx:afterSettle', function(evt) {
+        finishTopProgressBar();
+    });
+
+    document.body.addEventListener('htmx:responseError', function(evt) {
+        finishTopProgressBar();
+    });
+})();
+
 // Enhanced language detection and text handling
 document.addEventListener('DOMContentLoaded', function() {
-    // Detect and mark Bangla text
     function detectAndMarkBanglaText() {
         const textElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, div, td, th, a');
-        
         textElements.forEach(element => {
             const text = element.textContent.trim();
             if (text && containsBanglaCharacters(text)) {
@@ -370,7 +316,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function containsBanglaCharacters(text) {
-        // Unicode range for Bengali script (0980-09FF)
         const banglaRegex = /[\u0980-\u09FF]/;
         return banglaRegex.test(text);
     }
@@ -381,13 +326,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return banglaRegex.test(text) && englishRegex.test(text);
     }
 
-    // Apply language detection
     detectAndMarkBanglaText();
-
-    // Reapply after HTMX content updates
-    document.body.addEventListener('htmx:afterSettle', function() {
-        detectAndMarkBanglaText();
-    });
 
     // ============================================
     // ULTRA-FAST QUICK SEARCH IMPLEMENTATION
@@ -395,17 +334,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.querySelector('#quick-search-input');
     const searchResults = document.querySelector('#quick-search-results');
     const clearBtn = document.querySelector('#clear-search-btn');
+    const quickProgressBar = document.querySelector('#quick-search-progress-bar');
     
     if (searchInput && searchResults) {
         let searchTimeout;
         let currentRequest = null;
         let selectedIndex = -1;
         
-        // Custom debounced search handler
         searchInput.addEventListener('input', function(e) {
             const query = this.value.trim();
             
-            // Show/hide clear button
             if (clearBtn) {
                 if (query.length > 0) {
                     clearBtn.classList.add('visible');
@@ -414,32 +352,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Cancel previous timeout
             if (searchTimeout) {
                 clearTimeout(searchTimeout);
             }
             
-            // Hide results if empty
             if (query.length === 0) {
                 searchResults.classList.add('hidden');
                 searchResults.innerHTML = '';
+                if (quickProgressBar) quickProgressBar.classList.remove('active');
                 return;
             }
             
-            // Show loading indicator immediately for responsiveness
-            if (query.length === 1) {
-                searchResults.innerHTML = `
-                    <div class="bg-white border border-gray-200 rounded-lg shadow-xl p-4">
-                        <div class="flex items-center justify-center space-x-2 text-gray-500">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            <span class="text-sm">Searching...</span>
-                        </div>
+            // Activate search progress bar sweep
+            if (quickProgressBar) quickProgressBar.classList.add('active');
+            startTopProgressBar();
+
+            // Display sleek shimmer loading state in dropdown
+            searchResults.innerHTML = `
+                <div class="bg-white/95 backdrop-blur-xl border border-blue-100 rounded-xl shadow-2xl p-4 space-y-3">
+                    <div class="flex items-center justify-between pb-2 border-b border-gray-100">
+                        <span class="text-xs font-semibold text-blue-600 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fas fa-spinner fa-spin text-blue-500"></i> Searching catalog...
+                        </span>
                     </div>
-                `;
-                searchResults.classList.remove('hidden');
-            }
+                    <div class="space-y-2">
+                        <div class="skeleton h-8 w-full rounded-md"></div>
+                        <div class="skeleton h-8 w-full rounded-md"></div>
+                        <div class="skeleton h-8 w-3/4 rounded-md"></div>
+                    </div>
+                </div>
+            `;
+            searchResults.classList.remove('hidden');
             
-            // Adjust delay based on query length (single char = 200ms, multi = 150ms)
             const delay = query.length === 1 ? 200 : 150;
             
             searchTimeout = setTimeout(() => {
@@ -448,16 +392,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         function performSearch(query) {
-            // Cancel previous request if exists
             if (currentRequest) {
                 currentRequest.abort();
             }
             
-            // Create new AbortController for this request
             const controller = new AbortController();
             currentRequest = controller;
             
-            // Perform fetch with abort signal
             fetch(`/library/api/quick-search/?q=${encodeURIComponent(query)}`, {
                 signal: controller.signal,
                 headers: {
@@ -469,22 +410,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 searchResults.innerHTML = html;
                 searchResults.classList.remove('hidden');
                 currentRequest = null;
-                selectedIndex = -1; // Reset selection
-                
-                // Re-detect language for new content
+                selectedIndex = -1;
+                if (quickProgressBar) quickProgressBar.classList.remove('active');
+                finishTopProgressBar();
                 detectAndMarkBanglaText();
             })
             .catch(error => {
-                if (error.name === 'AbortError') {
-                    // Request was cancelled, ignore
-                    return;
-                }
+                if (error.name === 'AbortError') return;
                 console.error('Search error:', error);
                 currentRequest = null;
+                if (quickProgressBar) quickProgressBar.classList.remove('active');
+                finishTopProgressBar();
             });
         }
         
-        // Hide results when clicking outside
         document.addEventListener('click', function(e) {
             if (!searchInput.contains(e.target) && 
                 !searchResults.contains(e.target) && 
@@ -493,130 +432,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Show results when focusing on input (if has content)
         searchInput.addEventListener('focus', function() {
             if (this.value.trim().length > 0 && searchResults.children.length > 0) {
                 searchResults.classList.remove('hidden');
             }
         });
-        
-        // Keyboard navigation support
-        searchInput.addEventListener('keydown', function(e) {
-            const items = searchResults.querySelectorAll('.suggestion-item');
-            
-            if (items.length === 0) return;
-            
-            switch(e.key) {
-                case 'ArrowDown':
-                    e.preventDefault();
-                    selectedIndex = (selectedIndex + 1) % items.length;
-                    updateSelection(items);
-                    break;
-                    
-                case 'ArrowUp':
-                    e.preventDefault();
-                    selectedIndex = selectedIndex <= 0 ? items.length - 1 : selectedIndex - 1;
-                    updateSelection(items);
-                    break;
-                    
-                case 'Enter':
-                    if (selectedIndex >= 0 && items[selectedIndex]) {
-                        e.preventDefault();
-                        items[selectedIndex].click();
-                    }
-                    break;
-                    
-                case 'Escape':
-                    searchResults.classList.add('hidden');
-                    selectedIndex = -1;
-                    break;
-            }
-        });
-        
-        function updateSelection(items) {
-            items.forEach((item, index) => {
-                if (index === selectedIndex) {
-                    item.classList.add('bg-blue-100');
-                    item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-                } else {
-                    item.classList.remove('bg-blue-100');
-                }
-            });
-        }
-        
-        // Reset selection when mouse enters
-        searchResults.addEventListener('mouseenter', function() {
-            const items = searchResults.querySelectorAll('.suggestion-item');
-            items.forEach(item => item.classList.remove('bg-blue-100'));
-            selectedIndex = -1;
-        });
-        
-        // Language-aware input handling
-        searchInput.addEventListener('input', function() {
-            const value = this.value.trim();
-            
-            // Adjust input styling based on content
-            if (containsBanglaCharacters(value)) {
-                this.classList.add('bangla');
-            } else {
-                this.classList.remove('bangla');
-            }
-        });
     }
-
-    // Global click listener for dynamic search results (author/publisher)
-    document.body.addEventListener('click', function(event) {
-        const authorResult = event.target.closest('.author-result-item');
-        if (authorResult) {
-            selectAuthor(authorResult.dataset.slug, authorResult.dataset.name);
-            return;
-        }
-
-        const publisherResult = event.target.closest('.publisher-result-item');
-        if (publisherResult) {
-            selectPublisher(publisherResult.dataset.slug, publisherResult.dataset.name);
-            return;
-        }
-    });
-    
-    // HTMX event handlers with language detection
-    document.body.addEventListener('htmx:beforeRequest', function(evt) {
-        const target = document.querySelector(evt.detail.target);
-        if (target) {
-            target.style.opacity = '0.7';
-        }
-    });
-
-    document.body.addEventListener('htmx:afterRequest', function(evt) {
-        const target = document.querySelector(evt.detail.target);
-        if (target) {
-            target.style.opacity = '1';
-            // Reapply language detection to new content
-            setTimeout(detectAndMarkBanglaText, 100);
-        }
-    });
 });
-
-// ============================================
-// GLOBAL HELPER FUNCTIONS
-// ============================================
-
-function hideQuickSearchResults() {
-    const results = document.getElementById('quick-search-results');
-    if (results) {
-        results.classList.add('hidden');
-    }
-}
 
 function clearQuickSearch() {
     const input = document.getElementById('quick-search-input');
     const results = document.getElementById('quick-search-results');
     const clearBtn = document.getElementById('clear-search-btn');
+    const quickProgressBar = document.getElementById('quick-search-progress-bar');
     
     if (input) {
         input.value = '';
         input.focus();
-        input.classList.remove('bangla');
     }
     
     if (results) {
@@ -627,76 +459,18 @@ function clearQuickSearch() {
     if (clearBtn) {
         clearBtn.classList.remove('visible');
     }
-}
 
-// Enhanced search result highlighting for multilingual text
-function highlightSearchTerm(text, term) {
-    if (!term) return text;
-    
-    // Handle both English and Bangla search terms
-    const regex = new RegExp(`(${escapeRegExp(term)})`, 'gi');
-    return text.replace(regex, '<span class="search-highlight">$1</span>');
-}
-
-function escapeRegExp(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-// Author and publisher selection functions
-function selectAuthor(slug, name) {
-    document.getElementById('author-slug-input').value = slug;
-    document.getElementById('author-search-input').value = name;
-    document.getElementById('author-search-results').innerHTML = '';
-    
-    // Apply language styling to selected text
-    const input = document.getElementById('author-search-input');
-    if (containsBanglaCharacters(name)) {
-        input.classList.add('bangla');
-    } else {
-        input.classList.remove('bangla');
-    }
-
-    // Trigger the filter form submission
-    const filterForm = document.getElementById('filter-form');
-    if (filterForm) {
-        htmx.trigger(filterForm, 'submit');
+    if (quickProgressBar) {
+        quickProgressBar.classList.remove('active');
     }
 }
 
-function selectPublisher(slug, name) {
-    document.getElementById('publisher-slug-input').value = slug;
-    document.getElementById('publisher-search-input').value = name;
-    document.getElementById('publisher-search-results').innerHTML = '';
-    
-    // Apply language styling to selected text
-    const input = document.getElementById('publisher-search-input');
-    if (containsBanglaCharacters(name)) {
-        input.classList.add('bangla');
-    } else {
-        input.classList.remove('bangla');
-    }
-
-    // Trigger the filter form submission
-    const filterForm = document.getElementById('filter-form');
-    if (filterForm) {
-        htmx.trigger(filterForm, 'submit');
-    }
-}
-
-function containsBanglaCharacters(text) {
-    const banglaRegex = /[\u0980-\u09FF]/;
-    return banglaRegex.test(text);
-}
-
-// Language filter functionality
 function setLanguageFilter(event, lang) {
-    // Update active button
     document.querySelectorAll('.language-toggle button').forEach(btn => {
         btn.classList.remove('active');
     });
     event.target.classList.add('active');
     
-    // Apply filter (you can integrate this with your existing filter form)
     const form = document.getElementById('filter-form');
     if (form) {
         let langInput = form.querySelector('input[name="language"]');
@@ -707,8 +481,6 @@ function setLanguageFilter(event, lang) {
             form.appendChild(langInput);
         }
         langInput.value = lang === 'all' ? '' : lang;
-        
-        // Trigger form submission via HTMX
         htmx.trigger(form, 'submit');
     }
 }
@@ -716,6 +488,9 @@ function setLanguageFilter(event, lang) {
 {% endblock %}
 
 {% block content %}
+<!-- Top Page Navigation Progress Bar -->
+<div id="top-page-progress-bar"></div>
+
 <div class="container mx-auto px-4 py-8">
     <!-- Modern Library Header -->
     <div class="mb-8">
@@ -729,15 +504,18 @@ function setLanguageFilter(event, lang) {
                 <!-- Ultra-Fast Quick Search Box -->
                 <div class="relative">
                     <div class="flex items-center">
-                        <div class="relative w-64">
+                        <div class="relative w-64 md:w-80">
                             <input 
                                 type="text" 
                                 id="quick-search-input"
-                                placeholder="Quick search..."
-                                class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mixed-content transition-all"
+                                placeholder="Quick search titles, authors, ISBN..."
+                                class="w-full px-4 py-2.5 pr-10 border border-gray-300 rounded-l-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent mixed-content transition-all shadow-xs"
                                 autocomplete="off"
                                 spellcheck="false"
                             >
+                            <!-- Search Progress Bar (Indeterminate sweep line) -->
+                            <div id="quick-search-progress-bar" class="search-progress-bar"></div>
+
                             <!-- Clear button -->
                             <button 
                                 type="button"
@@ -749,19 +527,19 @@ function setLanguageFilter(event, lang) {
                             </button>
                         </div>
                         <a href="{% url 'library:home' %}" 
-                           class="px-4 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition-colors"
+                           class="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-r-xl hover:from-blue-700 hover:to-indigo-700 transition-all font-semibold shadow-md flex items-center gap-2"
                            title="Advanced search">
                             <i class="fas fa-search"></i>
                         </a>
                     </div>
                     
-                    <!-- Quick Search Results - Now handled by JavaScript -->
+                    <!-- Quick Search Results -->
                     <div id="quick-search-results" 
-                         class="absolute top-full left-0 mt-2 z-50 hidden">
+                         class="absolute top-full left-0 right-0 mt-2 z-50 hidden">
                     </div>
                 </div>
                 
-                <!-- Language Toggle (Optional) -->
+                <!-- Language Toggle -->
                 <div class="language-toggle">
                     <button type="button" class="active" onclick="setLanguageFilter(event, 'all')">All</button>
                     <button type="button" onclick="setLanguageFilter(event, 'en')">English</button>
