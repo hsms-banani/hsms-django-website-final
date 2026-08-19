@@ -15,9 +15,9 @@ class StaticViewSitemap(Sitemap):
             'committees', 'history_heritage', 'hsit_about',
             'director_message', 'philosophy_department', 'theology_department',
             'faculty_list', 'academic_calendar', 'library',
-            'student_list', 'publications', 'spiritual_food', 'news_list', 'events_list',
+            'student_list', 'publications', 'spiritual_food:home', 'news_list', 'events_list',
             'gallery_list', 'terms_of_service',
-            'privacy_policy', 'site_map', 'spiritual_food:homily_list',
+            'privacy_policy', 'site_map', 'spiritual_food:prayer_services', 'spiritual_food:homily_list',
             'spiritual_food:homily_archive', 'spiritual_food:liturgical_calendar',
             'library:home', 'library:category_list', 'library:author_list', 'library:publisher_list',
         ]

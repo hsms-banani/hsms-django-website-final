@@ -2,7 +2,146 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Prayer Services Schedule | Holy Spirit Major Seminary{% endblock %}
+{% block title %}Sunday Mass in Dhaka & Prayer Schedule | Holy Spirit Major Seminary{% endblock %}
+
+{% block meta_description %}Find Sunday Mass timings, weekday Holy Mass schedules, and Eucharistic adoration services in Dhaka, Bangladesh at Holy Spirit Major Seminary, Banani.{% endblock %}
+
+{% block meta_keywords %}Sunday Mass in Dhaka, Mass in Dhaka, Catholic Mass Dhaka, Mass timings Dhaka, Sunday Mass Banani, ঢাকা রবিবার খ্রিষ্টযোগ, বনানী ক্যাথলিক চার্চ মাস, ঢাকা ক্যাথলিক গির্জা সময়সূচী, Catholic Church Mass Bangladesh, Holy Spirit Major Seminary prayer services{% endblock %}
+
+{% block og_title %}Sunday Mass in Dhaka & Catholic Prayer Schedule | Holy Spirit Major Seminary{% endblock %}
+{% block og_description %}View the official Sunday Mass schedule, daily prayer services, and Eucharistic adoration timings at Holy Spirit Major Seminary in Banani, Dhaka, Bangladesh.{% endblock %}
+
+{% block twitter_title %}Sunday Mass in Dhaka & Catholic Prayer Schedule | Holy Spirit Major Seminary{% endblock %}
+{% block twitter_description %}View the official Sunday Mass schedule, daily prayer services, and Eucharistic adoration timings at Holy Spirit Major Seminary in Banani, Dhaka, Bangladesh.{% endblock %}
+
+{% block extra_css %}
+<!-- Schema.org JSON-LD Structured Data for Google Search & AI Overviews -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'home' %}"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Spiritual Food",
+          "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'spiritual_food:home' %}"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Sunday Mass in Dhaka",
+          "item": "{{ request.build_absolute_uri }}"
+        }
+      ]
+    },
+    {
+      "@type": ["CatholicChurch", "Place"],
+      "@id": "{{ request.build_absolute_uri }}#church",
+      "name": "Holy Spirit Major Seminary - Catholic Church & Chapel",
+      "alternateName": ["Sunday Mass in Dhaka", "HSMS Banani Mass Timings", "ঢাকা রবিবার খ্রিষ্টযোগ"],
+      "url": "{{ request.build_absolute_uri }}",
+      "logo": "{% static 'img/logo.png' %}",
+      "image": "{% static 'img/logo-white-bg.jpg' %}",
+      "description": "Holy Spirit Major Seminary Chapel in Banani, Dhaka offers Sunday Mass, weekday Holy Mass, Eucharistic adoration, and Catholic prayer services in Dhaka, Bangladesh.",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Block A-112, Road 27, Banani",
+        "addressLocality": "Dhaka",
+        "addressRegion": "Dhaka Division",
+        "postalCode": "1213",
+        "addressCountry": "BD"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 23.7937,
+        "longitude": 90.4047
+      },
+      "telephone": "+880-2-222271891",
+      "email": "hsmsmajorseminary@gmail.com",
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Sunday"],
+          "opens": "06:00",
+          "closes": "20:00",
+          "description": "Sunday Mass Services in Dhaka"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+          "opens": "06:00",
+          "closes": "20:00",
+          "description": "Weekday Mass & Daily Prayers"
+        }
+      ]
+    },
+    {
+      "@type": "Event",
+      "name": "Sunday Mass in Dhaka",
+      "description": "Holy Sunday Mass celebrated at Holy Spirit Major Seminary Chapel, Banani, Dhaka.",
+      "eventSchedule": {
+        "@type": "Schedule",
+        "repeatFrequency": "P1W",
+        "byDay": "https://schema.org/Sunday"
+      },
+      "location": {
+        "@type": "Place",
+        "name": "Holy Spirit Major Seminary Chapel",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Block A-112, Road 27, Banani",
+          "addressLocality": "Dhaka",
+          "addressCountry": "BD"
+        }
+      },
+      "organizer": {
+        "@type": "Organization",
+        "name": "Holy Spirit Major Seminary",
+        "url": "{{ request.build_absolute_uri }}"
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "When is Sunday Mass held in Dhaka at Holy Spirit Major Seminary?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sunday Mass at Holy Spirit Major Seminary Chapel in Banani, Dhaka is celebrated with multiple service times throughout the day, including morning Mass (6:30 AM) and evening Mass (4:30 PM & 6:30 PM)."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Where can I attend Catholic Mass in Banani, Dhaka?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Catholic Mass and prayer services are conducted at Holy Spirit Major Seminary Chapel, located at Block A-112, Road 27, Banani, Dhaka-1213, Bangladesh."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Are visitors welcome to attend Mass at Holy Spirit Major Seminary in Dhaka?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, all faithful, parishioners, and visitors in Dhaka are welcome to join daily morning prayers, Holy Mass, Eucharistic adoration, and Sunday Mass."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+{% endblock %}
 
 {% block content %}
 {% if banner %}
@@ -11,13 +150,13 @@
     <div class="container mx-auto px-4 relative">
         <div class="max-w-4xl mx-auto text-center">
             <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-amber-300 text-xs font-semibold uppercase tracking-wider mb-4 border border-white/20">
-                <i class="fas fa-church text-xs"></i> Spiritual Life & Worship
+                <i class="fas fa-church text-xs"></i> Catholic Worship in Dhaka
             </span>
             <h1 class="text-4xl md:text-6xl font-bold font-serif mb-4 text-white leading-tight animate-fade-in-up">
-                {{ banner.title|default:"Prayer Services Schedule" }}
+                {{ banner.title|default:"Sunday Mass & Prayer Services Schedule in Dhaka" }}
             </h1>
             <p class="text-lg md:text-xl text-white/90 max-w-2xl mx-auto leading-relaxed mb-8 animate-fade-in-up" style="animation-delay: 0.2s;">
-                {{ banner.subtitle|default:"Join us in daily prayer, Holy Mass, and Eucharistic devotion at Holy Spirit Major Seminary." }}
+                {{ banner.subtitle|default:"Join us for Sunday Mass, daily prayer, and Eucharistic adoration at Holy Spirit Major Seminary in Banani, Dhaka, Bangladesh." }}
             </p>
             <div class="flex flex-wrap items-center justify-center gap-4 animate-fade-in-up" style="animation-delay: 0.3s;">
                 <a href="{% url 'spiritual_food:prayer_request' %}" 
@@ -26,7 +165,7 @@
                 </a>
                 <a href="#schedule-section" 
                    class="bg-white/15 hover:bg-white/25 text-white font-semibold px-6 py-3.5 rounded-full border border-white/30 backdrop-blur-md transition-all flex items-center gap-2">
-                    <i class="fas fa-calendar-alt"></i> View Schedule
+                    <i class="fas fa-calendar-alt"></i> View Mass Schedule
                 </a>
             </div>
         </div>
@@ -39,13 +178,13 @@
     <div class="container mx-auto px-4 relative">
         <div class="max-w-4xl mx-auto text-center">
             <span class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 backdrop-blur-md text-amber-300 text-xs font-semibold uppercase tracking-wider mb-4 border border-white/20">
-                <i class="fas fa-church text-xs"></i> Spiritual Life & Worship
+                <i class="fas fa-church text-xs"></i> Catholic Worship in Dhaka
             </span>
             <h1 class="text-4xl md:text-5xl font-bold font-serif mb-4 text-white">
-                Prayer Services Schedule
+                Sunday Mass & Prayer Services Schedule in Dhaka
             </h1>
             <p class="text-lg md:text-xl text-blue-100 max-w-2xl mx-auto leading-relaxed mb-8">
-                Join us in daily prayer, Holy Mass, and Eucharistic adoration at Holy Spirit Major Seminary.
+                Join us for Sunday Mass, daily prayer, and Eucharistic adoration at Holy Spirit Major Seminary in Banani, Dhaka, Bangladesh.
             </p>
             <div class="flex flex-wrap items-center justify-center gap-4">
                 <a href="{% url 'spiritual_food:prayer_request' %}" 
@@ -54,7 +193,7 @@
                 </a>
                 <a href="#schedule-section" 
                    class="bg-white/15 hover:bg-white/25 text-white font-semibold px-6 py-3.5 rounded-full border border-white/30 backdrop-blur-md transition-all flex items-center gap-2">
-                    <i class="fas fa-calendar-alt"></i> View Schedule
+                    <i class="fas fa-calendar-alt"></i> View Mass Schedule
                 </a>
             </div>
         </div>
@@ -70,8 +209,8 @@
                 <i class="fas fa-info-circle text-lg"></i>
             </div>
             <div>
-                <h3 class="text-xl font-bold text-gray-900 font-serif">Important Information & Guidelines</h3>
-                <p class="text-xs text-gray-500">Key details for attending worship services</p>
+                <h3 class="text-xl font-bold text-gray-900 font-serif">Attending Holy Mass in Banani, Dhaka</h3>
+                <p class="text-xs text-gray-500">Key details for visitors & parishioners attending Sunday Mass & services</p>
             </div>
         </div>
         
@@ -82,7 +221,7 @@
                 </div>
                 <div>
                     <h4 class="font-semibold text-gray-900 text-sm mb-1">Timely Arrival</h4>
-                    <p class="text-xs text-gray-600 leading-relaxed">Please arrive 10-15 minutes before the service begins to ensure quiet preparation.</p>
+                    <p class="text-xs text-gray-600 leading-relaxed">Please arrive 10-15 minutes before Mass begins to ensure quiet prayer and seating.</p>
                 </div>
             </div>
 
@@ -91,8 +230,8 @@
                     <i class="fas fa-church"></i>
                 </div>
                 <div>
-                    <h4 class="font-semibold text-gray-900 text-sm mb-1">Service Location</h4>
-                    <p class="text-xs text-gray-600 leading-relaxed">All services are held in the Main Seminary Chapel unless specified otherwise.</p>
+                    <h4 class="font-semibold text-gray-900 text-sm mb-1">Chapel Location</h4>
+                    <p class="text-xs text-gray-600 leading-relaxed">Mass and devotions are celebrated at the Seminary Chapel in Banani, Dhaka.</p>
                 </div>
             </div>
 
@@ -102,7 +241,7 @@
                 </div>
                 <div>
                     <h4 class="font-semibold text-gray-900 text-sm mb-1">Mass Intentions</h4>
-                    <p class="text-xs text-gray-600 leading-relaxed">You can request specific Mass intentions and prayers online at any time.</p>
+                    <p class="text-xs text-gray-600 leading-relaxed">Submit intentions for Holy Mass and prayers online through our portal.</p>
                 </div>
             </div>
         </div>
@@ -118,9 +257,9 @@
         <div class="text-center mb-10">
             <span class="text-xs font-bold text-indigo-600 uppercase tracking-widest block mb-1">Regular Devotions</span>
             <h2 class="text-3xl font-bold font-serif text-gray-900">
-                Daily Services
+                Daily Prayer Services & Mass Timings
             </h2>
-            <p class="text-gray-600 text-sm mt-1">Communal prayer held every day throughout the year</p>
+            <p class="text-gray-600 text-sm mt-1">Communal prayer held every day throughout the year at Holy Spirit Major Seminary, Dhaka</p>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -165,9 +304,9 @@
         <div class="text-center mb-10">
             <span class="text-xs font-bold text-indigo-600 uppercase tracking-widest block mb-1">Weekly Liturgical Timetable</span>
             <h2 class="text-3xl font-bold font-serif text-gray-900">
-                Weekly Schedule
+                Weekly Mass & Prayer Schedule
             </h2>
-            <p class="text-gray-600 text-sm mt-1">Services organized by day of the week</p>
+            <p class="text-gray-600 text-sm mt-1">Catholic Mass schedule and prayer services organized by day of the week in Dhaka</p>
         </div>
         
         <div class="space-y-6">
@@ -176,7 +315,7 @@
             <div class="bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden transition hover:shadow-md">
                 <div class="bg-gradient-to-r from-indigo-900 to-purple-900 text-white px-6 py-4 flex items-center justify-between">
                     <h3 class="text-xl font-bold capitalize flex items-center gap-2">
-                        <i class="fas fa-calendar-day text-amber-400 text-lg"></i> {{ day|title }}
+                        <i class="fas fa-calendar-day text-amber-400 text-lg"></i> {{ day|title }} {% if day == 'sunday' %}Mass Schedule{% endif %}
                     </h3>
                     <span class="text-xs font-medium px-2.5 py-1 bg-white/10 rounded-full text-white/90">
                         {{ day_name|length }} {{ day_name|length|pluralize:"Service,Services" }}
@@ -221,9 +360,9 @@
         <div class="text-center mb-10">
             <span class="text-xs font-bold text-amber-600 uppercase tracking-widest block mb-1">Feast Days & Special Occasions</span>
             <h2 class="text-3xl font-bold font-serif text-gray-900">
-                Special Occasions
+                Special Occasions & Feast Day Mass
             </h2>
-            <p class="text-gray-600 text-sm mt-1">Services for special feast days, devotions, and solemnities</p>
+            <p class="text-gray-600 text-sm mt-1">Services for Catholic feast days, devotions, and solemnities in Dhaka</p>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -262,6 +401,48 @@
 </section>
 {% endif %}
 
+<!-- FAQ Section for Google Search & AI Overviews SEO -->
+<section class="py-14 bg-gray-50/80 border-t border-gray-100">
+    <div class="container mx-auto px-4 max-w-4xl">
+        <div class="text-center mb-10">
+            <span class="text-xs font-bold text-indigo-600 uppercase tracking-widest block mb-1">Frequently Asked Questions</span>
+            <h2 class="text-3xl font-bold font-serif text-gray-900">
+                Sunday Mass in Dhaka – Common Questions
+            </h2>
+            <p class="text-gray-600 text-sm mt-1">Information for parishioners, visitors, and pilgrims attending Mass in Banani, Dhaka</p>
+        </div>
+
+        <div class="space-y-4">
+            <div class="bg-white rounded-2xl p-6 border border-gray-200/80 shadow-xs">
+                <h3 class="text-base font-bold text-gray-900 flex items-center gap-2 mb-2">
+                    <i class="fas fa-question-circle text-indigo-600"></i> When is Sunday Mass held in Dhaka at Holy Spirit Major Seminary?
+                </h3>
+                <p class="text-xs md:text-sm text-gray-600 leading-relaxed pl-6">
+                    Sunday Mass at Holy Spirit Major Seminary Chapel in Banani, Dhaka is celebrated with multiple service times throughout the day, including morning Mass at 6:30 AM and evening Mass services at 4:30 PM and 6:30 PM.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 border border-gray-200/80 shadow-xs">
+                <h3 class="text-base font-bold text-gray-900 flex items-center gap-2 mb-2">
+                    <i class="fas fa-map-marker-alt text-indigo-600"></i> Where is Holy Spirit Major Seminary located in Dhaka?
+                </h3>
+                <p class="text-xs md:text-sm text-gray-600 leading-relaxed pl-6">
+                    The seminary is located at Block A-112, Road 27, Banani, Dhaka 1213, Bangladesh. It is easily accessible for residents and visitors across Dhaka.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 border border-gray-200/80 shadow-xs">
+                <h3 class="text-base font-bold text-gray-900 flex items-center gap-2 mb-2">
+                    <i class="fas fa-users text-indigo-600"></i> Is Sunday Mass open to visitors and the general public?
+                </h3>
+                <p class="text-xs md:text-sm text-gray-600 leading-relaxed pl-6">
+                    Yes, all Catholic faithful, parishioners, students, and visitors are warmly welcomed to participate in Sunday Holy Mass, Eucharistic adoration, and daily devotions at our chapel.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- Call to Action Banner -->
 <section class="py-16 bg-gradient-to-br from-indigo-950 via-purple-900 to-blue-950 text-white relative overflow-hidden">
     <div class="container mx-auto px-4 relative z-10">
@@ -270,10 +451,10 @@
                 <i class="fas fa-hands-praying"></i>
             </span>
             <h2 class="text-3xl md:text-4xl font-bold font-serif mb-4">
-                Need Special Prayers or Mass Intentions?
+                Need Special Mass Intentions or Prayers in Dhaka?
             </h2>
             <p class="text-lg text-white/90 mb-8 leading-relaxed">
-                Submit your intentions to our seminary community. We are honored to remember you, your family, and your intentions in our daily prayers.
+                Submit your intentions to our seminary community. We are honored to remember you, your family, and your intentions during Sunday Mass and daily prayers.
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
                 <a href="{% url 'spiritual_food:prayer_request' %}" 
