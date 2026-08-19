@@ -503,13 +503,13 @@ function setLanguageFilter(event, lang) {
             <div class="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-6">
                 <!-- Ultra-Fast Quick Search Box -->
                 <div class="relative">
-                    <div class="flex items-center">
-                        <div class="relative w-64 md:w-80">
+                    <div class="flex items-stretch">
+                        <div class="relative w-64 md:w-80 flex items-stretch">
                             <input 
                                 type="text" 
                                 id="quick-search-input"
                                 placeholder="Quick search titles, authors, ISBN..."
-                                class="w-full px-4 py-2.5 pr-10 border border-gray-300 rounded-l-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent mixed-content transition-all shadow-xs"
+                                class="w-full h-11 px-4 pr-10 border border-r-0 border-gray-300 rounded-l-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent mixed-content transition-all shadow-xs text-sm"
                                 autocomplete="off"
                                 spellcheck="false"
                             >
@@ -521,15 +521,15 @@ function setLanguageFilter(event, lang) {
                                 type="button"
                                 id="clear-search-btn"
                                 onclick="clearQuickSearch()"
-                                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors z-10"
                                 title="Clear search">
                                 <i class="fas fa-times text-sm"></i>
                             </button>
                         </div>
                         <a href="{% url 'library:home' %}" 
-                           class="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-r-xl hover:from-blue-700 hover:to-indigo-700 transition-all font-semibold shadow-md flex items-center gap-2"
+                           class="h-11 px-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-r-xl hover:from-blue-700 hover:to-indigo-700 transition-all font-semibold shadow-xs flex items-center justify-center border border-l-0 border-blue-600 flex-shrink-0"
                            title="Advanced search">
-                            <i class="fas fa-search"></i>
+                            <i class="fas fa-search text-base"></i>
                         </a>
                     </div>
                     
