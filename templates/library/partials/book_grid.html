@@ -53,20 +53,20 @@
 <!-- Pagination -->
 <div id="pagination-container">
 {% if page_obj.has_next %}
-<div class="text-center mt-10 mb-6">
+<div class="flex justify-center mt-10 mb-6">
     <button hx-get="{% url 'library:load_more_books' %}?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}" 
             hx-target="#pagination-container"
             hx-swap="outerHTML"
-            class="group relative inline-flex items-center justify-center px-8 py-3.5 text-sm font-bold text-white transition-all duration-300 ease-out bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 rounded-full shadow-lg hover:shadow-2xl hover:shadow-blue-500/30 hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-4 focus:ring-blue-500/30 overflow-hidden cursor-pointer">
+            class="group relative inline-flex items-center justify-center px-10 py-3.5 text-sm font-bold text-white transition-all duration-300 ease-out bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 rounded-full shadow-lg hover:shadow-2xl hover:shadow-blue-500/30 hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-4 focus:ring-blue-500/30 overflow-hidden cursor-pointer">
         <!-- Shimmer Sweep Glow Effect -->
         <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/25 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out pointer-events-none"></span>
         
-        <span class="htmx-indicator flex items-center gap-2">
+        <span class="htmx-indicator items-center justify-center gap-2">
             <i class="fas fa-circle-notch fa-spin text-amber-300 text-base"></i>
             <span>Loading Next Titles...</span>
         </span>
         
-        <span class="htmx-no-indicator flex items-center gap-2.5">
+        <span class="htmx-no-indicator inline-flex items-center justify-center gap-2.5">
             <i class="fas fa-book-open text-amber-300 text-base group-hover:scale-110 transition-transform"></i>
             <span>Load More Books</span>
             <i class="fas fa-chevron-down text-xs opacity-80 group-hover:translate-y-0.5 transition-transform"></i>
