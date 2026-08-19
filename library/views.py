@@ -696,7 +696,7 @@ def search_publishers(request):
         query = normalize_search_query(query)
         publishers = (
             Publisher.objects.filter(name__icontains=query)
-            .annotate(publication_count=Count('publications'))
+            .annotate(publication_count=Count('book_publications'))
             .order_by('-publication_count')[:10]
         )
     

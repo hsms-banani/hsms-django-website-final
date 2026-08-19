@@ -1,8 +1,32 @@
 <!-- templates/library/partials/_publisher_search_results.html -->
-{% for publisher in publishers %}
-    <div class="p-2 hover:bg-blue-100 cursor-pointer publisher-result-item"
-     data-slug="{{ publisher.slug }}"
-     data-name="{{ publisher.name|escapejs }}">
-    {{ publisher.name }}
-</div>
-{% endfor %}
+{% if publishers %}
+    <div class="py-1">
+    {% for publisher in publishers %}
+        <div class="publisher-result-item px-3 py-2.5 hover:bg-emerald-50/80 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors flex items-center justify-between group"
+             data-slug="{{ publisher.slug }}"
+             data-name="{{ publisher.name|escapejs }}"
+             data-count="{{ publisher.publication_count|default:0 }}">
+            <div class="flex items-center space-x-3 min-w-0">
+                <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center flex-shrink-0 text-xs shadow-xs group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="min-w-0">
+                    <h4 class="font-semibold text-gray-900 text-xs truncate group-hover:text-emerald-700 transition-colors">
+                        {{ publisher.name }}
+                    </h4>
+                    <p class="text-[11px] text-gray-500 flex items-center gap-1.5 mt-0.5">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                        <span>{{ publisher.publication_count|default:0 }} publication{{ publisher.publication_count|pluralize }}</span>
+                    </p>
+                </div>
+            </div>
+            <i class="fas fa-plus text-gray-300 text-xs group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all"></i>
+        </div>
+    {% endfor %}
+    </div>
+{% else %}
+    <div class="p-4 text-center text-gray-500">
+        <i class="fas fa-building-circle-xmark text-xl text-gray-300 mb-1 block"></i>
+        <p class="text-xs font-medium">No publishers found</p>
+    </div>
+{% endif %}

@@ -519,6 +519,74 @@ function setLanguageFilter(event, lang) {
         htmx.trigger(form, 'submit');
     }
 }
+
+// Pro Author & Publisher Filter Selection Controllers
+function clearAuthorFilter() {
+    const slugInput = document.getElementById('author-slug-input');
+    const searchInput = document.getElementById('author-search-input');
+    const results = document.getElementById('author-search-results');
+    if (slugInput) slugInput.value = '';
+    if (searchInput) searchInput.value = '';
+    if (results) results.classList.add('hidden');
+    const form = document.getElementById('filter-form');
+    if (form) htmx.trigger(form, 'submit');
+}
+
+function clearPublisherFilter() {
+    const slugInput = document.getElementById('publisher-slug-input');
+    const searchInput = document.getElementById('publisher-search-input');
+    const results = document.getElementById('publisher-search-results');
+    if (slugInput) slugInput.value = '';
+    if (searchInput) searchInput.value = '';
+    if (results) results.classList.add('hidden');
+    const form = document.getElementById('filter-form');
+    if (form) htmx.trigger(form, 'submit');
+}
+
+document.body.addEventListener('click', function(e) {
+    const authorItem = e.target.closest('.author-result-item');
+    if (authorItem) {
+        const slug = authorItem.dataset.slug;
+        const name = authorItem.dataset.name;
+        const slugInput = document.getElementById('author-slug-input');
+        const searchInput = document.getElementById('author-search-input');
+        const results = document.getElementById('author-search-results');
+        if (slugInput) slugInput.value = slug;
+        if (searchInput) searchInput.value = name;
+        if (results) results.classList.add('hidden');
+        const form = document.getElementById('filter-form');
+        if (form) htmx.trigger(form, 'submit');
+        return;
+    }
+
+    const publisherItem = e.target.closest('.publisher-result-item');
+    if (publisherItem) {
+        const slug = publisherItem.dataset.slug;
+        const name = publisherItem.dataset.name;
+        const slugInput = document.getElementById('publisher-slug-input');
+        const searchInput = document.getElementById('publisher-search-input');
+        const results = document.getElementById('publisher-search-results');
+        if (slugInput) slugInput.value = slug;
+        if (searchInput) searchInput.value = name;
+        if (results) results.classList.add('hidden');
+        const form = document.getElementById('filter-form');
+        if (form) htmx.trigger(form, 'submit');
+        return;
+    }
+
+    // Hide dropdowns when clicking outside
+    const authorWidget = document.getElementById('author-search-widget');
+    const authorResults = document.getElementById('author-search-results');
+    if (authorWidget && authorResults && !authorWidget.contains(e.target)) {
+        authorResults.classList.add('hidden');
+    }
+
+    const publisherWidget = document.getElementById('publisher-search-widget');
+    const publisherResults = document.getElementById('publisher-search-results');
+    if (publisherWidget && publisherResults && !publisherWidget.contains(e.target)) {
+        publisherResults.classList.add('hidden');
+    }
+});
 </script>
 {% endblock %}
 

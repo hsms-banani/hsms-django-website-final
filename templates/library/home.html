@@ -8,188 +8,218 @@
 {% block library_content %}
 <div class="flex flex-col lg:flex-row gap-8">
 
+    <!-- Pro Filter & Sort Sidebar -->
     <aside class="w-full lg:w-1/4 xl:w-1/5">
         <div class="sticky top-8">
-            <!-- Gradient border wrapper -->
-            <div class="bg-gradient-to-br from-blue-800 to-blue-600 p-0.5 rounded-2xl shadow-lg">
-                <div class="bg-white p-6 rounded-xl">
-                    <h2 class="text-2xl font-bold mb-8 text-gray-800 border-b pb-4">Filter & Sort</h2>
-                    
-                    <form id="filter-form" 
-                          hx-get="{% url 'library:home' %}" 
-                          hx-target="#book-grid-container"
-                          hx-indicator="#book-grid-skeleton"
-                          hx-push-url="true"
-                          class="space-y-6">
-
-                <!-- Search -->
-                <div>
-                    <label for="search-input" class="block text-sm font-semibold text-gray-600 mb-2 flex items-center justify-between">
-                        <span class="flex items-center">
-                            <i class="fas fa-search w-4 h-4 mr-2 text-gray-400"></i> Search
-                        </span>
-                        {% if search_query %}
-                        <a href="{% url 'library:home' %}" hx-get="{% url 'library:home' %}" hx-target="#book-grid-container" hx-indicator="#book-grid-skeleton" class="text-xs text-blue-600 hover:underline">Clear Search</a>
-                        {% endif %}
-                    </label>
-                    <div class="relative">
-                        <input type="text" name="q" id="search-input" placeholder="Find your next book..." 
-                               class="form-input w-full pl-10 pr-9 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
-                               value="{{ search_query|default:'' }}"
-                               hx-get="{% url 'library:home' %}"
-                               hx-trigger="keyup changed delay:300ms, search"
-                               hx-target="#book-grid-container"
-                               hx-indicator="#book-grid-skeleton, #search-progress-bar"
-                               hx-push-url="true">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-search text-gray-400"></i>
-                        </div>
-                        <div id="search-progress-bar" class="search-progress-bar htmx-indicator"></div>
-                        {% if search_query %}
-                        <a href="{% url 'library:home' %}" hx-get="{% url 'library:home' %}" hx-target="#book-grid-container" hx-indicator="#book-grid-skeleton" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600" title="Clear search">
-                            <i class="fas fa-times-circle"></i>
-                        </a>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Sorting -->
-                <div>
-                    <label for="sort-select" class="block text-sm font-semibold text-gray-600 mb-2 flex items-center">
-                        <div class="relative group">
-                            <i class="fas fa-sort-amount-down w-4 h-4 mr-2 text-gray-400"></i>
-                            <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max bg-gray-800 text-white text-xs rounded-md p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                                Sort by different criteria
-                            </span>
-                        </div>
-                        Sort By
-                    </label>
-                    <select name="sort" id="sort-select" class="form-select w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
-                        <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>Newest First</option>
-                        <option value="-times_borrowed" {% if sort_by == '-times_borrowed' %}selected{% endif %}>Most Popular</option>
-                        <option value="title" {% if sort_by == 'title' %}selected{% endif %}>Title (A-Z)</option>
-                        <option value="-title" {% if sort_by == '-title' %}selected{% endif %}>Title (Z-A)</option>
-                        <option value="-publication_year" {% if sort_by == '-publication_year' %}selected{% endif %}>Year (Newest)</option>
-                        <option value="call_number" {% if sort_by == 'call_number' %}selected{% endif %}>Location (A-Z)</option>
-                        <option value="-call_number" {% if sort_by == '-call_number' %}selected{% endif %}>Location (Z-A)</option>
-                    </select>
-                </div>
-
-                <!-- Category Filter -->
-                <div>
-                    <label for="category-select" class="block text-sm font-semibold text-gray-600 mb-2 flex items-center">
-                        <div class="relative group">
-                            <i class="fas fa-folder-open w-4 h-4 mr-2 text-gray-400"></i>
-                            <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max bg-gray-800 text-white text-xs rounded-md p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                                Filter by category
-                            </span>
-                        </div>
-                        Category
-                    </label>
-                    <select name="category" id="category-select" class="form-select w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                            hx-get="{% url 'library:get_authors_for_category' %}"
-                            hx-target="#author-select"
-                            hx-indicator="#author-spinner">
-                        <option value="">All Categories</option>
-                        {% for cat in filter_options.categories %}
-                            <option value="{{ cat.slug }}" {% if selected_filters.category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <!-- Author Filter -->
-                <div>
-                    <label for="author-search-input" class="block text-sm font-semibold text-gray-600 mb-2 flex items-center">
-                        <i class="fas fa-user-edit w-4 h-4 mr-2 text-gray-400"></i>
-                        Author
-                    </label>
-                    <div class="relative" id="author-search-widget">
-                        <input type="hidden" name="author" id="author-slug-input" value="{{ selected_filters.author|default:'' }}">
-                        <input type="text" 
-                               id="author-search-input"
-                               class="form-input w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                               placeholder="Search authors..."
-                               hx-get="{% url 'library:search_authors' %}"
-                               hx-trigger="keyup changed delay:300ms"
-                               hx-target="#author-search-results"
-                               hx-indicator="#author-spinner"
-                               autocomplete="off"
-                               name="author_q"
-                               value="{{ author_q_value|default:'' }}"
-                               hx-trigger="keyup changed delay:300ms{% if author_q_value %}, load{% endif %}"
-                        >
-                        <div id="author-spinner" class="absolute top-0 right-0 mt-3 mr-4 htmx-indicator">
-                            <i class="fas fa-spinner fa-spin text-gray-400"></i>
-                        </div>
-                        <div id="author-search-results" class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-lg shadow-lg z-10 max-h-60 overflow-y-auto"></div>
-                    </div>
-                </div>
-
-                <!-- Publisher Filter -->
-                <div>
-                    <label for="publisher-search-input" class="block text-sm font-semibold text-gray-600 mb-2 flex items-center">
-                        <i class="fas fa-building w-4 h-4 mr-2 text-gray-400"></i>
-                        Publisher
-                    </label>
-                    <div class="relative" id="publisher-search-widget">
-                        <input type="hidden" name="publisher" id="publisher-slug-input" value="{{ selected_filters.publisher|default:'' }}">
-                        <input type="text" 
-                               id="publisher-search-input"
-                               class="form-input w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                               placeholder="Search publishers..."
-                               hx-get="{% url 'library:search_publishers' %}"
-                               hx-trigger="keyup changed delay:300ms"
-                               hx-target="#publisher-search-results"
-                               hx-indicator="#publisher-spinner"
-                               autocomplete="off"
-                               name="publisher_q"
-                               value="{{ publisher_q_value|default:'' }}"
-                               hx-trigger="keyup changed delay:300ms{% if publisher_q_value %}, load{% endif %}"
-                        >
-                        <div id="publisher-spinner" class="absolute top-0 right-0 mt-3 mr-4 htmx-indicator">
-                            <i class="fas fa-spinner fa-spin text-gray-400"></i>
-                        </div>
-                        <div id="publisher-search-results" class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-lg shadow-lg z-10 max-h-60 overflow-y-auto"></div>
-                    </div>
-                </div>
-
-                <!-- Availability -->
-                <div>
-                    <label for="status-select" class="block text-sm font-semibold text-gray-600 mb-2 flex items-center">
-                        <div class="relative group">
-                            <i class="fas fa-check-circle w-4 h-4 mr-2 text-gray-400"></i>
-                            <span class="absolute bottom-full left-1/2 -translate-x-12 mb-2 w-max bg-gray-800 text-white text-xs rounded-md p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                                Filter by availability
-                            </span>
-                        </div>
-                        Availability
-                    </label>
-                    <select name="status" id="status-select" class="form-select w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
-                        <option value="">All</option>
-                        <option value="available" {% if selected_filters.status == 'available' %}selected{% endif %}>Available</option>
-                        <option value="checked_out" {% if selected_filters.status == 'checked_out' %}selected{% endif %}>Checked Out</option>
-                    </select>
+            <!-- Modern Pro Card Wrapper -->
+            <div class="bg-white/95 backdrop-blur-xl border border-gray-200/90 p-6 rounded-2xl shadow-xl space-y-6">
+                
+                <div class="flex items-center justify-between border-b border-gray-100 pb-4">
+                    <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                        <i class="fas fa-sliders-h text-blue-600 text-base"></i> Filter & Sort
+                    </h2>
+                    {% if selected_filters.author or selected_filters.publisher or selected_filters.category or selected_filters.status or search_query %}
+                    <a href="{% url 'library:home' %}" hx-get="{% url 'library:home' %}" hx-target="#book-grid-container" hx-indicator="#book-grid-skeleton" class="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline">Reset All</a>
+                    {% endif %}
                 </div>
                 
-                <div class="pt-4 space-y-3 border-t">
-                    <button type="submit" class="w-full px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 ease-in-out">
-                        Apply Filters
-                    </button>
-                    <a href="{% url 'library:home' %}" class="w-full text-center block px-4 py-2.5 text-gray-700 bg-gray-100 border border-gray-200 hover:bg-gray-200 hover:text-gray-900 rounded-lg transition-colors font-medium">
-                        Clear Filters
-                    </a>
-                </div>
-            </form>
+                <form id="filter-form" 
+                      hx-get="{% url 'library:home' %}" 
+                      hx-target="#book-grid-container"
+                      hx-indicator="#book-grid-skeleton"
+                      hx-push-url="true"
+                      class="space-y-5">
+
+                    <!-- Search Input -->
+                    <div>
+                        <label for="search-input" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 flex items-center justify-between">
+                            <span class="flex items-center">
+                                <i class="fas fa-search w-3.5 h-3.5 mr-1.5 text-blue-600"></i> Title & Keyword
+                            </span>
+                            {% if search_query %}
+                            <a href="{% url 'library:home' %}" hx-get="{% url 'library:home' %}" hx-target="#book-grid-container" hx-indicator="#book-grid-skeleton" class="text-[11px] text-blue-600 hover:underline">Clear</a>
+                            {% endif %}
+                        </label>
+                        <div class="relative">
+                            <input type="text" name="q" id="search-input" placeholder="Find books, keywords..." 
+                                   class="form-input w-full pl-9 pr-8 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-xs font-medium" 
+                                   value="{{ search_query|default:'' }}"
+                                   hx-get="{% url 'library:home' %}"
+                                   hx-trigger="keyup changed delay:300ms, search"
+                                   hx-target="#book-grid-container"
+                                   hx-indicator="#book-grid-skeleton, #search-progress-bar"
+                                   hx-push-url="true">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 text-xs">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div id="search-progress-bar" class="search-progress-bar htmx-indicator"></div>
+                            {% if search_query %}
+                            <a href="{% url 'library:home' %}" hx-get="{% url 'library:home' %}" hx-target="#book-grid-container" hx-indicator="#book-grid-skeleton" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 text-xs" title="Clear search">
+                                <i class="fas fa-times-circle"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Sort By -->
+                    <div>
+                        <label for="sort-select" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 flex items-center">
+                            <i class="fas fa-sort-amount-down w-3.5 h-3.5 mr-1.5 text-blue-600"></i> Sort By
+                        </label>
+                        <select name="sort" id="sort-select" class="form-select w-full border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-xs font-medium py-2.5">
+                            <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>Newest Additions</option>
+                            <option value="-times_borrowed" {% if sort_by == '-times_borrowed' %}selected{% endif %}>Most Popular</option>
+                            <option value="title" {% if sort_by == 'title' %}selected{% endif %}>Title (A-Z)</option>
+                            <option value="-title" {% if sort_by == '-title' %}selected{% endif %}>Title (Z-A)</option>
+                            <option value="-publication_year" {% if sort_by == '-publication_year' %}selected{% endif %}>Year (Newest)</option>
+                            <option value="call_number" {% if sort_by == 'call_number' %}selected{% endif %}>Call Number (A-Z)</option>
+                        </select>
+                    </div>
+
+                    <!-- Category Filter -->
+                    <div>
+                        <label for="category-select" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 flex items-center">
+                            <i class="fas fa-folder-open w-3.5 h-3.5 mr-1.5 text-blue-600"></i> Category
+                        </label>
+                        <select name="category" id="category-select" class="form-select w-full border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-xs font-medium py-2.5"
+                                hx-get="{% url 'library:get_authors_for_category' %}"
+                                hx-target="#author-select"
+                                hx-indicator="#author-spinner">
+                            <option value="">All Categories</option>
+                            {% for cat in filter_options.categories %}
+                                <option value="{{ cat.slug }}" {% if selected_filters.category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Pro Author Filter Widget -->
+                    <div>
+                        <label for="author-search-input" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 flex items-center justify-between">
+                            <span class="flex items-center">
+                                <i class="fas fa-user-edit w-3.5 h-3.5 mr-1.5 text-indigo-600"></i> Author
+                            </span>
+                            <button type="button" onclick="clearAuthorFilter()" class="text-[11px] text-indigo-600 hover:underline {% if not author_q_value and not selected_filters.author %}hidden{% endif %}">Clear</button>
+                        </label>
+                        <div class="relative" id="author-search-widget">
+                            <input type="hidden" name="author" id="author-slug-input" value="{{ selected_filters.author|default:'' }}">
+                            <div class="relative flex items-center">
+                                <input type="text" 
+                                       id="author-search-input"
+                                       class="form-input w-full pl-9 pr-8 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-xs font-medium"
+                                       placeholder="Search author name..."
+                                       hx-get="{% url 'library:search_authors' %}"
+                                       hx-trigger="keyup changed delay:250ms, focus"
+                                       hx-target="#author-search-results"
+                                       hx-indicator="#author-spinner"
+                                       autocomplete="off"
+                                       name="author_q"
+                                       value="{{ author_q_value|default:'' }}"
+                                >
+                                <i class="fas fa-user-edit absolute left-3 text-indigo-400 text-xs"></i>
+                                <div id="author-spinner" class="absolute right-3 htmx-indicator">
+                                    <i class="fas fa-spinner fa-spin text-indigo-500 text-xs"></i>
+                                </div>
+                            </div>
+                            <!-- Pro Author Results Dropdown -->
+                            <div id="author-search-results" class="absolute top-full left-0 right-0 bg-white/95 backdrop-blur-xl border border-gray-200/90 rounded-xl shadow-2xl z-30 max-h-64 overflow-y-auto mt-1 hidden"></div>
+                        </div>
+                    </div>
+
+                    <!-- Pro Publisher Filter Widget -->
+                    <div>
+                        <label for="publisher-search-input" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 flex items-center justify-between">
+                            <span class="flex items-center">
+                                <i class="fas fa-building w-3.5 h-3.5 mr-1.5 text-emerald-600"></i> Publisher
+                            </span>
+                            <button type="button" onclick="clearPublisherFilter()" class="text-[11px] text-emerald-600 hover:underline {% if not publisher_q_value and not selected_filters.publisher %}hidden{% endif %}">Clear</button>
+                        </label>
+                        <div class="relative" id="publisher-search-widget">
+                            <input type="hidden" name="publisher" id="publisher-slug-input" value="{{ selected_filters.publisher|default:'' }}">
+                            <div class="relative flex items-center">
+                                <input type="text" 
+                                       id="publisher-search-input"
+                                       class="form-input w-full pl-9 pr-8 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition text-xs font-medium"
+                                       placeholder="Search publisher name..."
+                                       hx-get="{% url 'library:search_publishers' %}"
+                                       hx-trigger="keyup changed delay:250ms, focus"
+                                       hx-target="#publisher-search-results"
+                                       hx-indicator="#publisher-spinner"
+                                       autocomplete="off"
+                                       name="publisher_q"
+                                       value="{{ publisher_q_value|default:'' }}"
+                                >
+                                <i class="fas fa-building absolute left-3 text-emerald-400 text-xs"></i>
+                                <div id="publisher-spinner" class="absolute right-3 htmx-indicator">
+                                    <i class="fas fa-spinner fa-spin text-emerald-500 text-xs"></i>
+                                </div>
+                            </div>
+                            <!-- Pro Publisher Results Dropdown -->
+                            <div id="publisher-search-results" class="absolute top-full left-0 right-0 bg-white/95 backdrop-blur-xl border border-gray-200/90 rounded-xl shadow-2xl z-30 max-h-64 overflow-y-auto mt-1 hidden"></div>
+                        </div>
+                    </div>
+
+                    <!-- Availability -->
+                    <div>
+                        <label for="status-select" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 flex items-center">
+                            <i class="fas fa-check-circle w-3.5 h-3.5 mr-1.5 text-blue-600"></i> Availability
+                        </label>
+                        <select name="status" id="status-select" class="form-select w-full border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-xs font-medium py-2.5">
+                            <option value="">All Statuses</option>
+                            <option value="available" {% if selected_filters.status == 'available' %}selected{% endif %}>Available Only</option>
+                            <option value="checked_out" {% if selected_filters.status == 'checked_out' %}selected{% endif %}>Checked Out</option>
+                        </select>
+                    </div>
+                    
+                    <div class="pt-3 space-y-2 border-t border-gray-100">
+                        <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold text-xs rounded-xl shadow-md hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 flex items-center justify-center gap-2">
+                            <i class="fas fa-filter text-xs"></i> Apply Filters
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </aside>
 
+    <!-- Main Catalog View -->
     <main class="w-full lg:w-3/4 xl:w-4/5">
+        <!-- Active Filter Pills Bar -->
+        {% if selected_filters.author or selected_filters.publisher or selected_filters.category or selected_filters.status or search_query %}
+        <div class="mb-5 flex flex-wrap items-center gap-2 bg-blue-50/70 border border-blue-100 rounded-2xl p-3.5 text-xs shadow-2xs">
+            <span class="font-bold text-blue-900 flex items-center gap-1.5 mr-1 text-xs">
+                <i class="fas fa-filter text-blue-600"></i> Active Filters:
+            </span>
+            {% if search_query %}
+                <span class="inline-flex items-center px-3 py-1 rounded-xl bg-white border border-blue-200 text-blue-800 shadow-2xs font-semibold gap-1.5">
+                    Query: "{{ search_query }}"
+                </span>
+            {% endif %}
+            {% if selected_filters.category %}
+                <span class="inline-flex items-center px-3 py-1 rounded-xl bg-white border border-blue-200 text-blue-800 shadow-2xs font-semibold gap-1.5">
+                    <i class="fas fa-folder text-blue-500"></i> {{ selected_filters.category }}
+                </span>
+            {% endif %}
+            {% if author_q_value or selected_filters.author %}
+                <span class="inline-flex items-center px-3 py-1 rounded-xl bg-white border border-indigo-200 text-indigo-800 shadow-2xs font-semibold gap-1.5">
+                    <i class="fas fa-user-edit text-indigo-500"></i> Author: {{ author_q_value|default:selected_filters.author }}
+                    <button type="button" onclick="clearAuthorFilter()" class="hover:text-red-600 transition-colors ml-1"><i class="fas fa-times text-xs"></i></button>
+                </span>
+            {% endif %}
+            {% if publisher_q_value or selected_filters.publisher %}
+                <span class="inline-flex items-center px-3 py-1 rounded-xl bg-white border border-emerald-200 text-emerald-800 shadow-2xs font-semibold gap-1.5">
+                    <i class="fas fa-building text-emerald-500"></i> Publisher: {{ publisher_q_value|default:selected_filters.publisher }}
+                    <button type="button" onclick="clearPublisherFilter()" class="hover:text-red-600 transition-colors ml-1"><i class="fas fa-times text-xs"></i></button>
+                </span>
+            {% endif %}
+            <a href="{% url 'library:home' %}" hx-get="{% url 'library:home' %}" hx-target="#book-grid-container" hx-indicator="#book-grid-skeleton" class="ml-auto text-blue-600 hover:text-blue-800 font-bold hover:underline">
+                Clear All
+            </a>
+        </div>
+        {% endif %}
+
         <div id="book-grid-container">
-            {# The initial content is loaded here, and this is the target for HTMX swaps #}
             {% include 'library/partials/book_grid.html' %}
         </div>
 
-        {# The skeleton loader, which is shown during HTMX requests #}
         <div id="book-grid-skeleton" class="htmx-indicator w-full">
             {% include 'library/partials/book_grid_loader.html' %}
         </div>
