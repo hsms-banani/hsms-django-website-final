@@ -1,6 +1,11 @@
 <!-- templates/library/partials/_publisher_search_results.html -->
 {% if publishers %}
     <div class="py-1">
+    {% if is_suggestion %}
+        <div class="px-3 py-1.5 bg-emerald-50/60 text-[10px] font-bold text-emerald-700 uppercase tracking-wider border-b border-emerald-100 flex items-center gap-1.5">
+            <i class="fas fa-fire text-amber-500"></i> Popular Publishers
+        </div>
+    {% endif %}
     {% for publisher in publishers %}
         <div class="publisher-result-item px-3 py-2.5 hover:bg-emerald-50/80 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors flex items-center justify-between group"
              data-slug="{{ publisher.slug }}"

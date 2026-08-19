@@ -1,6 +1,11 @@
 <!-- templates/library/partials/_author_search_results.html -->
 {% if authors %}
     <div class="py-1">
+    {% if is_suggestion %}
+        <div class="px-3 py-1.5 bg-indigo-50/60 text-[10px] font-bold text-indigo-700 uppercase tracking-wider border-b border-indigo-100 flex items-center gap-1.5">
+            <i class="fas fa-fire text-amber-500"></i> Popular Authors
+        </div>
+    {% endif %}
     {% for author in authors %}
         <div class="author-result-item px-3 py-2.5 hover:bg-blue-50/80 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors flex items-center justify-between group"
              data-slug="{{ author.slug }}"

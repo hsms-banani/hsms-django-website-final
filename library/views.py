@@ -667,7 +667,7 @@ def optimized_multilingual_search(books, query, query_language):
         return sorted(scored_books, key=lambda x: x[1], reverse=True)
 
 def search_authors(request):
-    """Enhanced author search with multilingual support"""
+    """Enhanced author search with top suggestions when query is empty"""
     query = request.GET.get('author_q', '').strip()
     if len(query) >= 1:
         query = normalize_search_query(query)
@@ -682,16 +682,18 @@ def search_authors(request):
             authors = Author.objects.filter(
                 Q(first_name__icontains=query) | Q(last_name__icontains=query)
             ).annotate(publication_count=Count('publications')).order_by('-publication_count')[:10]
+    else:
+        authors = Author.objects.annotate(publication_count=Count('publications')).order_by('-publication_count')[:10]
     
     return render(request, 'library/partials/_author_search_results.html', {
         'authors': authors,
-        'query_language': detect_text_language(query) if query else 'en'
+        'query_language': detect_text_language(query) if query else 'en',
+        'is_suggestion': len(query) == 0
     })
 
 def search_publishers(request):
-    """Enhanced publisher search"""
+    """Enhanced publisher search with top suggestions when query is empty"""
     query = request.GET.get('publisher_q', '').strip()
-    publishers = []
     if len(query) >= 1:
         query = normalize_search_query(query)
         publishers = (
@@ -699,9 +701,15 @@ def search_publishers(request):
             .annotate(publication_count=Count('book_publications'))
             .order_by('-publication_count')[:10]
         )
+    else:
+        publishers = (
+            Publisher.objects.annotate(publication_count=Count('book_publications'))
+            .order_by('-publication_count')[:10]
+        )
     
     return render(request, 'library/partials/_publisher_search_results.html', {
-        'publishers': publishers
+        'publishers': publishers,
+        'is_suggestion': len(query) == 0
     })
 
 # Keep existing view functions but with minimal updates for better caching
