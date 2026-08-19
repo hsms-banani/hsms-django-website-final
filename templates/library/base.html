@@ -1,4 +1,4 @@
-<!-- templates/library/base.html - Enhanced with Top Page Progress Bar & Search Loaders -->
+<!-- templates/library/base.html - Enhanced with Splash Loader, Top Progress Bar & Search Loaders -->
 {% extends "base.html" %}
 {% load static %}
 
@@ -219,6 +219,47 @@
 {% block extra_js %}
 <script>
 // ============================================
+// FULLSCREEN LIBRARY ENTRY SPLASH LOADER ENGINE
+// ============================================
+(function() {
+    function initSplashLoader() {
+        const splash = document.getElementById('library-splash-loader');
+        const fill = document.getElementById('splash-progress-fill');
+        const text = document.getElementById('splash-progress-text');
+        
+        if (!splash || !fill || !text) return;
+        
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.floor(Math.random() * 22) + 14;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+                fill.style.width = '100%';
+                text.textContent = '100%';
+                
+                setTimeout(() => {
+                    splash.style.opacity = '0';
+                    splash.style.transform = 'scale(1.04)';
+                    setTimeout(() => {
+                        splash.style.display = 'none';
+                    }, 500);
+                }, 200);
+            } else {
+                fill.style.width = progress + '%';
+                text.textContent = progress + '%';
+            }
+        }, 70);
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSplashLoader);
+    } else {
+        initSplashLoader();
+    }
+})();
+
+// ============================================
 // TOP PAGE & HTMX NAVIGATION PROGRESS BAR ENGINE
 // ============================================
 (function() {
@@ -269,7 +310,6 @@
         }, 200);
     };
 
-    // Auto-trigger progress bar when navigating or clicking links
     document.addEventListener('DOMContentLoaded', function() {
         startTopProgressBar();
         finishTopProgressBar();
@@ -286,7 +326,6 @@
         startTopProgressBar();
     });
 
-    // HTMX Integration for Top Progress Bar
     document.body.addEventListener('htmx:beforeRequest', function(evt) {
         startTopProgressBar();
     });
@@ -339,7 +378,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (searchInput && searchResults) {
         let searchTimeout;
         let currentRequest = null;
-        let selectedIndex = -1;
         
         searchInput.addEventListener('input', function(e) {
             const query = this.value.trim();
@@ -363,11 +401,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Activate search progress bar sweep
             if (quickProgressBar) quickProgressBar.classList.add('active');
             startTopProgressBar();
 
-            // Display sleek shimmer loading state in dropdown
             searchResults.innerHTML = `
                 <div class="bg-white/95 backdrop-blur-xl border border-blue-100 rounded-xl shadow-2xl p-4 space-y-3">
                     <div class="flex items-center justify-between pb-2 border-b border-gray-100">
@@ -410,7 +446,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 searchResults.innerHTML = html;
                 searchResults.classList.remove('hidden');
                 currentRequest = null;
-                selectedIndex = -1;
                 if (quickProgressBar) quickProgressBar.classList.remove('active');
                 finishTopProgressBar();
                 detectAndMarkBanglaText();
@@ -488,6 +523,41 @@ function setLanguageFilter(event, lang) {
 {% endblock %}
 
 {% block content %}
+<!-- Fullscreen Library Entry Splash Loader Overlay -->
+<div id="library-splash-loader" class="fixed inset-0 z-[999999] bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 flex flex-col items-center justify-center text-white transition-all duration-500 ease-in-out opacity-100 backdrop-blur-2xl">
+    <!-- Ambient Background Glow Accents -->
+    <div class="absolute -top-32 -left-32 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="relative z-10 flex flex-col items-center text-center max-w-md px-6">
+        <!-- Floating Animated Book/Seminary Icon -->
+        <div class="w-24 h-24 mb-6 rounded-3xl bg-white/10 border border-white/20 shadow-2xl flex items-center justify-center backdrop-blur-md animate-bounce-gentle relative">
+            <div class="absolute inset-0 rounded-3xl bg-gradient-to-tr from-blue-500 to-amber-400 opacity-20 blur-md"></div>
+            <i class="fas fa-book-open text-4xl text-amber-400"></i>
+        </div>
+
+        <span class="px-3.5 py-1 rounded-full bg-amber-400/20 border border-amber-400/30 text-amber-300 text-xs font-semibold uppercase tracking-widest mb-3">
+            Holy Spirit Major Seminary
+        </span>
+
+        <h2 class="text-3xl font-bold font-serif text-white tracking-tight mb-2">
+            HSMS Digital Library
+        </h2>
+        <p class="text-xs text-blue-200/80 mb-8 max-w-xs leading-relaxed">
+            Initializing catalog, manuscripts & collection...
+        </p>
+
+        <!-- Progress Bar & Percentage Counter -->
+        <div class="w-full bg-white/10 rounded-full h-2 border border-white/15 overflow-hidden relative mb-3">
+            <div id="splash-progress-fill" class="h-full bg-gradient-to-r from-blue-500 via-indigo-400 to-amber-400 rounded-full transition-all duration-300 w-0"></div>
+        </div>
+        <div class="flex items-center justify-between w-full text-[11px] text-blue-200/70 font-mono">
+            <span>Loading Catalog</span>
+            <span id="splash-progress-text">0%</span>
+        </div>
+    </div>
+</div>
+
 <!-- Top Page Navigation Progress Bar -->
 <div id="top-page-progress-bar"></div>
 

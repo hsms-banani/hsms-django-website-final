@@ -120,3 +120,18 @@
 .htmx-request.htmx-indicator {
     display: block;
 }
+
+/* Library Entry Splash Loader Animations */
+@keyframes bounceGentle {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        transform: translateY(-8px) scale(1.03);
+    }
+}
+
+.animate-bounce-gentle {
+    animation: bounceGentle 3s ease-in-out infinite;
+}
+
